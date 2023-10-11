@@ -1,0 +1,37 @@
+{
+    "title": "ImageGen(SDXL)",
+    "description": "Generate images from prompt with SDXL",
+    "inputs": {
+      "17": {
+        "inputs": {
+          "text_g": {
+            "type": "STRING",
+            "name": "Prompt(Positive)",
+            "help": "the positive prompt to generate images",
+            "default": "Super detailed and natural 8k hyper-realistic image of a smiling Italian bride applying her make-up in a brightly lit room.",
+            "max": 300
+          }
+        }
+      },
+      "25": {
+        "inputs": {
+          "noise_seed": {
+            "type": "INT",
+            "name": "Seed",
+            "help": "the seed to generate images",
+            "default": 0,
+            "min": 0,
+            "max": 4503599627370496,
+            "step": 1
+          }
+        }
+      }
+    },
+    "outputs": {
+      "28": {
+        "outputs": {
+          "filename_prefix": "ComfyFlowApp"
+        }
+      }
+    }
+  }

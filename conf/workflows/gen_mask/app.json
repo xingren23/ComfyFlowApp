@@ -1,0 +1,26 @@
+{
+    "title": "GenMask(SAM)",
+    "description": "Generate mask of image",
+    "inputs": {
+        "1": {
+            "inputs": {
+                "image": {
+                    "type": "IMAGE",
+                    "name": "SelectImage",
+                    "help": "drag and drop to select an image."
+                }
+            }
+        }
+    },
+    "outputs": {
+        "17": {
+            "outputs": {
+                "image": {
+                    "type": "IMAGE",
+                    "name": "InvertMaskImage",
+                    "help": "Invert mask image"
+                }
+            }
+        }
+    }
+}
