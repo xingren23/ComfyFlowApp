@@ -176,9 +176,9 @@ class ComfyFlowApp:
                     logger.info("update output_image")
                     st.image(output_image, use_column_width=True, caption='Output Image')
                 else:
-                    output_image = Image.open('./public/images/output-default.png')
+                    output_image = Image.open('./public/images/output-none.png')
                     logger.info("default output_image")
-                    st.image(output_image, use_column_width=True, caption='No Image, Generate it!')
+                    st.image(output_image, use_column_width=True, caption='None Image, Generate it!')
 
 
 if __name__ == "__main__":
