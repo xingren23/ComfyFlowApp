@@ -1,8 +1,5 @@
-import os
 import json
-import argparse
 from typing import Any
-import requests
 import random
 from PIL import Image
 from loguru import logger
@@ -10,21 +7,9 @@ from loguru import logger
 import streamlit as st
 from comfy_client import ComfyClient
 
-
-NODE_CLASS_MAPPINGS = {}
-
-def register_node_class(server_addr):
-    object_info_url = f"http://{server_addr}/object_info"
-    logger.info(f"Got object info from {object_info_url}")
-    resp = requests.get(object_info_url, timeout=3)
-    if resp.status_code != 200:
-        raise Exception(f"Failed to get object info from {object_info_url}")
-    object_info = resp.json()
-    
-    return object_info
-
 class ComfyFlowApp:
     def __init__(self, server_addr, api_file, app_file) -> Any:
+    
         self.comfy_client = ComfyClient(server_addr)
         with open(api_file) as f:
             logger.info(f"Loading api data from {api_file}")
@@ -130,7 +115,9 @@ class ComfyFlowApp:
                     image = Image.open(uploaded_file)
                     st.image(image, use_column_width=True, caption='Input Image')
 
-    def _create_ui(self):      
+    def _create_ui(self):   
+        st.set_page_config(page_title='ComfyFlowApp', layout='wide')
+           
         logger.info("Creating UI")  
 
         # reduce top padding
@@ -181,29 +168,3 @@ class ComfyFlowApp:
                     st.image(output_image, use_column_width=True, caption='None Image, Generate it!')
 
 
-if __name__ == "__main__":
-    
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--server_addr", type=str, default="127.0.0.1:8188")
-    parser.add_argument("--workflow", type=str, default="default")
-    try:
-        args = parser.parse_args()
-        server_addr = args.server_addr
-        workflow = args.workflow
-
-        api_file = f"conf/workflows/{workflow}/api.json"
-        app_file = f"conf/workflows/{workflow}/app.json"
-
-        if not os.path.exists(api_file) or not os.path.exists(app_file):
-            raise Exception(f"Invalid workflow {workflow}, api file {api_file} or app file {app_file} does not exist")
-
-        logger.info("Starting ComfyFlowApp")
-        st.set_page_config(page_title='ComfyFlowApp', layout='wide')
-
-        NODE_CLASS_MAPPINGS = register_node_class(server_addr)
-        app = ComfyFlowApp(server_addr=server_addr, api_file=api_file, app_file=app_file)
-    except SystemExit as e:
-        logger.error(e)
-        exit()
-
-    
