@@ -1,6 +1,6 @@
 {
     "title": "GenMask(SAM)",
-    "description": "Generate mask of image",
+    "description": ":apple: Generate mask of image",
     "inputs": {
         "1": {
             "inputs": {

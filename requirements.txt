@@ -1,1 +1,2 @@
 streamlit
+streamlit-extras

@@ -5,9 +5,9 @@ from PIL import Image
 from loguru import logger
 
 import streamlit as st
-from comfy_client import ComfyClient
+from module.comfyclient import ComfyClient
 
-class ComfyFlowApp:
+class Comfyflow:
     def __init__(self, server_addr, api_file, app_file) -> Any:
     
         self.comfy_client = ComfyClient(server_addr)
@@ -115,32 +115,20 @@ class ComfyFlowApp:
                     image = Image.open(uploaded_file)
                     st.image(image, use_column_width=True, caption='Input Image')
 
-    def _create_ui(self):   
-        st.set_page_config(page_title='ComfyFlowApp', layout='wide')
-           
+    def _create_ui(self):      
         logger.info("Creating UI")  
 
-        # reduce top padding
-        st.markdown("""
-        <style>
-               .block-container {
-                    padding-top: 1rem;
-                    padding-bottom: 0rem;
-                    padding-left: 5rem;
-                    padding-right: 5rem;
-                }
-        </style>
-        """, unsafe_allow_html=True)
+        st.title(f'{self.app_data["description"]}')
 
-        header_col, logo_col, git_col = st.columns([0.82, 0.15, 0.03], gap="small")
-        with header_col:
-            st.title(f'✈️ {self.app_data["description"]}')
-        with logo_col:
-            st.markdown("")
-            st.link_button(':point_right: Star ComfyFlowApp', url='https://github.com/xingren23/ComfyFlowApp')
-        with git_col:
-            st.markdown("")
-            st.markdown("[![Github](https://img.icons8.com/material-outlined/32/000000/github.png)](https://github.com/xingren23/ComfyFlowApp)")
+        # header_col, logo_col, git_col = st.columns([0.82, 0.15, 0.03], gap="small")
+        # with header_col:
+        #     st.title(f'✈️ {self.app_data["description"]}')
+        # with logo_col:
+        #     st.markdown("")
+        #     st.link_button(':point_right: Star ComfyFlowApp', url='https://github.com/xingren23/ComfyFlowApp')
+        # with git_col:
+        #     st.markdown("")
+        #     st.markdown("[![Github](https://img.icons8.com/material-outlined/32/000000/github.png)](https://github.com/xingren23/ComfyFlowApp)")
             
         st.divider()
 
