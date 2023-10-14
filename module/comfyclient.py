@@ -9,6 +9,15 @@ class ComfyClient:
     def __init__(self, server_addr) -> None:
         self.client_id = str(uuid.uuid4())
         self.server_addr = server_addr
+
+    def get_node_class(self):
+        object_info_url = f"http://{self.server_addr}/object_info"
+        logger.info(f"Got object info from {object_info_url}")
+        resp = requests.get(object_info_url, timeout=3)
+        if resp.status_code != 200:
+            raise Exception(f"Failed to get object info from {object_info_url}")
+        return resp.json()
+    
     
     def queue_prompt(self, prompt):
         p = {"prompt": prompt, "client_id": self.client_id}
@@ -72,6 +81,6 @@ class ComfyClient:
                         images_output.append(image_data)
                 output_images[node_id] = images_output
 
-        logger.info(f"Gen images from server, {len(output_images)}")
+        logger.info(f"Gen images from server, {len(output_images)}, {output_images.keys()}")
         return output_images
 

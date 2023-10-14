@@ -1,0 +1,1 @@
+{"name": "rui-test", "description": "test", "inputs": {"19": {"inputs": {"prompt": {"type": "TEXT", "name": "19.SeargePromptText.prompt", "help": "Input a string", "default": "", "max": 300}}}, "21": {"inputs": {"prompt": {"type": "TEXT", "name": "21.SeargePromptText.prompt", "help": "Input a string", "default": "", "max": 300}}}}, "outputs": {"54": {"outputs": {}}}}

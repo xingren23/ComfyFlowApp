@@ -33,13 +33,13 @@ class Comfyflow:
             node_inputs = node['inputs']
             for param_item in node_inputs:
                 param_type = node_inputs[param_item]['type']
-                if param_type == "STRING":
+                if param_type == "TEXT":
                     param_name = node_inputs[param_item]['name']
                     param_key = f"{node_id}_{param_name}"
                     param_value = st.session_state[param_key]
                     logger.info(f"update param {param_name} {param_value}")
                     prompt[node_id]["inputs"][param_item] = param_value
-                elif param_type == "INT":
+                elif param_type == "NUMBER":
                     param_name = node_inputs[param_item]['name']
                     param_key = f"{node_id}_{param_name}"
                     param_value = st.session_state[param_key]
@@ -51,7 +51,7 @@ class Comfyflow:
                         st.session_state[param_key] = param_value
                     
                     prompt[node_id]["inputs"][param_item] = param_value
-                elif param_type == 'IMAGE':
+                elif param_type == 'UPLOADIMAGE':
                     param_name = node_inputs[param_item]['name']
                     param_key = f"{node_id}_{param_name}"
                     if param_key in st.session_state:
@@ -68,7 +68,6 @@ class Comfyflow:
         images = self.comfy_client.gen_images(prompt)
         for node_id in self.app_data['outputs']:
             image_data = images[node_id]
-            break
         return image_data
         
 
@@ -76,7 +75,7 @@ class Comfyflow:
         for param_item in node_inputs:
             param_type = node_inputs[param_item]['type']
             print(param_type)
-            if param_type == "STRING":
+            if param_type == "TEXT":
                 param_name = node_inputs[param_item]['name']
                 param_default = node_inputs[param_item]['default']
                 param_help = node_inputs[param_item]['help']
@@ -86,7 +85,7 @@ class Comfyflow:
                 st.text_area(param_name, value =param_default, key=param_key, help=param_help, max_chars=param_max)
                 if param_key not in st.session_state:   
                     st.session_state[param_key] = param_default
-            elif param_type == "INT":
+            elif param_type == "NUMBER":
                 param_name = node_inputs[param_item]['name']
                 param_default = node_inputs[param_item]['default']
                 param_help = node_inputs[param_item]['help']
@@ -98,7 +97,7 @@ class Comfyflow:
                 st.number_input(param_name, value =param_default, key=param_key, help=param_help, min_value=param_min, max_value=param_max, step=param_step)
                 if param_key not in st.session_state:
                     st.session_state[param_key] = param_default
-            elif param_type == 'IMAGE':
+            elif param_type == 'UPLOADIMAGE':
                 param_name = node_inputs[param_item]['name']
                 param_help = node_inputs[param_item]['help']
                 param_subfolder = node_inputs[param_item].get('subfolder', '')
@@ -119,17 +118,7 @@ class Comfyflow:
         logger.info("Creating UI")  
 
         st.title(f'{self.app_data["description"]}')
-
-        # header_col, logo_col, git_col = st.columns([0.82, 0.15, 0.03], gap="small")
-        # with header_col:
-        #     st.title(f'✈️ {self.app_data["description"]}')
-        # with logo_col:
-        #     st.markdown("")
-        #     st.link_button(':point_right: Star ComfyFlowApp', url='https://github.com/xingren23/ComfyFlowApp')
-        # with git_col:
-        #     st.markdown("")
-        #     st.markdown("[![Github](https://img.icons8.com/material-outlined/32/000000/github.png)](https://github.com/xingren23/ComfyFlowApp)")
-            
+      
         st.divider()
 
         input_col, output_col = st.columns([0.4, 0.6], gap="medium")
@@ -154,5 +143,4 @@ class Comfyflow:
                     output_image = Image.open('./public/images/output-none.png')
                     logger.info("default output_image")
                     st.image(output_image, use_column_width=True, caption='None Image, Generate it!')
-
 

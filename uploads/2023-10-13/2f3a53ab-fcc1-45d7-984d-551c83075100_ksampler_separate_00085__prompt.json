@@ -1,0 +1,183 @@
+{
+    "4": {
+        "inputs": {
+            "ckpt_name": "sd_xl_base_1.0.safetensors"
+        },
+        "class_type": "CheckpointLoaderSimple"
+    },
+    "5": {
+        "inputs": {
+            "width": 1024,
+            "height": 1024,
+            "batch_size": 1
+        },
+        "class_type": "EmptyLatentImage"
+    },
+    "13": {
+        "inputs": {
+            "ckpt_name": "sd_xl_refiner_1.0.safetensors"
+        },
+        "class_type": "CheckpointLoaderSimple"
+    },
+    "17": {
+        "inputs": {
+            "width": 1024,
+            "height": 1024,
+            "crop_w": 0,
+            "crop_h": 0,
+            "target_width": 1024,
+            "target_height": 1024,
+            "text_g": "a bottle of macallan sitting on top of a wooden tray next to two glasses filled with liquid,  green plums on the table\uff0cwhite plum blossom,sunlight,grove,chinese wood windows\uff0cprofessional food photography, Cao Zhibai, art photography, a still life",
+            "text_l": "photography, 35mm lens, f1.8, bokeh",
+            "clip": [
+                "4",
+                1
+            ]
+        },
+        "class_type": "CLIPTextEncodeSDXL"
+    },
+    "18": {
+        "inputs": {
+            "ascore": 2.0,
+            "width": 1024,
+            "height": 1024,
+            "text": "text, watermark",
+            "clip": [
+                "13",
+                1
+            ]
+        },
+        "class_type": "CLIPTextEncodeSDXLRefiner"
+    },
+    "22": {
+        "inputs": {
+            "width": 1024,
+            "height": 1024,
+            "crop_w": 0,
+            "crop_h": 0,
+            "target_width": 1024,
+            "target_height": 1024,
+            "text_g": "text, watermark",
+            "text_l": "text, watermark",
+            "clip": [
+                "4",
+                1
+            ]
+        },
+        "class_type": "CLIPTextEncodeSDXL"
+    },
+    "23": {
+        "inputs": {
+            "ascore": 6.0,
+            "width": 1024,
+            "height": 1024,
+            "text": "photography, 35mm lens, f1.8, bokeh",
+            "clip": [
+                "13",
+                1
+            ]
+        },
+        "class_type": "CLIPTextEncodeSDXLRefiner"
+    },
+    "24": {
+        "inputs": {
+            "vae_name": "sdxl_vae.safetensors"
+        },
+        "class_type": "VAELoader"
+    },
+    "25": {
+        "inputs": {
+            "add_noise": "enable",
+            "noise_seed": [
+                "36",
+                3
+            ],
+            "steps": 30,
+            "cfg": 8.0,
+            "sampler_name": "dpmpp_2m",
+            "scheduler": "karras",
+            "start_at_step": 0,
+            "end_at_step": 20,
+            "return_with_leftover_noise": "enable",
+            "model": [
+                "4",
+                0
+            ],
+            "positive": [
+                "17",
+                0
+            ],
+            "negative": [
+                "22",
+                0
+            ],
+            "latent_image": [
+                "5",
+                0
+            ]
+        },
+        "class_type": "KSamplerAdvanced"
+    },
+    "26": {
+        "inputs": {
+            "add_noise": "disable",
+            "noise_seed": [
+                "36",
+                3
+            ],
+            "steps": 30,
+            "cfg": 8.0,
+            "sampler_name": "dpmpp_2m",
+            "scheduler": "karras",
+            "start_at_step": 20,
+            "end_at_step": 10000,
+            "return_with_leftover_noise": "disable",
+            "model": [
+                "13",
+                0
+            ],
+            "positive": [
+                "23",
+                0
+            ],
+            "negative": [
+                "18",
+                0
+            ],
+            "latent_image": [
+                "25",
+                0
+            ]
+        },
+        "class_type": "KSamplerAdvanced"
+    },
+    "27": {
+        "inputs": {
+            "samples": [
+                "26",
+                0
+            ],
+            "vae": [
+                "24",
+                0
+            ]
+        },
+        "class_type": "VAEDecode"
+    },
+    "28": {
+        "inputs": {
+            "filename_prefix": "ksampler_separate",
+            "images": [
+                "27",
+                0
+            ]
+        },
+        "class_type": "SaveImage"
+    },
+    "36": {
+        "inputs": {
+            "seed": 25537079037459
+        },
+        "class_type": "Seed"
+    }
+}
