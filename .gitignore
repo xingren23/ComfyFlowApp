@@ -1,6 +1,8 @@
 .DS_Store
 __pycache__/
 *.log
-.vscode/
-.VSCodeCounter
-uploads
+.vscode/*
+.VSCodeCounter/*
+uploads/*
+.devcontainer/*
+```
