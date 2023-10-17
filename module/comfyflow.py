@@ -1,6 +1,7 @@
-import json
 from typing import Any
 import random
+import json
+import copy
 from PIL import Image
 from loguru import logger
 
@@ -8,28 +9,18 @@ import streamlit as st
 from module.comfyclient import ComfyClient
 
 class Comfyflow:
-    def __init__(self, server_addr, api_file, app_file) -> Any:
+    def __init__(self, server_addr, api_data, app_data) -> Any:
     
         self.comfy_client = ComfyClient(server_addr)
-        with open(api_file) as f:
-            logger.info(f"Loading api data from {api_file}")
-            self.api_data = json.load(f)
-        with open(app_file) as f:
-            logger.info(f"Loading app data from {app_file}")
-            self.app_data = json.load(f)
-        
-        assert self.api_data is not None
-        assert self.app_data is not None
-
-        self.app = self._create_ui()
-
-        pass
+        self.api_json = json.loads(api_data)
+        self.app_json = json.loads(app_data)
+        self._create_ui()
 
     def generate(self):
-        prompt = self.api_data
+        prompt = copy.deepcopy(self.api_json)
         #set prompt inputs
-        for node_id in self.app_data['inputs']:
-            node = self.app_data['inputs'][node_id]
+        for node_id in self.app_json['inputs']:
+            node = self.app_json['inputs'][node_id]
             node_inputs = node['inputs']
             for param_item in node_inputs:
                 param_type = node_inputs[param_item]['type']
@@ -66,7 +57,7 @@ class Comfyflow:
         #set prompt outputs
         logger.info(f"Sending prompt to server, {prompt}")
         images = self.comfy_client.gen_images(prompt)
-        for node_id in self.app_data['outputs']:
+        for node_id in self.app_json['outputs']:
             image_data = images[node_id]
         return image_data
         
@@ -117,7 +108,7 @@ class Comfyflow:
     def _create_ui(self):      
         logger.info("Creating UI")  
 
-        st.title(f'{self.app_data["description"]}')
+        # st.title(f'{self.app_data["description"]}')
       
         st.divider()
 
@@ -125,8 +116,9 @@ class Comfyflow:
         with input_col:
             # st.subheader('Inputs')
             with st.container():
-                for node_id in self.app_data['inputs']:
-                    node = self.app_data['inputs'][node_id]
+                logger.info(f"app_data: {self.app_json}")
+                for node_id in self.app_json['inputs']:
+                    node = self.app_json['inputs'][node_id]
                     node_inputs = node['inputs']
                     self._create_ui_input(node_id, node_inputs)
 

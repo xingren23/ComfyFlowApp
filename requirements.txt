@@ -1,3 +1,5 @@
 loguru
+SQLAlchemy
 streamlit
 streamlit-extras
+st-pages

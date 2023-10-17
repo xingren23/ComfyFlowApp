@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # app name
-APP_NAME="comfyflowapp"
+APP_NAME="🏠_Home"
 
 # 查找并终止正在运行的 Flask 应用程序进程
 PID=$(ps aux | grep "$APP_NAME" | grep -v grep | awk '{print $2}')

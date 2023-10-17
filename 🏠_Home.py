@@ -1,24 +1,22 @@
-import argparse
 import os
-import re
-import base64
-from pathlib import Path
 from loguru import logger
 
 import streamlit as st
 import module.header as header
 
-if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--server_addr", type=str, default="127.0.0.1:8188")
+if __name__ == "__main__":
     try:
-        args = parser.parse_args()
-        server_addr = args.server_addr
+        server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')   
+        logger.info(f"server_addr: {server_addr}")
 
         header.page_header()
+        
+        from module.sqlitehelper import SQLiteHelper
+        sqlitehelper = SQLiteHelper()
+        apps = sqlitehelper.get_apps()
 
-        st.session_state['server_addr'] = server_addr
+        st.session_state['comfyflow_apps'] = apps
         
         with st.container():
             st.markdown("## 📌 Welcome to ComfyFlowApp")
@@ -30,7 +28,9 @@ if __name__ == "__main__":
                         ComfyFlowApp simplifies the way workflows are shared and used. Workflow developers can easily share their workflows as webapp with others, however users don't need to worry about the inner details of the workflow. They can simply use the webapp.
             """)
             st.markdown("""
-                        :point_right: Follow the repo [ComfyFlowApp](https://github.com/xingren23/ComfyFlowApp) to get the latest updates.
+                        :point_right: Follow the repo [ComfyFlowApp](https://github.com/xingren23/ComfyFlowApp) to get the latest updates. 
+                        
+                        [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/comfyflow)
                         """)
             st.markdown("""
                         ### How to develop a ComfyFlowApp?
