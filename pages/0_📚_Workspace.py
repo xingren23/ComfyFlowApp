@@ -1,15 +1,21 @@
+import os
 from loguru import logger
 import streamlit as st
-import module.header as header
+import module.page as page
 from streamlit_extras.row import row
 from streamlit_extras.stylable_container import stylable_container
 from streamlit_extras.switch_page_button import switch_page
 
-from module.utils import get_apps
+from module.utils import load_apps, init_comfyui
+from manager.app_manager import start_app, stop_app
 
-logger.info("Loading workspace page")
-header.page_header()
 
+server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')   
+logger.info(f"Loading workspace page, server_addr: {server_addr}")
+
+page.page_header()
+
+init_comfyui(server_addr)
 
 with stylable_container(
         key="new_app_button",
@@ -20,7 +26,7 @@ with stylable_container(
                 border-radius: 4px;
                 width: 120px;
             }
-            button:hover {
+            button:hover, button:focus {
                 border: 0px solid rgb(28 131 225);
             }
         """,
@@ -33,37 +39,82 @@ with stylable_container(
     if new_button:
         switch_page("Create")
 
-
 with st.container():
-    apps = get_apps()
-    for app in apps:
+    load_apps()
+    apps = st.session_state['comfyflow_apps']
+    if len(apps) == 0:
         st.divider()
-        # get description limit to 200 chars
-        description = app["description"]
-        if len(description) > 160:
-            description = description[:160] + "..."
+        st.info("No apps, please create a new app.")
+    else:
+        for name in apps.keys():
+            app = apps[name]
+            st.divider()
+            # get description limit to 200 chars
+            description = app["description"]
+            if len(description) > 160:
+                description = description[:160] + "..."
 
-        app_row = row([1, 5, 1,1,1,1], vertical_align="bottom")
-        app_row.image(app["image"])
-        app_row.markdown(f"""
-                         ### {app['name']}
-                        {description}
-                        {app['url']}
-                          """)
-        
-        edit_button = app_row.button(":apple: Edit", help="Edit this app.", key=f"{app['name']}-button-edit")
-        if edit_button:
-            st.session_state.update({"edit_app": app['name']})
-            switch_page("Create")
-        preview_button = app_row.button("Preview", help="Run this app.", key=f"{app['name']}-button-preview")
-        if preview_button:
-            st.session_state.update({"preview_app": app['name']})
-            switch_page("Preview")
-        release_button = app_row.button("Release", help="Share this app.", key=f"{app['name']}-button-release")
-        if release_button:
-            if True:
-                st.session_state.update({"release_app": app['name']})
-                switch_page("Release")
+            app_row = row([1, 5.8, 2,1.2], vertical_align="bottom")
+            if app["image"] is not None:
+                app_row.image(app["image"])
             else:
-                st.error("You need to preview and check the app first.")
-        delete_button = app_row.button("Delete", help="Delete this app.", key=f"{app['name']}-button-delete")
+                app_row.image("https://via.placeholder.com/150")
+            app_row.markdown(f"""
+                            #### {app['name']}
+                            {description}
+                            """)
+            app_row.markdown(f"""
+                            #### Url
+                            {app['url']}
+                                """)
+            app_status = f"🌱 {app['status']}"
+            if app['status'] == "previewed":
+                app_status = f"💡 {app['status']}"
+            elif app['status'] == "released":
+                app_status = f"✈️ {app['status']}"
+            app_row.markdown(f"""
+                            #### Status
+                            {app_status}
+                            """)
+            operate_row = row([1, 1, 1, 1, 4, 1, 1], vertical_align="bottom")
+            edit_button = operate_row.button(":apple: Edit", help="Edit this app.", key=f"{app['name']}-button-edit")
+            if edit_button:
+                st.session_state.update({"edit_app": app['name']})
+                switch_page("Create")
+            preview_button = operate_row.button("Preview", help="Run this app.", key=f"{app['name']}-button-preview")
+            if preview_button:
+                st.session_state.update({"preview_app": app['name']})
+                switch_page("Preview")
+            release_button = operate_row.button("Release", help="Share this app.", key=f"{app['name']}-button-release")
+            if release_button:
+                logger.info(f"release app: {app['name'], app['status']}")
+                if app['status'] == "previewed":
+                    st.session_state.update({"release_app": app['name']})
+                    switch_page("Release")
+                elif app['status'] == "created":
+                    st.error("Please preview and check this app first.")
+            delete_button = operate_row.button("Delete", help="Delete this app.", key=f"{app['name']}-button-delete")
+            if delete_button:
+                logger.info(f"delete app: {app['name']}")
+                from module.sqlitehelper import sqlitehelper
+                sqlitehelper.delete_app(app['name'])
+                st.rerun()
+            operate_row.markdown("")
+
+            start_button = operate_row.button("Start", help="Start this app.", key=f"{app['name']}-button-start")
+            if start_button:
+                logger.info(f"start app: {app['name'], app['url']}")
+                ret = start_app(app['name'], app['url'])
+                if ret == "running":
+                    st.info(f"App {app['name']} is running, {app['url']}")
+                elif ret == "started":
+                    st.success(f"Start app {app['name']} success, {app['url']}")
+                
+            stop_button = operate_row.button("Stop", help="Stop this app.", key=f"{app['name']}-button-stop")
+            if stop_button:
+                logger.info(f"stop app: {app['name']}")    
+                ret = stop_app(app['name'], app['url'])
+                if ret == "stopped":
+                    st.success(f"Stop app {app['name']} success, {app['url']}")
+                elif ret == "not running":
+                    st.info(f"App {app['name']} is not running, {app['url']}")

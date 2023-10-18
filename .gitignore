@@ -3,6 +3,7 @@ __pycache__/
 *.log
 .vscode/*
 .VSCodeCounter/*
-uploads/*
+.uploads/*
 .devcontainer/*
+.comfyflow/*
 ```

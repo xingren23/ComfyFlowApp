@@ -1,4 +1,3 @@
-
 import os
 from datetime import datetime
 from loguru import logger
@@ -7,11 +6,17 @@ from PIL.PngImagePlugin import PngInfo
 import json
 
 import streamlit as st
-import module.header as header
-from module.comfyclient import ComfyClient
+import module.page as page
+from streamlit_extras.row import row
 from streamlit_extras.stylable_container import stylable_container
+from module.utils import init_comfyui, format_node_info
 
-logger.info("Loading upload page")
+server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')
+logger.info(f"Loading create page, server_addr: {server_addr}")
+
+page.page_header()
+
+init_comfyui(server_addr)
 
 def process_workflow_meta(image_upload, savefile):
     # parse meta data from image, save image to local
@@ -25,14 +30,14 @@ def process_workflow_meta(image_upload, savefile):
             # get filename and extension
             file_id = image_upload.file_id
             file_name, _ = os.path.splitext(os.path.basename(image_upload.name))
-            save_to_file = f'uploads/{datetime.today().strftime("%Y-%m-%d")}/{file_id}_{file_name}.png'
+            save_to_file = f'.comfyflow/{datetime.today().strftime("%Y-%m-%d")}/{file_id}_{file_name}.png'
             
             os.makedirs(os.path.dirname(save_to_file), exist_ok=True)
             metadata = PngInfo()
             for x in tran_img.info:
                 logger.info(f"image meta data, {x}:{tran_img.info[x]}")
                 # save as json file
-                file_path = f'uploads/{datetime.today().strftime("%Y-%m-%d")}/{file_id}_{file_name}_{x}.json'
+                file_path = f'.comfyflow/{datetime.today().strftime("%Y-%m-%d")}/{file_id}_{file_name}_{x}.json'
                 with open(file_path, 'w') as json_file:
                     json_file.write(tran_img.info[x])
 
@@ -40,6 +45,7 @@ def process_workflow_meta(image_upload, savefile):
                 metadata.add_text(x, json.dumps(img.info[x]))
             logger.info(f"save image to {save_to_file} with meta data, {metadata}")
             img.save(save_to_file, format='png', PngInfo=metadata, compress_level=4)
+            st.session_state['comfyflow_create_upload_image'] = save_to_file
 
         return tran_img.info    
     except Exception as e:
@@ -47,19 +53,22 @@ def process_workflow_meta(image_upload, savefile):
         return None
     
 
-def parse_prompt(prompt_info):
+def parse_prompt(prompt_info, workflow_info):
     # parse prompt to inputs and outputs
     try:
+        workflow = json.loads(workflow_info)
+        workflow_nodes = {f"{node['id']}": node for node in workflow['nodes']}
         prompt = json.loads(prompt_info)
         params_inputs = []
         params_outputs = []
-        logger.info(f"parse_prompt, {prompt}")
         for node_id in prompt:
             node = prompt[node_id]
+            workflow_node = workflow_nodes[node_id]
+            node_name = workflow_node.get('properties', {}).get('Node name for S&R', '')
             class_type = prompt[node_id]['class_type']
             for param in node['inputs']:
                 param_value = node['inputs'][param]
-                param_key = f"{node_id}.{class_type}.{param}"
+                param_key = f"{node_id}.{class_type}.{node_name}.{param}"
                 logger.info(f"parse_prompt, {param_key} {param_value}")
                 # check param_value is []
                 if isinstance(param_value, list):
@@ -83,20 +92,20 @@ def parse_prompt(prompt_info):
 def process_image_change():
     logger.info(f"process_image_change session , {st.session_state['upload_image']}")
     if not st.session_state['upload_image']:
-        logger.info("clear upload_prompt_inputs and upload_prompt_outputs")
-        st.session_state['upload_prompt'] = None
-        st.session_state['upload_prompt_inputs'] = []
-        st.session_state['upload_prompt_outputs'] = []
+        logger.info("clear comfyflow_create_prompt, comfyflow_create_prompt_inputs and comfyflow_create_prompt_outputs")
+        st.session_state['comfyflow_create_prompt'] = None
+        st.session_state['comfyflow_create_prompt_inputs'] = []
+        st.session_state['comfyflow_create_prompt_outputs'] = []
 
 
-def get_node_input_config(input_param):
-    node_id, class_type, param = input_param.split('.')
+def get_node_input_config(input_param, app_input_name, app_input_description):
+    node_id, class_type, class_name, param = input_param.split('.')
     class_meta = st.session_state['comfy_object_info'][class_type]
     class_input = class_meta['input']['required']
     if 'optional' in class_meta['input'].keys():
         class_input.update(class_meta['input']['optional'])
     
-    logger.info(f"{node_id} {class_type} {param}, class input {class_input}")
+    logger.info(f"{node_id} {class_type} {class_name} {param}, class input {class_input}")
 
     input_config = {}
     if isinstance(class_input[param][0], str):
@@ -106,8 +115,8 @@ def get_node_input_config(input_param):
                 "inputs": {
                     param: {
                         "type": "TEXT",
-                        "name": input_param,
-                        "help": "Input a string",
+                        "name": app_input_name,
+                        "help": app_input_description,
                         "default": "",
                         "max": 300,
                     }
@@ -119,8 +128,8 @@ def get_node_input_config(input_param):
                 "inputs": {
                     param: {
                         "type": "NUMBER",
-                        "name": input_param,
-                        "help": "Input a int",
+                        "name": app_input_name,
+                        "help": app_input_description,
                         "default": defaults.get('default', 0),
                         "min": defaults.get('min', 0),
                         "max": min(defaults.get('max', 100), 4503599627370496),
@@ -134,12 +143,24 @@ def get_node_input_config(input_param):
                 "inputs": {
                     param: {
                         "type": "NUMBER",
-                        "name": input_param,
-                        "help": "Input a float",
+                        "name": app_input_name,
+                        "help": app_input_description,
                         "default": defaults.get('default', 0),
                         "min": defaults.get('min', 0),
                         "max": min(defaults.get('max', 100), 4503599627370496),
                         "step": defaults.get('step', 1),
+                    }
+                }
+            }
+        elif class_input[param][0] == 'BOOLEAN':
+            defaults = class_input[param][1]
+            input_config = {
+                "inputs": {
+                    param: {
+                        "type": "CHECKBOX",
+                        "name": app_input_name,
+                        "help": app_input_description,
+                        "default": defaults.get('default', False),
                     }
                 }
             }
@@ -149,8 +170,8 @@ def get_node_input_config(input_param):
                 "inputs": {
                     param: {
                         "type": "UPLOADIMAGE",
-                        "name": input_param,
-                        "help": "UpLoad image from local file",
+                        "name": app_input_name,
+                        "help": app_input_description,
                     }
                 }
             }
@@ -159,8 +180,8 @@ def get_node_input_config(input_param):
                 "inputs": {
                     param: {
                         "type": "SELECT",
-                        "name": input_param,
-                        "help": "Select a option",
+                        "name": app_input_name,
+                        "help": app_input_description,
                         "options": class_input[param][0],
                     }
                 }
@@ -168,7 +189,7 @@ def get_node_input_config(input_param):
     return node_id, input_config
 
 def get_node_output_config(output_param):
-    node_id, class_type, param = output_param.split('.')
+    node_id, class_type, class_name, param = output_param.split('.')
     output_param_inputs =  {
         "outputs": {
         }
@@ -180,26 +201,28 @@ def step1_upload_image(expanded=True):
         image_col1, image_col2 = st.columns([0.5, 0.5])
         with image_col1:
             image_upload = st.file_uploader("Upload image", type=["png", "jpg", "jpeg"], key="upload_image", on_change=process_image_change, help="upload image of comfyui workflow")
+
         with image_col2:   
             if image_upload:
                 metas = process_workflow_meta(image_upload, True)
                 if metas and 'prompt' in metas.keys() and 'workflow' in metas.keys():
-                    st.session_state['upload_prompt'] = metas.get('prompt')
-                    inputs, outputs = parse_prompt(metas.get('prompt'))
+                    st.session_state['comfyflow_create_prompt'] = metas.get('prompt')
+                    inputs, outputs = parse_prompt(metas.get('prompt'), metas.get('workflow'))
                     if inputs and outputs:
-                        logger.info(f"upload_prompt_inputs, {inputs}")
-                        st.session_state['upload_prompt_inputs'] = inputs
-                        logger.info(f"upload_prompt_outputs, {outputs}")
-                        st.session_state['upload_prompt_outputs'] = outputs
+                        logger.info(f"comfyflow_create_prompt_inputs, {inputs}")
+                        st.session_state['comfyflow_create_prompt_inputs'] = inputs
+                        logger.info(f"comfyflow_create_prompt_outputs, {outputs}")
+                        st.session_state['comfyflow_create_prompt_outputs'] = outputs
 
-                        image_col1, image_col, col3 = st.columns([0.2, 0.6, 0.2])
+                        _, image_col, _ = st.columns([0.2, 0.6, 0.2])
                         with image_col:
                             st.image(image_upload, use_column_width=True, caption='ComfyUI Workflow Image, include workflow meta data')
                 else:
-                    st.error(f"this image don't generated by a comfyui workflow, please upload again")
+                    st.error(f"this image don't generated by comfyui workflow.")
+
 
 def step2_config_params(expanded=True):
-    with st.expander("### :two: Config params of workflow app", expanded=expanded):
+    with st.expander("### :two: Config params of app", expanded=expanded):
         with st.container():
             name_col1, desc_col2 = st.columns([0.2, 0.8])
             with name_col1:
@@ -207,25 +230,100 @@ def step2_config_params(expanded=True):
             with desc_col2:
                 st.text_input("App Description", value="", placeholder="input app description", key="app_desc", help="Input app description")
 
-        param_col1, param_col2 = st.columns([0.5, 0.5])
-        with param_col1:
-            params_inputs = st.session_state.get('upload_prompt_inputs', [])
-            st.selectbox("Input Param", options=params_inputs, key="input_param1", help="Select a param from workflow")
-            st.selectbox("Input Param", options=params_inputs, key="input_param2", help="Select a param from workflow")
-        with param_col2:
-            params_outputs = st.session_state.get('upload_prompt_outputs', [])
-            st.selectbox("Output Param", options=params_outputs, key="output_param1", help="Select a param from workflow")
-  
+        with st.container():
+            st.markdown("Input Params:")
+            params_inputs = st.session_state.get('comfyflow_create_prompt_inputs', [])
+            logger.info(f"params_inputs, {params_inputs}")
+            param_input1_row = row([0.4, 0.2, 0.4], vertical_align="bottom")
+            param_input1_row.selectbox("Select input of workflow", options=params_inputs, key="input_param1", format_func=format_node_info, index=None, help="Select a param from workflow")
+            param_input1_row.text_input("App Input Name", value="", placeholder="Param Name", key="input_param1_name", help="Input param name")
+            param_input1_row.text_input("App Input Description", value="", placeholder="Param Description", key="input_param1_desc", help="Input param description")
+            
+            param_input2_row = row([0.4, 0.2, 0.4], vertical_align="bottom")
+            param_input2_row.selectbox("Select input of workflow", options=params_inputs, key="input_param2", index=None, format_func=format_node_info, help="Select a param from workflow")
+            param_input2_row.text_input("App Input Name", value="", placeholder="Param Name", key="input_param2_name", help="Input param name")
+            param_input2_row.text_input("App Input Description", value="", placeholder="Param Description", key="input_param2_desc", help="Input param description")
 
-header.page_header()
+        with st.container():
+            st.markdown("Output Params:")
+            params_outputs = st.session_state.get('comfyflow_create_prompt_outputs', [])
+            logger.info(f"params_outputs, {params_outputs}")
+            param_output1_row = row([0.4, 0.2, 0.4], vertical_align="bottom")
+            param_output1_row.selectbox("Select output of workflow", options=params_outputs, key="output_param1", format_func=format_node_info, help="Select a param from workflow")
+            param_output1_row.text_input("Apn Output Name", value="", placeholder="Param Name", key="output_param1_name", help="Input param name")
+            param_output1_row.text_input("App Output Description", value="", placeholder="Param Description", key="output_param1_desc", help="Input param description")
+
+
+def gen_app_config():
+    prompt = st.session_state['comfyflow_create_prompt']
+    input_param1 = st.session_state['input_param1']
+    input_param1_name = st.session_state['input_param1_name']
+    input_param1_desc = st.session_state['input_param1_desc']
+    output_param1 = st.session_state['output_param1']
+    app_name = st.session_state['app_name']
+    app_desc = st.session_state['app_desc']
+    logger.info(f"gen_app_config, {prompt} {input_param1} {output_param1} {app_name} {app_desc}")
+    if prompt and input_param1 and output_param1 and app_name and app_desc:
+        # gen and upload app.json 
+        app_config = {
+            "name": app_name,
+            "description": app_desc,
+            "inputs": {},
+            "outputs": {}
+        }
+        # parse input_param1
+        node_id, input_param1_inputs = get_node_input_config(input_param1, input_param1_name, input_param1_desc)
+        app_config['inputs'][node_id] = input_param1_inputs 
+        input_param2 = st.session_state['input_param2']
+        input_param2_name = st.session_state['input_param2_name']
+        input_param2_desc = st.session_state['input_param2_desc']
+        if input_param2:
+            node_id, input_param2_inputs = get_node_input_config(input_param2, input_param2_name, input_param2_desc)
+            app_config['inputs'][node_id] = input_param2_inputs
+
+        # parse output_param1
+        node_id, output_param1_inputs = get_node_output_config(output_param1)
+        app_config['outputs'][node_id] = output_param1_inputs
+        return app_config
+
+def submit_app(app_config):
+    # check app dir
+    workflow_path = f'.comfyflow/{st.session_state["app_name"]}'
+    os.makedirs(workflow_path, exist_ok=True)
+
+    # save app config
+    app_file_path = f'{workflow_path}/app.json'
+    with open(app_file_path, 'w') as f:
+        # dump dict to file
+        logger.info(f"save app config to {app_file_path}, {app_config}")
+        json.dump(app_config, f)
+
+    # upload prompt.json
+    prompt_file_path = f'{workflow_path}/prompt.json'
+    with open(prompt_file_path, 'w') as f:
+        # write string to file
+        prompt = st.session_state['comfyflow_create_prompt']
+        logger.info(f"save prompt to {prompt_file_path}, {prompt}")
+        f.write(prompt)
+
+    # upload workflow image
+    upload_image = st.session_state['comfyflow_create_upload_image']
+    image_file_path = f'{workflow_path}/app.png'
+    os.rename(upload_image, image_file_path)
+
+    # submit to sqlite
+    from module.sqlitehelper import sqlitehelper
+    app = {}
+    app['name'] = app_config['name']
+    app['description'] = app_config['description']
+    app['app_conf'] = json.dumps(app_config)
+    app['api_conf'] = prompt
+    app['status'] = 'created'
+    app['image'] = open(image_file_path, 'rb').read()
+    sqlitehelper.create_app(app)
+
 
 with st.container():
-    if 'comfy_object_info' not in st.session_state.keys():
-        server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')
-        comfy_client = ComfyClient(server_addr=server_addr)
-        comfy_object_info = comfy_client.get_node_class()
-        st.session_state['comfy_object_info'] = comfy_object_info
-
     st.title("🌱 Create app from comfyui workflow")
 
     # upload workflow image and config params
@@ -233,63 +331,24 @@ with st.container():
     step2_config_params()
     
     with stylable_container(
-        key="new_app_button",
+        key="submit_button",
         css_styles="""
             button {
                 background-color: rgb(28 131 225);
                 color: white;
                 border-radius: 4px;
             }
-            button:hover {
+            button:hover, button:focus {
                 border: 0px solid rgb(28 131 225);
             }
+            button:
         """,
         ):
-        submit_button = st.button("Submit", key='submit_workflow', use_container_width=True, help="Submit app from workflow")
+        submit_button = st.button("Submit", key='submit_workflow', use_container_width=True, help="Submit app params")
         if submit_button:
-            # check app dir
-            workflow_path = f'workflows/{st.session_state["app_name"]}'
-            os.makedirs(workflow_path, exist_ok=True)
-
-            prompt = st.session_state['upload_prompt']
-            input_param1 = st.session_state['input_param1']
-            output_param1 = st.session_state['output_param1']
-            app_name = st.session_state['app_name']
-            app_desc = st.session_state['app_desc']
-            if prompt and input_param1 and output_param1 and app_name and app_desc:
-                # gen and upload app.json 
-                app_config = {
-                    "name": app_name,
-                    "description": app_desc,
-                    "inputs": {},
-                    "outputs": {}
-                }
-                # parse input_param1
-                node_id, input_param1_inputs = get_node_input_config(input_param1)
-                app_config['inputs'][node_id] = input_param1_inputs 
-                input_param2 = st.session_state['input_param2']
-                if input_param2:
-                    node_id, input_param2_inputs = get_node_input_config(input_param2)
-                    app_config['inputs'][node_id] = input_param2_inputs
-
-                # parse output_param1
-                node_id, output_param1_inputs = get_node_output_config(output_param1)
-                app_config['outputs'][node_id] = output_param1_inputs
-
-                # save app config
-                app_file_path = f'{workflow_path}/app.json'
-                with open(app_file_path, 'w') as f:
-                    # dump dict to file
-                    logger.info(f"save app config to {app_file_path}, {app_config}")
-                    json.dump(app_config, f)
-
-                # upload prompt.json
-                prompt_file_path = f'{workflow_path}/prompt.json'
-                with open(prompt_file_path, 'w') as f:
-                    # write string to file
-                    logger.info(f"save prompt to {prompt_file_path}, {prompt}")
-                    f.write(st.session_state['upload_prompt'])
-
-                st.success("Submit workflow app successfully")
+            app_config = gen_app_config()
+            if app_config:
+                submit_app(app_config=app_config)
+                st.success(f"Submit app successfully, {app_config['name']}")
             else:
-                st.error("Submit workflow app failed, please check workflow image and config params")
+                st.error("Submit app failed, please check workflow image and config params")

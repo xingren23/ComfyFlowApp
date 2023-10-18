@@ -56,7 +56,7 @@ class ComfyClient:
         logger.info(f"Connecting to websocket server, {self.server_addr}")
         ws.connect("ws://{}/ws?clientId={}".format(self.server_addr, self.client_id))
 
-        prompt_id = self.queue_prompt(prompt)['prompt_id']
+        prompt_id = self.queue_prompt(prompt)['prompt_id']  
         output_images = {}
         while True:
             out = ws.recv()

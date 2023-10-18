@@ -99,22 +99,42 @@ class SQLiteHelper:
             apps = s.execute(sql).fetchall()
             return apps
         
-    def insert_app(self, app):
+    def create_app(self, app):
         with self.session as s:
-            logger.info(f"insert app: {app}")
-            app['app_conf'] = open(app['app_conf'], 'r').read()
-            app['api_conf'] = open(app['api_conf'], 'r').read()
-            app['image'] = open(app['image'], 'rb').read()
-            sql = f'INSERT INTO {self.app_talbe_name} (name, description, image, app_conf, api_conf) VALUES (:name, :description, :image, :app_conf, :api_conf);'
+            logger.info(f"insert app: {app['name']} {app['description']}")
+            sql = f'INSERT INTO {self.app_talbe_name} (name, description, image, app_conf, api_conf, status) VALUES (:name, :description, :image, :app_conf, :api_conf, :status);'
             s.execute(sql, app)
             s.commit()
 
-    def update_app(self, app):
+    def edit_app(self, id, name, description, app_conf):
+        # update name, description, app_conf, could not update image, api_conf
         with self.session as s:
-            logger.info(f"update app: {app}")
-            app['app_conf'] = open(app['app_conf'], 'r').read()
-            app['api_conf'] = open(app['api_conf'], 'r').read()
-            app['image'] = open(app['image'], 'rb').read()
-            sql = f'UPDATE {self.app_talbe_name} SET name=:name, description=:description, image=:image, app_conf=:app_conf, api_conf=:api_conf WHERE id=:id;'
-            s.execute(sql, app)
+            logger.info(f"update app conf: {id} {name} {description} {app_conf}")
+            sql = f'UPDATE {self.app_talbe_name} SET name=:name, description=:description, app_conf=:app_conf,  WHERE id=:id;'
+            s.execute(sql, dict(id=id, name=name, description=description, app_conf=app_conf))
             s.commit()
+
+    def update_app_preview(self, name, preview_image, status="previewed"):
+        # update preview_image
+        with self.session as s:
+            logger.info(f"update app preview: {name}")
+            sql = f'UPDATE {self.app_talbe_name} SET preview_image=:preview_image, status=:status WHERE name=:name;'
+            s.execute(sql, dict(preview_image=preview_image, status=status, name=name))
+            s.commit()
+    
+    def update_app_release(self, name, url, template, status="released"):
+        # update release
+        with self.session as s:
+            logger.info(f"update app release: {name} {url} {template}")
+            sql = f'UPDATE {self.app_talbe_name} SET url=:url, template=:template, status=:status WHERE name=:name;'
+            s.execute(sql, dict(url=url, template=template, status=status, name=name))
+            s.commit()
+
+    def delete_app(self, name):
+        with self.session as s:
+            logger.info(f"delete app: {name}")
+            sql = f'DELETE FROM {self.app_talbe_name} WHERE name=:name;'
+            s.execute(sql, dict(name=name))
+            s.commit()
+
+sqlitehelper = SQLiteHelper()            

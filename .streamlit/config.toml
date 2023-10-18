@@ -1,3 +1,4 @@
+
 [server]
 
 # List of folders that should not be watched for changes. This
@@ -118,6 +119,7 @@ enableStaticServing = false
 # recommend performing SSL termination by the load balancer or the reverse
 # proxy.']
 # sslKeyFile =
+
 
 [client]
 # Default: true
