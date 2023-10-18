@@ -9,7 +9,7 @@ import streamlit as st
 import module.page as page
 from streamlit_extras.row import row
 from streamlit_extras.stylable_container import stylable_container
-from module.utils import init_comfyui, format_node_info
+from module.utils import init_comfyui
 
 server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')
 logger.info(f"Loading create page, server_addr: {server_addr}")
@@ -18,6 +18,11 @@ page.page_header()
 
 init_comfyui(server_addr)
 
+
+def format_node_info(param):
+    # format {id}.{class_type}.{alias}.{param_name}
+    node_id, class_type, class_name, param_name, param_value = param.split('|')
+    return f"{class_type}:{param_name}:{param_value}"
 
 def process_workflow_meta(image_upload, savefile):
     # parse meta data from image, save image to local
@@ -246,7 +251,8 @@ def step2_config_params(expanded=True):
             param_output1_row.selectbox("Select output of workflow", options=params_outputs,
                                         key="output_param1", format_func=format_node_info, help="Select a param from workflow")
             param_output1_row.text_input(
-                "Apn Output Name", value="", placeholder="Param Name", key="output_param1_name", help="Input param name")
+                "Apn Output Name", value="", placeholder="Param Name", key="output_param1_name",
+                help="Input param name")
             param_output1_row.text_input("App Output Description", value="", placeholder="Param Description",
                                          key="output_param1_desc", help="Input param description")
 

@@ -29,8 +29,3 @@ def init_comfyui(server_addr):
         except Exception as e:
             st.error(f"Failed to get comfy object info, error: {e}")
             st.stop()
-
-def format_node_info(param):
-    # format {id}.{class_type}.{alias}.{param_name}
-    node_id, class_type, class_name, param_name, param_value = param.split('|')
-    return f"{node_id}:{class_type}:{param_value}"
