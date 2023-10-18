@@ -23,19 +23,20 @@ class Comfyflow:
             node = self.app_json['inputs'][node_id]
             node_inputs = node['inputs']
             for param_item in node_inputs:
+                logger.info(f"update param {param_item}, {node_inputs[param_item]}")
                 param_type = node_inputs[param_item]['type']
                 if param_type == "TEXT":
                     param_name = node_inputs[param_item]['name']
                     param_key = f"{node_id}_{param_name}"
                     param_value = st.session_state[param_key]
-                    logger.info(f"update param {param_name} {param_value}")
+                    logger.info(f"update param {param_key} {param_name} {param_value}")
                     prompt[node_id]["inputs"][param_item] = param_value
 
                 elif param_type == "NUMBER":
                     param_name = node_inputs[param_item]['name']
                     param_key = f"{node_id}_{param_name}"
                     param_value = st.session_state[param_key]
-                    logger.info(f"update param {param_name} {param_value}")
+                    logger.info(f"update param {param_key} {param_name} {param_value}")
                     if (param_name == "seed" or param_name == "noise_seed") and param_value == -1:
                         param_max = node_inputs[param_item]['max']
                         param_value = random.randint(0, param_max)
@@ -48,14 +49,14 @@ class Comfyflow:
                     param_name = node_inputs[param_item]['name']
                     param_key = f"{node_id}_{param_name}"
                     param_value = st.session_state[param_key]
-                    logger.info(f"update param {param_name} {param_value}")
+                    logger.info(f"update param {param_key} {param_name} {param_value}")
                     prompt[node_id]["inputs"][param_item] = param_value
 
                 elif param_type == "CHECKBOX":
                     param_name = node_inputs[param_item]['name']
                     param_key = f"{node_id}_{param_name}"
                     param_value = st.session_state[param_key]
-                    logger.info(f"update param {param_name} {param_value}")
+                    logger.info(f"update param {param_key} {param_name} {param_value}")
                     prompt[node_id]["inputs"][param_item] = param_value
 
                 elif param_type == 'UPLOADIMAGE':
@@ -64,7 +65,7 @@ class Comfyflow:
                     if param_key in st.session_state:
                         param_value = st.session_state[param_key]
                         
-                        logger.info(f"update param {param_name} {param_value}")
+                        logger.info(f"update param {param_key} {param_name} {param_value}")
                         if param_value is not None:
                             prompt[node_id]["inputs"][param_item] = param_value.name
                         else:

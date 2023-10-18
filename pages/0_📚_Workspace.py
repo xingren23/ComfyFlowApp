@@ -76,16 +76,16 @@ with st.container():
                             #### Status
                             {app_status}
                             """)
-            operate_row = row([1, 1, 1, 1, 4, 1, 1], vertical_align="bottom")
-            edit_button = operate_row.button(":apple: Edit", help="Edit this app.", key=f"{app['name']}-button-edit")
-            if edit_button:
-                st.session_state.update({"edit_app": app['name']})
-                switch_page("Create")
-            preview_button = operate_row.button("Preview", help="Run this app.", key=f"{app['name']}-button-preview")
+            operate_row = row([1, 1, 1, 4, 1, 1], vertical_align="bottom")
+            # edit_button = operate_row.button(":apple: Edit", help="Edit this app.", key=f"{app['name']}-button-edit")
+            # if edit_button:
+            #     st.session_state.update({"edit_app": app['name']})
+            #     switch_page("Create")
+            preview_button = operate_row.button("💡Preview", help="Run this app.", key=f"{app['name']}-button-preview")
             if preview_button:
                 st.session_state.update({"preview_app": app['name']})
                 switch_page("Preview")
-            release_button = operate_row.button("Release", help="Share this app.", key=f"{app['name']}-button-release")
+            release_button = operate_row.button("✈️Release", help="Share this app.", key=f"{app['name']}-button-release")
             if release_button:
                 logger.info(f"release app: {app['name'], app['status']}")
                 if app['status'] == "previewed":
@@ -93,7 +93,7 @@ with st.container():
                     switch_page("Release")
                 elif app['status'] == "created":
                     st.error("Please preview and check this app first.")
-            delete_button = operate_row.button("Delete", help="Delete this app.", key=f"{app['name']}-button-delete")
+            delete_button = operate_row.button("🗑 Delete", help="Delete this app.", key=f"{app['name']}-button-delete")
             if delete_button:
                 logger.info(f"delete app: {app['name']}")
                 from module.sqlitehelper import sqlitehelper
@@ -101,20 +101,26 @@ with st.container():
                 st.rerun()
             operate_row.markdown("")
 
-            start_button = operate_row.button("Start", help="Start this app.", key=f"{app['name']}-button-start")
+            start_button = operate_row.button("▶️ Start", help="Start this app.", key=f"{app['name']}-button-start")
             if start_button:
-                logger.info(f"start app: {app['name'], app['url']}")
-                ret = start_app(app['name'], app['url'])
-                if ret == "running":
-                    st.info(f"App {app['name']} is running, {app['url']}")
-                elif ret == "started":
-                    st.success(f"Start app {app['name']} success, {app['url']}")
+                if app['status'] == "released":
+                    logger.info(f"start app: {app['name'], app['url']}")
+                    ret = start_app(app['name'], app['url'])
+                    if ret == "running":
+                        st.info(f"App {app['name']} is running yet, {app['url']}")
+                    elif ret == "started":
+                        st.success(f"Start app {app['name']} success, you could share {app['url']} to your friends")
+                else:
+                    st.error("Please release this app first.")
                 
-            stop_button = operate_row.button("Stop", help="Stop this app.", key=f"{app['name']}-button-stop")
+            stop_button = operate_row.button("⏹️ Stop", help="Stop this app.", key=f"{app['name']}-button-stop")
             if stop_button:
-                logger.info(f"stop app: {app['name']}")    
-                ret = stop_app(app['name'], app['url'])
-                if ret == "stopped":
-                    st.success(f"Stop app {app['name']} success, {app['url']}")
-                elif ret == "not running":
-                    st.info(f"App {app['name']} is not running, {app['url']}")
+                if app['status'] == "released":
+                    logger.info(f"stop app: {app['name']}")    
+                    ret = stop_app(app['name'], app['url'])
+                    if ret == "stopping":
+                        st.success(f"Stop app {app['name']} success, {app['url']}")
+                    elif ret == "stopped":
+                        st.info(f"App {app['name']} has stopped, {app['url']}")
+                else:
+                    st.error("Please release this app first.")

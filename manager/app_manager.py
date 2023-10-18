@@ -66,8 +66,8 @@ def stop_app(app_name, url):
     if is_process_running(app_name, ["run", "comfyflow_app.py", str(port), address, app_name]):
         logger.info(f"stop comfyflow app {app_name}")
         kill_all_process(app_name, ["run", "comfyflow_app.py", str(port), address, app_name])
-        return "stopped"
+        return "stopping"
     else:
         logger.info(f"App {app_name} is not running, url: {url}")
-        return "not running"
+        return "stopped"
 

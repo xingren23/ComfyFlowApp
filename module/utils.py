@@ -14,7 +14,7 @@ def load_apps():
     apps = sqlitehelper.get_apps()
     app_map = {app['name']: app for app in apps}
     st.session_state['comfyflow_apps'] = app_map  
-    logger.info(f"load apps: {app_map}")
+    logger.info(f"load apps: {app_map.keys()}")
 
 def init_comfyui(server_addr):
     if 'comfy_object_info' not in st.session_state.keys():
@@ -32,5 +32,5 @@ def init_comfyui(server_addr):
 
 def format_node_info(param):
     # format {id}.{class_type}.{alias}.{param_name}
-    node_id, class_type, class_name, param_name = param.split('.')
-    return f"{class_name}:{param_name}"
+    node_id, class_type, class_name, param_name, param_value = param.split('|')
+    return f"{node_id}:{class_type}:{param_value}"

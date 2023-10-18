@@ -60,7 +60,7 @@ with app_col:
             else:
                 logger.info(f"App {release_app} has been released!")
 
-            st.success(f"Release {release_app} success! You can share your app with url: {url}")
+            st.success(f"Release {release_app} success, url: {url}")
 
 
 with template_col:
