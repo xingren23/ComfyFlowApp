@@ -47,10 +47,6 @@ def page_header():
 
         badge(type="github", name="xingren23/ComfyFlowApp", url="https://github.com/xingren23/ComfyFlowApp")
         badge(type="twitter", name="xingren23", url="https://twitter.com/xingren23")
-        # badge(type="buymeacoffee", name="comfyflow", url="https://www.buymeacoffee.com/comfyflow")
-        st.markdown("""
-                [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/comfyflow)
-                """)
 
 parser = argparse.ArgumentParser(description='Comfyflow manager')
 parser.add_argument('--app', type=str, default='', help='comfyflow app name')
