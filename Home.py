@@ -1,12 +1,11 @@
 from loguru import logger
 
 import streamlit as st
-import module.page as page
-
+import modules.page as page
 
 def init_apps():
     if 'comfyflow_apps' not in st.session_state.keys():
-        from module.sqlitehelper import SQLiteHelper
+        from modules.sqlitehelper import SQLiteHelper
         sqlitehelper = SQLiteHelper()
         apps = sqlitehelper.get_apps()
         st.session_state['comfyflow_apps'] = apps

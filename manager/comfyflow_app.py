@@ -2,7 +2,7 @@ import os
 import streamlit as st
 import argparse
 
-from module.utils import load_apps
+from modules.utils import load_apps
 from streamlit_extras.badges import badge
 
 def page_header():    
@@ -72,7 +72,7 @@ with st.container():
             app_data = apps[app_name]['app_conf']
             api_data = apps[app_name]['api_conf']
             server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')
-            from module.comfyflow import Comfyflow
+            from modules.comfyflow import Comfyflow
             comfy_flow = Comfyflow(server_addr=server_addr, api_data=api_data, app_data=app_data)
         else:
             st.warning(f"App hasn't released, {app_name} status {app_status}")

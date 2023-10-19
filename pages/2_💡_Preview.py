@@ -1,10 +1,10 @@
 import os
 from loguru import logger
-from module.comfyflow import Comfyflow
+from modules.comfyflow import Comfyflow
 
 import streamlit as st
-import module.page as page
-from module.utils import load_apps
+import modules.page as page
+from modules.utils import load_apps
 
 
 logger.info("Loading preview page")
@@ -28,7 +28,7 @@ with st.container():
         preview_result = st.session_state['preview_result']
         # update app status
         if apps[preview_app]['status'] == 'created':
-            from module.sqlitehelper import sqlitehelper
+            from modules.sqlitehelper import sqlitehelper
             sqlitehelper.update_app_preview(preview_result['name'], preview_result['image'])
             logger.info(f"Update app {preview_result['name']} status: previewed.")
         else:

@@ -1,11 +1,9 @@
 import json
 from typing import Any
-from PIL import Image
-from loguru import logger
 
 import streamlit as st
-from module.comfyclient import ComfyClient
-from module.comfyflow import Comfyflow
+from modules.comfyclient import ComfyClient
+from modules.comfyflow import Comfyflow
 
 class DefaultTemplate(Comfyflow):
     def __init__(self, server_addr, api_data, app_data) -> Any:

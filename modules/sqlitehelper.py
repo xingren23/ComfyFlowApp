@@ -2,7 +2,7 @@ import os
 import json
 from loguru import logger
 import streamlit as st
-import module.utils as utils
+import modules.utils as utils
 from sqlalchemy import text
 
 """

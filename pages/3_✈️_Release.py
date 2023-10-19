@@ -2,11 +2,11 @@ import os
 from loguru import logger
 
 import streamlit as st
-import module.page as page
+import modules.page as page
 from templates.default import DefaultTemplate
 from streamlit_extras.stylable_container import stylable_container
 
-from module.utils import load_apps
+from modules.utils import load_apps
 
 logger.info("Loading release page")
 
@@ -53,7 +53,7 @@ with app_col:
             url = f"http://localhost:{app_port}"
             if apps[release_app]['status'] == 'previewed':
                 # update app status
-                from module.sqlitehelper import sqlitehelper
+                from modules.sqlitehelper import sqlitehelper
                 if 'comfyflow_template' in st.session_state.keys():
                     template_name = st.session_state['comfyflow_template']
                 sqlitehelper.update_app_release(release_app, url, template_name, "released")

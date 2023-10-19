@@ -10,7 +10,7 @@ def listdirs(dir_path):
 
 
 def load_apps():
-    from module.sqlitehelper import sqlitehelper
+    from modules.sqlitehelper import sqlitehelper
     apps = sqlitehelper.get_apps()
     app_map = {app['name']: app for app in apps}
     st.session_state['comfyflow_apps'] = app_map  
@@ -18,7 +18,7 @@ def load_apps():
 
 def init_comfyui(server_addr):
     if 'comfy_object_info' not in st.session_state.keys():
-        from module.comfyclient import ComfyClient
+        from modules.comfyclient import ComfyClient
         try:
             server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')
             global comfy_client

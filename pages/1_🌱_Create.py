@@ -6,10 +6,10 @@ from PIL.PngImagePlugin import PngInfo
 import json
 
 import streamlit as st
-import module.page as page
+import modules.page as page
 from streamlit_extras.row import row
 from streamlit_extras.stylable_container import stylable_container
-from module.utils import init_comfyui
+from modules.utils import init_comfyui
 
 server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')
 logger.info(f"Loading create page, server_addr: {server_addr}")
@@ -324,7 +324,7 @@ def submit_app(app_config):
     os.rename(upload_image, image_file_path)
 
     # submit to sqlite
-    from module.sqlitehelper import sqlitehelper
+    from modules.sqlitehelper import sqlitehelper
     app = {}
     app['name'] = app_config['name']
     app['description'] = app_config['description']

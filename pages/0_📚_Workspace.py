@@ -1,12 +1,12 @@
 import os
 from loguru import logger
 import streamlit as st
-import module.page as page
+import modules.page as page
 from streamlit_extras.row import row
 from streamlit_extras.stylable_container import stylable_container
 from streamlit_extras.switch_page_button import switch_page
 
-from module.utils import load_apps, init_comfyui
+from modules.utils import load_apps, init_comfyui
 from manager.app_manager import start_app, stop_app
 
 
@@ -96,7 +96,7 @@ with st.container():
             delete_button = operate_row.button("🗑 Delete", help="Delete this app.", key=f"{app['name']}-button-delete")
             if delete_button:
                 logger.info(f"delete app: {app['name']}")
-                from module.sqlitehelper import sqlitehelper
+                from modules.sqlitehelper import sqlitehelper
                 sqlitehelper.delete_app(app['name'])
                 st.rerun()
             operate_row.markdown("")
