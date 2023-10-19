@@ -11,4 +11,5 @@ manager/comfyflow.db
 manager/public/*
 manager/module/*
 manager/.streamlit/*
+.comfyflow_apps/*
 ```

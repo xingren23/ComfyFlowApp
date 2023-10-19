@@ -110,6 +110,8 @@ with st.container():
                         st.info(f"App {app['name']} is running yet, {app['url']}")
                     elif ret == "started":
                         st.success(f"Start app {app['name']} success, you could share {app['url']} to your friends")
+                    else:
+                        st.error(f"Start app {app['name']} failed, please check the log")
                 else:
                     st.error("Please release this app first.")
                 
@@ -122,5 +124,7 @@ with st.container():
                         st.success(f"Stop app {app['name']} success, {app['url']}")
                     elif ret == "stopped":
                         st.info(f"App {app['name']} has stopped, {app['url']}")
+                    else:
+                        st.error(f"Stop app {app['name']} failed, please check the log")
                 else:
                     st.error("Please release this app first.")

@@ -1,3 +1,4 @@
+import os
 from loguru import logger
 import threading
 import subprocess
@@ -17,6 +18,7 @@ class CommandThread(threading.Thread):
             logger.info("Command output:", result.stdout)
         else:
             logger.error("Error:", result.stderr)
+
 
 def is_process_running(app_name, args):
     """
@@ -43,6 +45,35 @@ def kill_all_process(app_name, args):
                 logger.info(f"Kill process {app_name}, pid: {process.info['pid']}")
                 process.kill()
 
+def make_app_home(app_name):
+    app_path = os.path.join(os.getcwd(), ".comfyflow_apps", app_name)
+    if not os.path.exists(app_path):
+        os.makedirs(app_path)
+        logger.info(f"make App {app_name} dir, {app_path}")
+
+    try:
+        # cp comfyflow_app.py, comfyflow.db, public, modules, .streamlit to app_path
+        os.system(f"cp -f ./manager/comfyflow_app.py {app_path}")
+        os.system(f"cp -f ./comfyflow.db {app_path}")
+        os.system(f"cp -rf ./public {app_path}")
+        os.system(f"cp -rf ./modules {app_path}")
+        os.system(f"cp -rf ./.streamlit {app_path}")
+
+        logger.info(f"App {app_name} generated, path: {app_path}")
+        return app_path
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return None
+
+def remove_app_home(app_name):
+    app_path = os.path.join(os.getcwd(), ".comfyflow_apps", app_name)
+    if os.path.exists(app_path):
+        os.system(f"rm -rf {app_path}")
+        logger.info(f"App {app_name} removed, path: {app_path}")
+        return True
+    else:
+        logger.info(f"App {app_name} does not exist, path: {app_path}")
+        return False
 
 def start_app(app_name, url):
     # url : http://localhost:8188, parse server and port
@@ -54,7 +85,11 @@ def start_app(app_name, url):
         return "running"
     else:
         logger.info(f"start comfyflow app {app_name}")
-        app_thread = CommandThread("manager", command)
+        app_path = make_app_home(app_name)
+        if app_path is None:
+            logger.error(f"App {app_name} dir generated failed, path: {app_path}")
+            return "failed"
+        app_thread = CommandThread(app_path, command)
         app_thread.start()
         logger.info(f"App {app_name} started, url: {url}")
         return "started"
@@ -66,6 +101,7 @@ def stop_app(app_name, url):
     if is_process_running(app_name, ["run", "comfyflow_app.py", str(port), address, app_name]):
         logger.info(f"stop comfyflow app {app_name}")
         kill_all_process(app_name, ["run", "comfyflow_app.py", str(port), address, app_name])
+        remove_app_home(app_name)
         return "stopping"
     else:
         logger.info(f"App {app_name} is not running, url: {url}")
