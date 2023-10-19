@@ -12,13 +12,12 @@ class CommandThread(threading.Thread):
         self.command = command
     
     def run(self):
-        cmd = f"cd {self.path} ; {self.command}"
-        logger.info(f"Run command {cmd}")
-        result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        logger.info(f"Run command {self.command} in path {self.path}")
+        result = subprocess.run(self.command, shell=True, cwd=self.path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         if result.returncode == 0:
             logger.info("Command output:", result.stdout)
         else:
-            logger.error("Error:", result.stderr)
+            logger.warning(f"{self.command} return ", result.stderr)
 
 
 def is_process_running(app_name, args):
@@ -47,6 +46,9 @@ def kill_all_process(app_name, args):
                 process.kill()
 
 def make_app_home(app_name):
+    # remove app home first
+    remove_app_home(app_name)
+
     app_path = os.path.join(os.getcwd(), ".comfyflow_apps", app_name)
     if not os.path.exists(app_path):
         os.makedirs(app_path)
