@@ -40,7 +40,7 @@ set COMFYUI_SERVER_ADDR=127.0.0.1:8188
 1. 在ComfyUI中开发工作流
 2. 在ComfyFlowApp Workspace 管理工作流，包括创建及编辑应用、预览应用、发布应用，以及启动和停止应用等；
 
-    当你的应用启动后，你可以将应用链接分享给其他用户。
+    **当你的应用启动后，你可以将应用链接分享给其他用户。**
 
 #### 详细步骤
 - 工作流开发, 在ComfyUI中开发工作流，参考[ComfyUI](https://github.com/comfyanonymous/ComfyUI)

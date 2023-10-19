@@ -71,16 +71,16 @@ class ComfyClient:
                 continue #previews are binary data
 
         history = self.get_history(prompt_id)[prompt_id]
-        for o in history['outputs']:
-            for node_id in history['outputs']:
-                node_output = history['outputs'][node_id]
-                if 'images' in node_output:
-                    images_output = []
-                    for image in node_output['images']:
-                        image_data = self.get_image(image['filename'], image['subfolder'], image['type'])
-                        images_output.append(image_data)
-                output_images[node_id] = images_output
+        for node_id in history['outputs']:
+            node_output = history['outputs'][node_id]
+            if 'images' in node_output:
+                images_output = []
+                for image in node_output['images']:
+                    image_data = self.get_image(image['filename'], image['subfolder'], image['type'])
+                    images_output.append(image_data)
+                if len(images_output) > 0:
+                    output_images[node_id] = images_output
+                    logger.info(f"Got images from server, {node_id}, {len(images_output)}")
 
         logger.info(f"Gen images from server, {len(output_images)}, {output_images.keys()}")
         return output_images
-
