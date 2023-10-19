@@ -2,3 +2,5 @@ loguru>=0.7.0
 SQLAlchemy>=1.4.39
 streamlit>=1.27.2
 streamlit-extras>=0.3.4
+websocket-client>=0.58.0
+```
