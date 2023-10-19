@@ -3,6 +3,7 @@ import json
 from loguru import logger
 import streamlit as st
 import module.utils as utils
+from sqlalchemy import text
 
 """
 comfyflow_apps table
@@ -39,11 +40,11 @@ class SQLiteHelper:
     def _init_table(self):
         with self.session as s:
             logger.info(f"init table: {self.app_talbe_name}")
-            sql = f'CREATE TABLE IF NOT EXISTS {self.app_talbe_name} (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT, image BLOB, app_conf TEXT, api_conf TEXT, preview_image BLOB, template TEXT, url TEXT, status TEXT, created_at NUMERIC, updated_at NUMERIC);'
+            sql = text(f'CREATE TABLE IF NOT EXISTS {self.app_talbe_name} (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT, image BLOB, app_conf TEXT, api_conf TEXT, preview_image BLOB, template TEXT, url TEXT, status TEXT, created_at NUMERIC, updated_at NUMERIC);')
             s.execute(sql)
 
             # create index on name
-            sql = f'CREATE INDEX IF NOT EXISTS {self.app_talbe_name}_name_index ON {self.app_talbe_name} (name);'
+            sql = text(f'CREATE INDEX IF NOT EXISTS {self.app_talbe_name}_name_index ON {self.app_talbe_name} (name);')
             s.execute(sql)
             s.commit()
 
@@ -66,7 +67,7 @@ class SQLiteHelper:
                         app['app_conf'] = json.dumps(app_json)
                     
                     # check if app exists
-                    sql = f'SELECT * FROM {self.app_talbe_name} WHERE name=:name;'
+                    sql = text(f'SELECT * FROM {self.app_talbe_name} WHERE name=:name;')
                     ret = s.execute(sql, {'name': app['name']}).fetchone()
                     if ret is not None:
                         logger.info(f"app {app_dir} exists, skip")
@@ -87,7 +88,7 @@ class SQLiteHelper:
                         else:
                             app['image'] = None
 
-                        sql = f'INSERT INTO {self.app_talbe_name} (name, description, image, app_conf, api_conf) VALUES (:name, :description, :image, :app_conf, :api_conf);'
+                        sql = text(f'INSERT INTO {self.app_talbe_name} (name, description, image, app_conf, api_conf) VALUES (:name, :description, :image, :app_conf, :api_conf);')
                         s.execute(sql, app)
                 except Exception as e:
                     logger.error(f"load app {app_dir} failed, {e}")
@@ -95,14 +96,14 @@ class SQLiteHelper:
 
     def get_apps(self):
         with self.session as s:
-            sql = f'SELECT * FROM {self.app_talbe_name};'
+            sql = text(f'SELECT * FROM {self.app_talbe_name};')
             apps = s.execute(sql).fetchall()
             return apps
         
     def create_app(self, app):
         with self.session as s:
             logger.info(f"insert app: {app['name']} {app['description']}")
-            sql = f'INSERT INTO {self.app_talbe_name} (name, description, image, app_conf, api_conf, status) VALUES (:name, :description, :image, :app_conf, :api_conf, :status);'
+            sql = text(f'INSERT INTO {self.app_talbe_name} (name, description, image, app_conf, api_conf, status) VALUES (:name, :description, :image, :app_conf, :api_conf, :status);')
             s.execute(sql, app)
             s.commit()
 
@@ -110,7 +111,7 @@ class SQLiteHelper:
         # update name, description, app_conf, could not update image, api_conf
         with self.session as s:
             logger.info(f"update app conf: {id} {name} {description} {app_conf}")
-            sql = f'UPDATE {self.app_talbe_name} SET name=:name, description=:description, app_conf=:app_conf,  WHERE id=:id;'
+            sql = text(f'UPDATE {self.app_talbe_name} SET name=:name, description=:description, app_conf=:app_conf,  WHERE id=:id;')
             s.execute(sql, dict(id=id, name=name, description=description, app_conf=app_conf))
             s.commit()
 
@@ -118,7 +119,7 @@ class SQLiteHelper:
         # update preview_image
         with self.session as s:
             logger.info(f"update app preview: {name}")
-            sql = f'UPDATE {self.app_talbe_name} SET preview_image=:preview_image, status=:status WHERE name=:name;'
+            sql = text(f'UPDATE {self.app_talbe_name} SET preview_image=:preview_image, status=:status WHERE name=:name;')
             s.execute(sql, dict(preview_image=preview_image, status=status, name=name))
             s.commit()
     
@@ -126,14 +127,14 @@ class SQLiteHelper:
         # update release
         with self.session as s:
             logger.info(f"update app release: {name} {url} {template}")
-            sql = f'UPDATE {self.app_talbe_name} SET url=:url, template=:template, status=:status WHERE name=:name;'
+            sql = text(f'UPDATE {self.app_talbe_name} SET url=:url, template=:template, status=:status WHERE name=:name;')
             s.execute(sql, dict(url=url, template=template, status=status, name=name))
             s.commit()
 
     def delete_app(self, name):
         with self.session as s:
             logger.info(f"delete app: {name}")
-            sql = f'DELETE FROM {self.app_talbe_name} WHERE name=:name;'
+            sql = text(f'DELETE FROM {self.app_talbe_name} WHERE name=:name;')
             s.execute(sql, dict(name=name))
             s.commit()
 
