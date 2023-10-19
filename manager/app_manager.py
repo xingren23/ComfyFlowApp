@@ -3,6 +3,7 @@ from loguru import logger
 import threading
 import subprocess
 import psutil
+import shutil
 
 class CommandThread(threading.Thread):
     def __init__(self, path, command):
@@ -53,11 +54,11 @@ def make_app_home(app_name):
 
     try:
         # cp comfyflow_app.py, comfyflow.db, public, modules, .streamlit to app_path
-        os.system(f"cp -f ./manager/comfyflow_app.py {app_path}")
-        os.system(f"cp -f ./comfyflow.db {app_path}")
-        os.system(f"cp -rf ./public {app_path}")
-        os.system(f"cp -rf ./modules {app_path}")
-        os.system(f"cp -rf ./.streamlit {app_path}")
+        shutil.copyfile("./manager/comfyflow_app.py", os.path.join(app_path, "comfyflow_app.py"))
+        shutil.copyfile("./comfyflow.db", os.path.join(app_path, "comfyflow.db"))
+        shutil.copytree("./public", os.path.join(app_path, "public"))
+        shutil.copytree("./modules", os.path.join(app_path, "modules"))
+        shutil.copytree("./.streamlit", os.path.join(app_path, ".streamlit"))
 
         logger.info(f"App {app_name} generated, path: {app_path}")
         return app_path
@@ -68,7 +69,7 @@ def make_app_home(app_name):
 def remove_app_home(app_name):
     app_path = os.path.join(os.getcwd(), ".comfyflow_apps", app_name)
     if os.path.exists(app_path):
-        os.system(f"rm -rf {app_path}")
+        shutil.rmtree(app_path)
         logger.info(f"App {app_name} removed, path: {app_path}")
         return True
     else:
