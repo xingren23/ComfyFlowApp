@@ -38,8 +38,16 @@ set COMFYUI_SERVER_ADDR=127.0.0.1:8188
 
 # start comfyflowapp
 ./bin/run.bat
+```
 
 ### 📌 How to develop a ComfyFlowApp?
+
+1. Develop workflow in ComfyUI
+2. Manage application in ComfyFlowApp Workspace, eg create & edit app, preview app, release app, and start & stop app, etc. 
+
+    **when your application started, you could share app link to others.**
+
+#### Detaiis
 
 - Develop：develop workflow in ComfyUI, refer to [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
 ![图1](docs/images/comfy-workflow.png)
