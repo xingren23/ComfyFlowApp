@@ -14,21 +14,32 @@ Follow the repo to get the latest updates.
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/comfyflow)
 
-### 快速开始
+### 📌 Quick Start
 - Linux & Mac
 ```bash
-# 安装依赖
+# install requirements
 pip install -r requirements.txt
 
-# 配置环境变量，设置ComfyUI服务地址
+# configure environment variables, defaulut ComfyUI server address is 127.0.0.1:8188
 export COMFYUI_SERVER_ADDR=127.0.0.1:8188
 
-# 启动服务
+# start comfyflowapp
 sh bin/start.sh
 ```
 
 
-### How to develop a ComfyFlowApp?
+- Windows
+```bash
+# install requirements
+pip install -r requirements.txt
+
+# configure environment variables, defaulut ComfyUI server address is 127.0.0.1:8188
+set COMFYUI_SERVER_ADDR=127.0.0.1:8188
+
+# start comfyflowapp
+./bin/run.bat
+
+### 📌 How to develop a ComfyFlowApp?
 
 - Develop：develop workflow in ComfyUI, refer to [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
 ![图1](docs/images/comfy-workflow.png)

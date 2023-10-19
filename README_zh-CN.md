@@ -17,11 +17,23 @@ ComfyFlowApp 是ComfyUI的扩展工具，你可以将ComfyUI工作流转换为We
 # 安装依赖
 pip install -r requirements.txt
 
-# 配置环境变量，设置ComfyUI服务地址
+# 配置环境变量，设置你的ComfyUI服务地址，ComfyUI服务地址默认为 127.0.0.1:8188
 export COMFYUI_SERVER_ADDR=127.0.0.1:8188
 
-# 启动服务
+# 启动 ComfyFlowApp
 sh bin/start.sh
+```
+
+- Windows
+```bash
+# 安装依赖
+pip install -r requirements.txt
+
+# 配置环境变量，设置你的ComfyUI服务地址，ComfyUI服务地址默认为 127.0.0.1:8188
+set COMFYUI_SERVER_ADDR=127.0.0.1:8188
+
+# 启动 ComfyFlowApp
+./bin/run.bat
 ```
 
 ### 如何开发一个ComfyFlowApp？

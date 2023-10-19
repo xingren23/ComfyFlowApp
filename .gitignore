@@ -6,4 +6,9 @@ __pycache__/
 .uploads/*
 .devcontainer/*
 .comfyflow/*
+
+manager/comfyflow.db
+manager/public/*
+manager/module/*
+manager/.streamlit/*
 ```
