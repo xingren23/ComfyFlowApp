@@ -13,7 +13,21 @@ ComfyFlowApp simplifies the way workflows are shared and used. Workflow develope
 Follow the repo to get the latest updates.
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/comfyflow)
-                        
+
+### 快速开始
+- Linux & Mac
+```bash
+# 安装依赖
+pip install -r requirements.txt
+
+# 配置环境变量，设置ComfyUI服务地址
+export COMFYUI_SERVER_ADDR=127.0.0.1:8188
+
+# 启动服务
+sh bin/start.sh
+```
+
+
 ### How to develop a ComfyFlowApp?
 
 - Develop：develop workflow in ComfyUI, refer to [ComfyUI](https://github.com/comfyanonymous/ComfyUI)

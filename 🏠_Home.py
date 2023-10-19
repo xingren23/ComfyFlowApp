@@ -40,17 +40,12 @@ with st.container():
     st.image('./docs/images/comfy-workflow.png',
              caption='ComfyUI workflow')
     st.markdown("""
-                        :two: Upload：upload workflow image to ComfyFlowApp, and configure application parameters to generate WebApp application
+                        :two: Workspace：manage application in Workspace, including create & edit app, preview app, release app, and start & stop app, etc.
                         """)
-    st.image('./docs/images/comfy-upload-app.png',
+    st.image('./docs/images/comfy-workspace.png',
              caption='Upload workflow image')
-    st.markdown("""
-                        :three: Preview：preview WebApp application online
-                        """)
-    st.image('./docs/images/comfy-workflow-app.png',
-             caption='Preview WebApp application')
 
     st.markdown("""
                         ### Some examples
-                        **👈 Select a demo from the Workflow page on the left** to see some examples of ComfyFlowApp can do!
+                        **👈 Workspace page on the left** to see some examples of ComfyFlowApp can do!
                         """)
