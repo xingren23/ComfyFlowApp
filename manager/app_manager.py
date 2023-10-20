@@ -49,7 +49,7 @@ def make_app_home(app_name):
     # remove app home first
     remove_app_home(app_name)
 
-    app_path = os.path.join(os.getcwd(), ".comfyflow_apps", app_name)
+    app_path = os.path.join(os.getcwd(), ".apps", app_name)
     if not os.path.exists(app_path):
         os.makedirs(app_path)
         logger.info(f"make App {app_name} dir, {app_path}")
@@ -69,7 +69,7 @@ def make_app_home(app_name):
         return None
 
 def remove_app_home(app_name):
-    app_path = os.path.join(os.getcwd(), ".comfyflow_apps", app_name)
+    app_path = os.path.join(os.getcwd(), ".apps", app_name)
     if os.path.exists(app_path):
         shutil.rmtree(app_path)
         logger.info(f"App {app_name} removed, path: {app_path}")

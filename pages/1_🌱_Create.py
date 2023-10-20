@@ -21,10 +21,21 @@ init_comfyui(server_addr)
 NODE_SEP = '||'
 
 
-def format_node_info(param):
+def format_input_node_info(param):
     # format {id}.{class_type}.{alias}.{param_name}
-    node_id, class_type, param_name, param_value = param.split(NODE_SEP)
-    return f"{class_type}:{param_name}:{param_value}"
+    params_inputs = st.session_state.get('comfyflow_create_prompt_inputs', {})
+    params_value = params_inputs[param]
+    logger.info(f"format_input_node_info, {param} {params_value}")
+    node_id, class_type, param_name, param_value = params_value.split(NODE_SEP)
+    return f"{node_id}:{class_type}:{param_name}:{param_value}"
+
+def format_output_node_info(param):
+    # format {id}.{class_type}
+    params_outputs = st.session_state.get('comfyflow_create_prompt_outputs', {})
+    params_value = params_outputs[param]
+    logger.info(f"format_output_node_info, {param} {params_value}")
+    node_id, class_type, input_values = params_value.split(NODE_SEP)
+    return f"{node_id}:{class_type}:{input_values}"
 
 def process_workflow_meta(image_upload, savefile):
     # parse meta data from image, save image to local
@@ -39,14 +50,14 @@ def process_workflow_meta(image_upload, savefile):
             file_id = image_upload.file_id
             file_name, _ = os.path.splitext(
                 os.path.basename(image_upload.name))
-            save_to_file = f'.comfyflow/{datetime.today().strftime("%Y-%m-%d")}/{file_id}_{file_name}.png'
+            save_to_file = f'.comfyflow/temp/{datetime.today().strftime("%Y-%m-%d")}/{file_id}_{file_name}.png'
 
             os.makedirs(os.path.dirname(save_to_file), exist_ok=True)
             metadata = PngInfo()
             for x in tran_img.info:
                 # logger.info(f"image meta data, {x}:{tran_img.info[x]}")
                 # save as json file
-                file_path = f'.comfyflow/{datetime.today().strftime("%Y-%m-%d")}/{file_id}_{file_name}_{x}.json'
+                file_path = f'.comfyflow/temp/{datetime.today().strftime("%Y-%m-%d")}/{file_id}_{file_name}_{x}.json'
                 with open(file_path, 'w') as json_file:
                     json_file.write(tran_img.info[x])
 
@@ -66,30 +77,39 @@ def parse_prompt(prompt_info):
     # parse prompt to inputs and outputs
     try:
         prompt = json.loads(prompt_info)
-        params_inputs = []
-        params_outputs = []
+        params_inputs = {}
+        params_outputs = {}
         for node_id in prompt:
             node = prompt[node_id]
             class_type = prompt[node_id]['class_type']
+            node_inputs = []
             for param in node['inputs']:
                 param_value = node['inputs'][param]
-                param_key = f"{node_id}{NODE_SEP}{class_type}{NODE_SEP}{param}{NODE_SEP}{param_value}"
-                logger.info(f"parse_prompt, {param_key}")
+                option_key = f"{node_id}{NODE_SEP}{param}"
+                option_value = f"{node_id}{NODE_SEP}{class_type}{NODE_SEP}{param}{NODE_SEP}{param_value}"
+                logger.info(f"parse_prompt, {option_key} {option_value}")
                 # check param_value is []
                 if isinstance(param_value, list):
-                    logger.info(f"ignore {param_key}, param_value is list, {param_value}")
+                    logger.info(f"ignore {option_key}, param_value is list, {param_value}")
                     continue
                 if param == "choose file to upload":
-                    logger.info(f"ignore {param_key}, param for 'choose file to upload'")
+                    logger.info(f"ignore {option_key}, param for 'choose file to upload'")
                     continue
+                                
+                params_inputs.update({option_key: option_value})
+                node_inputs.append(param_value)
 
-                is_output = st.session_state['comfy_object_info'][class_type]['output_node']
-                if is_output:
-                    params_outputs.append(param_key)
+            is_output = st.session_state['comfy_object_info'][class_type]['output_node']
+            if is_output:
+                if class_type == 'SaveImage':
+                    option_key = f"{node_id}{NODE_SEP}{class_type}"
+                    if len(node_inputs) == 0:
+                        option_value = f"{node_id}{NODE_SEP}{class_type}{NODE_SEP}None"
+                    else:
+                        option_value = f"{node_id}{NODE_SEP}{class_type}{NODE_SEP}{node_inputs}"
+                    params_outputs.update({option_key: option_value})
                 else:
-                    params_inputs.append(param_key)
-
-                logger.info(f"parse_prompt end, {param_key}")
+                    logger.warning(f"Only support SaveImage as output node, {class_type}")
 
         return params_inputs, params_outputs
     except Exception as e:
@@ -103,8 +123,8 @@ def process_image_change():
     if not st.session_state['upload_image']:
         logger.info("clear comfyflow_create_prompt, comfyflow_create_prompt_inputs and comfyflow_create_prompt_outputs")
         st.session_state['comfyflow_create_prompt'] = None
-        st.session_state['comfyflow_create_prompt_inputs'] = []
-        st.session_state['comfyflow_create_prompt_outputs'] = []
+        st.session_state['comfyflow_create_prompt_inputs'] = {}
+        st.session_state['comfyflow_create_prompt_outputs'] = {}
 
 
 def get_node_input_config(input_param, app_input_name, app_input_description):
@@ -114,7 +134,7 @@ def get_node_input_config(input_param, app_input_name, app_input_description):
     if 'optional' in class_meta['input'].keys():
         class_input.update(class_meta['input']['optional'])
 
-    logger.info(f"{node_id} {class_type} {param}, class input {class_input}")
+    logger.info(f"{node_id} {class_type} {param} {param_value}, class input {class_input}")
 
     input_config = {}
     if isinstance(class_input[param][0], str):
@@ -208,6 +228,8 @@ def step1_upload_image(expanded=True):
                         with image_col:
                             st.image(image_upload, use_column_width=True,
                                      caption='ComfyUI Workflow Image, include workflow meta data')
+                    else:
+                        st.error(f"failed to parse comfyui workflow from image.")
                 else:
                     st.error(f"this image don't generated by comfyui workflow.")
 
@@ -225,18 +247,17 @@ def step2_config_params(expanded=True):
 
         with st.container():
             st.markdown("Input Params:")
-            params_inputs = st.session_state.get('comfyflow_create_prompt_inputs', [])
+            params_inputs = st.session_state.get('comfyflow_create_prompt_inputs', {})
+            params_inputs_options = list(params_inputs.keys())
             param_input1_row = row([0.4, 0.2, 0.4], vertical_align="bottom")
-            param_input1_row.selectbox("Select input of workflow", options=params_inputs, key="input_param1",
-                                       format_func=format_node_info, index=None, help="Select a param from workflow")
+            param_input1_row.selectbox("Select input of workflow", options=params_inputs_options, key="input_param1", format_func=format_input_node_info, index=None, help="Select a param from workflow")
             param_input1_row.text_input(
                 "App Input Name", value="", placeholder="Param Name", key="input_param1_name", help="Input param name")
             param_input1_row.text_input("App Input Description", value="", placeholder="Param Description",
                                         key="input_param1_desc", help="Input param description")
 
             param_input2_row = row([0.4, 0.2, 0.4], vertical_align="bottom")
-            param_input2_row.selectbox("Select input of workflow", options=params_inputs, key="input_param2",
-                                       index=None, format_func=format_node_info, help="Select a param from workflow")
+            param_input2_row.selectbox("Select input of workflow", options=params_inputs_options, key="input_param2", index=None, format_func=format_input_node_info, help="Select a param from workflow")
             param_input2_row.text_input(
                 "App Input Name", value="", placeholder="Param Name", key="input_param2_name", help="Input param name")
             param_input2_row.text_input("App Input Description", value="", placeholder="Param Description",
@@ -244,11 +265,11 @@ def step2_config_params(expanded=True):
 
         with st.container():
             st.markdown("Output Params:")
-            params_outputs = st.session_state.get(
-                'comfyflow_create_prompt_outputs', [])
+            params_outputs = st.session_state.get('comfyflow_create_prompt_outputs', {})
+            params_outputs_options = list(params_outputs.keys())
             param_output1_row = row([0.4, 0.2, 0.4], vertical_align="bottom")
-            param_output1_row.selectbox("Select output of workflow", options=params_outputs,
-                                        key="output_param1", format_func=format_node_info, help="Select a param from workflow")
+            param_output1_row.selectbox("Select output of workflow", options=params_outputs_options,
+                                        key="output_param1", format_func=format_output_node_info, help="Select a param from workflow")
             param_output1_row.text_input(
                 "Apn Output Name", value="", placeholder="Param Name", key="output_param1_name",
                 help="Input param name")
@@ -299,20 +320,18 @@ def gen_app_config():
 
 def submit_app(app_config):
     # check app dir
-    workflow_path = f'.comfyflow/{st.session_state["app_name"]}'
+    workflow_path = f'.comfyflow/workflows/{st.session_state["app_name"]}'
     os.makedirs(workflow_path, exist_ok=True)
 
     # save app config
     app_file_path = f'{workflow_path}/app.json'
     with open(app_file_path, 'w') as f:
-        # dump dict to file
         # logger.info(f"save app config to {app_file_path}, {app_config}")
         json.dump(app_config, f)
 
     # upload prompt.json
     prompt_file_path = f'{workflow_path}/prompt.json'
     with open(prompt_file_path, 'w') as f:
-        # write string to file
         prompt = st.session_state['comfyflow_create_prompt']
         # logger.info(f"save prompt to {prompt_file_path}, {prompt}")
         f.write(prompt)
