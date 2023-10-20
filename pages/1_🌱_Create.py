@@ -23,7 +23,7 @@ NODE_SEP = '||'
 
 def format_node_info(param):
     # format {id}.{class_type}.{alias}.{param_name}
-    node_id, class_type, class_name, param_name, param_value = param.split(NODE_SEP)
+    node_id, class_type, param_name, param_value = param.split(NODE_SEP)
     return f"{class_type}:{param_name}:{param_value}"
 
 def process_workflow_meta(image_upload, savefile):
@@ -62,22 +62,18 @@ def process_workflow_meta(image_upload, savefile):
         return None
 
 
-def parse_prompt(prompt_info, workflow_info):
+def parse_prompt(prompt_info):
     # parse prompt to inputs and outputs
     try:
-        workflow = json.loads(workflow_info)
-        workflow_nodes = {f"{node['id']}": node for node in workflow['nodes']}
         prompt = json.loads(prompt_info)
         params_inputs = []
         params_outputs = []
         for node_id in prompt:
             node = prompt[node_id]
-            workflow_node = workflow_nodes[node_id]
-            node_name = workflow_node.get('properties', {}).get('Node name for S&R', '')
             class_type = prompt[node_id]['class_type']
             for param in node['inputs']:
                 param_value = node['inputs'][param]
-                param_key = f"{node_id}{NODE_SEP}{class_type}{NODE_SEP}{node_name}{NODE_SEP}{param}{NODE_SEP}{param_value}"
+                param_key = f"{node_id}{NODE_SEP}{class_type}{NODE_SEP}{param}{NODE_SEP}{param_value}"
                 logger.info(f"parse_prompt, {param_key}")
                 # check param_value is []
                 if isinstance(param_value, list):
@@ -112,13 +108,13 @@ def process_image_change():
 
 
 def get_node_input_config(input_param, app_input_name, app_input_description):
-    node_id, class_type, class_name, param, param_value = input_param.split(NODE_SEP)
+    node_id, class_type, param, param_value = input_param.split(NODE_SEP)
     class_meta = st.session_state['comfy_object_info'][class_type]
     class_input = class_meta['input']['required']
     if 'optional' in class_meta['input'].keys():
         class_input.update(class_meta['input']['optional'])
 
-    logger.info(f"{node_id} {class_type} {class_name} {param}, class input {class_input}")
+    logger.info(f"{node_id} {class_type} {param}, class input {class_input}")
 
     input_config = {}
     if isinstance(class_input[param][0], str):
@@ -179,7 +175,7 @@ def get_node_input_config(input_param, app_input_name, app_input_description):
 
 
 def get_node_output_config(output_param):
-    node_id, class_type, class_name, param, param_value = output_param.split(
+    node_id, class_type, param, param_value = output_param.split(
         NODE_SEP)
     output_param_inputs = {
         "outputs": {
@@ -199,10 +195,9 @@ def step1_upload_image(expanded=True):
         with image_col2:
             if image_upload:
                 metas = process_workflow_meta(image_upload, True)
-                if metas and 'prompt' in metas.keys() and 'workflow' in metas.keys():
+                if metas and 'prompt' in metas.keys():
                     st.session_state['comfyflow_create_prompt'] = metas.get('prompt')
-                    inputs, outputs = parse_prompt(
-                        metas.get('prompt'), metas.get('workflow'))
+                    inputs, outputs = parse_prompt(metas.get('prompt'))
                     if inputs and outputs:
                         logger.info(f"comfyflow_create_prompt_inputs, {inputs}")
                         st.session_state['comfyflow_create_prompt_inputs'] = inputs
