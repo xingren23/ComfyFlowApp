@@ -15,10 +15,7 @@ logger.info("Loading create page")
 
 page.page_header()
 
-init_comfy_object_info()
-
 NODE_SEP = '||'
-
 
 def format_input_node_info(param):
     # format {id}.{class_type}.{alias}.{param_name}
@@ -98,6 +95,8 @@ def parse_prompt(prompt_info):
                 params_inputs.update({option_key: option_value})
                 node_inputs.append(param_value)
 
+            if 'comfy_object_info' not in st.session_state.keys():
+                init_comfy_object_info()
             is_output = st.session_state['comfy_object_info'][class_type]['output_node']
             if is_output:
                 if class_type == 'SaveImage':
@@ -131,6 +130,8 @@ def get_node_input_config(input_param, app_input_name, app_input_description):
     option_params_value = params_inputs[input_param]
     logger.debug(f"get_node_input_config, {input_param} {option_params_value}")
     node_id, class_type, param, param_value = option_params_value.split(NODE_SEP)
+    if 'comfy_object_info' not in st.session_state.keys():
+        init_comfy_object_info()
     class_meta = st.session_state['comfy_object_info'][class_type]
     class_input = class_meta['input']['required']
     if 'optional' in class_meta['input'].keys():

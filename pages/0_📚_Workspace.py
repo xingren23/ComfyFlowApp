@@ -52,7 +52,7 @@ with st.container():
             if len(description) > 160:
                 description = description[:160] + "..."
 
-            app_row = row([1, 5.8, 2,1.2], vertical_align="bottom")
+            app_row = row([1, 5.8, 1.2, 2], vertical_align="bottom")
             if app["image"] is not None:
                 app_row.image(app["image"])
             else:
@@ -61,10 +61,6 @@ with st.container():
                             #### {app['name']}
                             {description}
                             """)
-            app_row.markdown(f"""
-                            #### Url
-                            🌐 {app['url']}
-                                """)
             app_status = f"🌱 {app['status']}"
             if app['status'] == "previewed":
                 app_status = f"💡 {app['status']}"
@@ -74,6 +70,11 @@ with st.container():
                             #### Status
                             {app_status}
                             """)
+            app_row.markdown(f"""
+                            #### Web Site
+                            🌐 {app['url']}
+                                """)
+            
             operate_row = row([1, 1, 1, 4, 1, 1], vertical_align="bottom")
             # edit_button = operate_row.button(":apple: Edit", help="Edit this app.", key=f"{app['name']}-button-edit")
             # if edit_button:
