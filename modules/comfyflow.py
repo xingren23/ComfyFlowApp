@@ -166,7 +166,7 @@ class Comfyflow:
                         st.error('Generate Failed!')
                     else:
                         logger.info("update output_image")
-                        st.image(output_image, use_column_width=True, caption='Output Image')
+                        st.image(output_image, use_column_width=True)
 
                         # update preview image with first output image
                         preview_image = output_image[0]

@@ -212,7 +212,7 @@ def step1_upload_image(expanded=True):
     with st.expander("### :one: Upload image of comfyui workflow", expanded=expanded):
         image_col1, image_col2 = st.columns([0.5, 0.5])
         with image_col1:
-            image_upload = st.file_uploader("Upload image", type=["png", "jpg", "jpeg"], 
+            image_upload = st.file_uploader("Upload image *", type=["png", "jpg", "jpeg"], 
                                             key="upload_image", on_change=process_image_change, 
                                             help="upload image of comfyui workflow")
 
@@ -243,10 +243,10 @@ def step2_config_params(expanded=True):
         with st.container():
             name_col1, desc_col2 = st.columns([0.2, 0.8])
             with name_col1:
-                st.text_input("App Name", value="", placeholder="input app name",
+                st.text_input("App Name *", value="", placeholder="input app name",
                               key="app_name", help="Input app name")
             with desc_col2:
-                st.text_input("App Description", value="", placeholder="input app description",
+                st.text_input("App Description *", value="", placeholder="input app description",
                               key="app_desc", help="Input app description")
 
         with st.container():
@@ -254,9 +254,9 @@ def step2_config_params(expanded=True):
             params_inputs = st.session_state.get('comfyflow_create_prompt_inputs', {})
             params_inputs_options = list(params_inputs.keys())
             param_input1_row = row([0.4, 0.2, 0.4], vertical_align="bottom")
-            param_input1_row.selectbox("Select input of workflow", options=params_inputs_options, key="input_param1", format_func=format_input_node_info, index=None, help="Select a param from workflow")
+            param_input1_row.selectbox("Select input of workflow *", options=params_inputs_options, key="input_param1", format_func=format_input_node_info, index=None, help="Select a param from workflow")
             param_input1_row.text_input(
-                "App Input Name", value="", placeholder="Param Name", key="input_param1_name", help="Input param name")
+                "App Input Name *", value="", placeholder="Param Name", key="input_param1_name", help="Input param name")
             param_input1_row.text_input("App Input Description", value="", placeholder="Param Description",
                                         key="input_param1_desc", help="Input param description")
 
@@ -272,10 +272,10 @@ def step2_config_params(expanded=True):
             params_outputs = st.session_state.get('comfyflow_create_prompt_outputs', {})
             params_outputs_options = list(params_outputs.keys())
             param_output1_row = row([0.4, 0.2, 0.4], vertical_align="bottom")
-            param_output1_row.selectbox("Select output of workflow", options=params_outputs_options,
+            param_output1_row.selectbox("Select output of workflow *", options=params_outputs_options,
                                         key="output_param1", format_func=format_output_node_info, help="Select a param from workflow")
             param_output1_row.text_input(
-                "Apn Output Name", value="", placeholder="Param Name", key="output_param1_name",
+                "Apn Output Name *", value="", placeholder="Param Name", key="output_param1_name",
                 help="Input param name")
             param_output1_row.text_input("App Output Description", value="", placeholder="Param Description",
                                          key="output_param1_desc", help="Input param description")
