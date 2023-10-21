@@ -82,8 +82,8 @@ def start_app(app_name, url):
     # url : http://localhost:8188, parse server and port
     address = url.split("//")[1].split(":")[0]
     port = url.split("//")[1].split(":")[1]
-    command = f"streamlit run comfyflow_app.py --server.port {port} --server.address {address} -- --app {app_name}"
-    if is_process_running(app_name, ["run", "comfyflow_app.py", str(port), address, app_name]):
+    command = f"streamlit run comfyflow_app.py --server.port {port} --server.address {address} -- --app '{app_name}'"
+    if is_process_running(app_name, ["run", "comfyflow_app.py", str(port), address]):
         logger.info(f"App {app_name} is already running, url: {url}")
         return "running"
     else:
@@ -101,9 +101,9 @@ def stop_app(app_name, url):
     # url : http://localhost:8188, parse server and port
     address = url.split("//")[1].split(":")[0]
     port = url.split("//")[1].split(":")[1]
-    if is_process_running(app_name, ["run", "comfyflow_app.py", str(port), address, app_name]):
+    if is_process_running(app_name, ["run", "comfyflow_app.py", str(port), address]):
         logger.info(f"stop comfyflow app {app_name}")
-        kill_all_process(app_name, ["run", "comfyflow_app.py", str(port), address, app_name])
+        kill_all_process(app_name, ["run", "comfyflow_app.py", str(port), address])
         remove_app_home(app_name)
         return "stopping"
     else:

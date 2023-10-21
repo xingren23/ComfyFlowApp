@@ -25,7 +25,7 @@ def init_comfyui(server_addr):
             comfy_client = ComfyClient(server_addr=server_addr)
             comfy_object_info = comfy_client.get_node_class()
             st.session_state['comfy_object_info'] = comfy_object_info
-            logger.info(f"init comfy object info: {comfy_object_info.keys()}")
+            logger.debug(f"init comfy object info: {comfy_object_info.keys()}")
         except Exception as e:
             st.error(f"Failed to get comfy object info, error: {e}")
             st.stop()
