@@ -6,12 +6,11 @@ from PIL import Image
 from loguru import logger
 
 import streamlit as st
-from modules.comfyclient import ComfyClient
 
 class Comfyflow:
-    def __init__(self, server_addr, api_data, app_data) -> Any:
+    def __init__(self, comfy_client, api_data, app_data) -> Any:
     
-        self.comfy_client = ComfyClient(server_addr)
+        self.comfy_client = comfy_client
         self.api_json = json.loads(api_data)
         self.app_json = json.loads(app_data)
         self.create_ui()

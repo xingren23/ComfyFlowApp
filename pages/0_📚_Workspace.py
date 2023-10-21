@@ -6,16 +6,13 @@ from streamlit_extras.row import row
 from streamlit_extras.stylable_container import stylable_container
 from streamlit_extras.switch_page_button import switch_page
 
-from modules.utils import load_apps, init_comfyui
+from modules.utils import load_apps
 from manager.app_manager import start_app, stop_app
 
 
-server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')   
-logger.info(f"Loading workspace page, server_addr: {server_addr}")
+logger.info("Loading workspace page")
 
 page.page_header()
-
-init_comfyui(server_addr)
 
 with stylable_container(
         key="new_app_button",
@@ -46,6 +43,7 @@ with st.container():
         st.divider()
         st.info("No apps, please create a new app.")
     else:
+        from modules.sqlitehelper import sqlitehelper
         for name in apps.keys():
             app = apps[name]
             st.divider()
@@ -65,7 +63,7 @@ with st.container():
                             """)
             app_row.markdown(f"""
                             #### Url
-                            {app['url']}
+                            🌐 {app['url']}
                                 """)
             app_status = f"🌱 {app['status']}"
             if app['status'] == "previewed":
@@ -96,7 +94,6 @@ with st.container():
             delete_button = operate_row.button("🗑 Delete", help="Delete this app.", key=f"{app['name']}-button-delete")
             if delete_button:
                 logger.info(f"delete app: {app['name']}")
-                from modules.sqlitehelper import sqlitehelper
                 sqlitehelper.delete_app(app['name'])
                 st.rerun()
             operate_row.markdown("")
@@ -104,14 +101,22 @@ with st.container():
             start_button = operate_row.button("▶️ Start", help="Start this app.", key=f"{app['name']}-button-start")
             if start_button:
                 if app['status'] == "released":
-                    logger.info(f"start app: {app['name'], app['url']}")
-                    ret = start_app(app['name'], app['url'])
+                    server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')
+                    app_port = int(server_addr.split(":")[1]) + int(app['id'])
+                    url = f"http://localhost:{app_port}"
+
+                    ret = start_app(app['name'], url)
                     if ret == "running":
-                        st.info(f"App {app['name']} is running yet, {app['url']}")
+                        sqlitehelper.update_app_url(app['name'], url)
+                        logger.info(f"App {app['name']} is running yet, {app['url']}")
+                        st.rerun()
                     elif ret == "started":
-                        st.success(f"Start app {app['name']} success, you could share {app['url']} to your friends")
+                        sqlitehelper.update_app_url(app['name'], url)
+                        logger.info(f"Start app {app['name']} success, you could share {app['url']} to your friends")
+                        st.rerun()
                     else:
                         st.error(f"Start app {app['name']} failed, please check the log")
+                    
                 else:
                     st.error("Please release this app first.")
                 
@@ -119,12 +124,20 @@ with st.container():
             if stop_button:
                 if app['status'] == "released":
                     logger.info(f"stop app: {app['name']}")    
-                    ret = stop_app(app['name'], app['url'])
-                    if ret == "stopping":
-                        st.success(f"Stop app {app['name']} success, {app['url']}")
-                    elif ret == "stopped":
-                        st.info(f"App {app['name']} has stopped, {app['url']}")
+                    if app['url'] == "":
+                        st.info(f"App {app['name']} url is empty, maybe it is stopped")
                     else:
-                        st.error(f"Stop app {app['name']} failed, please check the log")
+                        ret = stop_app(app['name'], app['url'])
+                        if ret == "stopping":
+                            sqlitehelper.update_app_url(app['name'], "")
+                            logger.info(f"Stop app {app['name']} success, {app['url']}")
+                            st.rerun()
+                        elif ret == "stopped":
+                            sqlitehelper.update_app_url(app['name'], "")
+                            logger.info(f"App {app['name']} has stopped, {app['url']}")
+                            st.rerun()
+                        else:
+                            st.error(f"Stop app {app['name']} failed, please check the log")
+                    
                 else:
                     st.error("Please release this app first.")

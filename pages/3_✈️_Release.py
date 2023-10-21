@@ -1,4 +1,3 @@
-import os
 from loguru import logger
 
 import streamlit as st
@@ -6,7 +5,7 @@ import modules.page as page
 from templates.default import DefaultTemplate
 from streamlit_extras.stylable_container import stylable_container
 
-from modules.utils import load_apps
+from modules.utils import load_apps, init_comfy_client
 
 logger.info("Loading release page")
 
@@ -48,19 +47,16 @@ with app_col:
         ):
         release_button = st.button("Release", help="Release your app with server-address", use_container_width=True)
         if release_button:
-            port = os.getenv('COMFYFLOW_SERVER_PORT', default=8188)
-            app_port = int(port) + int(apps[release_app]['id'])
-            url = f"http://localhost:{app_port}"
             if apps[release_app]['status'] == 'previewed':
                 # update app status
                 from modules.sqlitehelper import sqlitehelper
                 if 'comfyflow_template' in st.session_state.keys():
                     template_name = st.session_state['comfyflow_template']
-                sqlitehelper.update_app_release(release_app, url, template_name, "released")
+                sqlitehelper.update_app_release(release_app, template_name, "released")
             else:
                 logger.info(f"App {release_app} has been released!")
 
-            st.success(f"Release {release_app} success, url: {url}")
+            st.success(f"Release {release_app} success")
 
 
 with template_col:
@@ -69,10 +65,14 @@ with template_col:
         st.markdown("#### Release with default template.")
         api_data = apps[release_app]['api_conf']
         app_data = apps[release_app]['app_conf']
-        server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')
+
+        if 'comfy_client' not in st.session_state.keys():
+            comfy_client = init_comfy_client()
+        comfy_client = st.session_state['comfy_client']
+
         template_name = 'default'
         if template_name == 'default':
-            comfy_flow = DefaultTemplate(server_addr=server_addr, api_data=api_data, app_data=app_data)
+            comfy_flow = DefaultTemplate(comfy_client=comfy_client, api_data=api_data, app_data=app_data)
             if comfy_flow is not None:
                 st.session_state['comfyflow_template'] = template_name
             

@@ -1,8 +1,7 @@
-import os
 import streamlit as st
 import argparse
 
-from modules.utils import load_apps
+from modules.utils import load_apps, init_comfy_client
 from streamlit_extras.badges import badge
 
 def page_header():    
@@ -52,7 +51,6 @@ parser = argparse.ArgumentParser(description='Comfyflow manager')
 parser.add_argument('--app', type=str, default='', help='comfyflow app name')
 args = parser.parse_args()
 
-
 page_header()
 
 with st.container():
@@ -67,8 +65,12 @@ with st.container():
         if app_status == 'released':
             app_data = apps[app_name]['app_conf']
             api_data = apps[app_name]['api_conf']
-            server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')
+
+            if 'comfy_client' not in st.session_state.keys():
+                init_comfy_client()
+            comfy_client = st.session_state['comfy_client']
+
             from modules.comfyflow import Comfyflow
-            comfy_flow = Comfyflow(server_addr=server_addr, api_data=api_data, app_data=app_data)
+            comfy_flow = Comfyflow(comfy_client=comfy_client, api_data=api_data, app_data=app_data)
         else:
             st.warning(f"App hasn't released, {app_name} status {app_status}")

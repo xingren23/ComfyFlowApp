@@ -16,16 +16,27 @@ def load_apps():
     st.session_state['comfyflow_apps'] = app_map  
     logger.info(f"load apps: {app_map.keys()}")
 
-def init_comfyui(server_addr):
-    if 'comfy_object_info' not in st.session_state.keys():
+def init_comfy_client():
         from modules.comfyclient import ComfyClient
         try:
             server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')
-            global comfy_client
             comfy_client = ComfyClient(server_addr=server_addr)
+            st.session_state['comfy_client'] = comfy_client
+            
+            logger.info(f"init comfy_client: {server_addr}")
+        except Exception as e:
+            st.error(f"Failed to get comfy object info, error: {e}")
+            st.stop()
+
+def init_comfy_object_info():
+    if 'comfy_object_info' not in st.session_state.keys():
+        try:
+            if 'comfy_client' not in st.session_state.keys():
+                init_comfy_client()
+            comfy_client = st.session_state['comfy_client']
             comfy_object_info = comfy_client.get_node_class()
             st.session_state['comfy_object_info'] = comfy_object_info
             logger.debug(f"init comfy object info: {comfy_object_info.keys()}")
         except Exception as e:
             st.error(f"Failed to get comfy object info, error: {e}")
-            st.stop()
+            st.stop()            

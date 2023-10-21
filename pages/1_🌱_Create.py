@@ -9,14 +9,13 @@ import streamlit as st
 import modules.page as page
 from streamlit_extras.row import row
 from streamlit_extras.stylable_container import stylable_container
-from modules.utils import init_comfyui
+from modules.utils import init_comfy_object_info
 
-server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')
-logger.info(f"Loading create page, server_addr: {server_addr}")
+logger.info("Loading create page")
 
 page.page_header()
 
-init_comfyui(server_addr)
+init_comfy_object_info()
 
 NODE_SEP = '||'
 

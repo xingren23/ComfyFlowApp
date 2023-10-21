@@ -123,12 +123,12 @@ class SQLiteHelper:
             s.execute(sql, dict(preview_image=preview_image, status=status, name=name))
             s.commit()
     
-    def update_app_release(self, name, url, template, status="released"):
+    def update_app_release(self, name, template, status="released"):
         # update release
         with self.session as s:
-            logger.info(f"update app release: {name} {url} {template}")
-            sql = text(f'UPDATE {self.app_talbe_name} SET url=:url, template=:template, status=:status WHERE name=:name;')
-            s.execute(sql, dict(url=url, template=template, status=status, name=name))
+            logger.info(f"update app release: {name} {template}")
+            sql = text(f'UPDATE {self.app_talbe_name} SET template=:template, status=:status WHERE name=:name;')
+            s.execute(sql, dict(template=template, status=status, name=name))
             s.commit()
 
     def delete_app(self, name):
@@ -136,6 +136,13 @@ class SQLiteHelper:
             logger.info(f"delete app: {name}")
             sql = text(f'DELETE FROM {self.app_talbe_name} WHERE name=:name;')
             s.execute(sql, dict(name=name))
+            s.commit()
+
+    def update_app_url(self, name, url):
+        with self.session as s:
+            logger.info(f"update app url: {name} {url}")
+            sql = text(f'UPDATE {self.app_talbe_name} SET url=:url WHERE name=:name;')
+            s.execute(sql, dict(url=url, name=name))
             s.commit()
 
 sqlitehelper = SQLiteHelper()            

@@ -79,7 +79,7 @@ def remove_app_home(app_name):
         return False
 
 def start_app(app_name, url):
-    # url : http://localhost:8188, parse server and port
+    # url, parse server and port
     address = url.split("//")[1].split(":")[0]
     port = url.split("//")[1].split(":")[1]
     command = f"streamlit run comfyflow_app.py --server.port {port} --server.address {address} -- --app '{app_name}'"
@@ -98,7 +98,7 @@ def start_app(app_name, url):
         return "started"
     
 def stop_app(app_name, url):
-    # url : http://localhost:8188, parse server and port
+    # url, parse server and port
     address = url.split("//")[1].split(":")[0]
     port = url.split("//")[1].split(":")[1]
     if is_process_running(app_name, ["run", "comfyflow_app.py", str(port), address]):

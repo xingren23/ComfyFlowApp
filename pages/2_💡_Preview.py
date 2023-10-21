@@ -1,10 +1,9 @@
-import os
 from loguru import logger
 from modules.comfyflow import Comfyflow
 
 import streamlit as st
 import modules.page as page
-from modules.utils import load_apps
+from modules.utils import load_apps, init_comfy_client
 
 
 logger.info("Loading preview page")
@@ -22,8 +21,12 @@ with st.container():
 
     api_data = apps[preview_app]['api_conf']
     app_data = apps[preview_app]['app_conf']
-    server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')
-    comfy_flow = Comfyflow(server_addr=server_addr, api_data=api_data, app_data=app_data)
+    
+    if 'comfy_client' not in st.session_state.keys():
+        init_comfy_client()
+    comfy_client = st.session_state['comfy_client']
+
+    comfy_flow = Comfyflow(comfy_client=comfy_client, api_data=api_data, app_data=app_data)
     if 'preview_result' in st.session_state.keys():
         preview_result = st.session_state['preview_result']
         # update app status
