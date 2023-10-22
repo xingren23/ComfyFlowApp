@@ -83,13 +83,13 @@ def parse_prompt(prompt_info):
                 param_value = node['inputs'][param]
                 option_key = f"{node_id}{NODE_SEP}{param}"
                 option_value = f"{node_id}{NODE_SEP}{class_type}{NODE_SEP}{param}{NODE_SEP}{param_value}"
-                logger.info(f"parse_prompt, {option_key} {option_value}")
+                logger.debug(f"parse_prompt, {option_key} {option_value}")
                 # check param_value is []
                 if isinstance(param_value, list):
-                    logger.info(f"ignore {option_key}, param_value is list, {param_value}")
+                    logger.debug(f"ignore {option_key}, param_value is list, {param_value}")
                     continue
                 if param == "choose file to upload":
-                    logger.info(f"ignore {option_key}, param for 'choose file to upload'")
+                    logger.debug(f"ignore {option_key}, param for 'choose file to upload'")
                     continue
                                 
                 params_inputs.update({option_key: option_value})
@@ -99,6 +99,7 @@ def parse_prompt(prompt_info):
                 init_comfy_object_info()
             is_output = st.session_state['comfy_object_info'][class_type]['output_node']
             if is_output:
+                # TODO: support multi output
                 if class_type == 'SaveImage':
                     option_key = f"{node_id}{NODE_SEP}{class_type}"
                     if len(node_inputs) == 0:
@@ -116,8 +117,6 @@ def parse_prompt(prompt_info):
 
 
 def process_image_change():
-    logger.info(
-        f"process_image_change session , {st.session_state['upload_image']}")
     if not st.session_state['upload_image']:
         logger.info("clear comfyflow_create_prompt, comfyflow_create_prompt_inputs and comfyflow_create_prompt_outputs")
         st.session_state['comfyflow_create_prompt'] = None
@@ -137,7 +136,7 @@ def get_node_input_config(input_param, app_input_name, app_input_description):
     if 'optional' in class_meta['input'].keys():
         class_input.update(class_meta['input']['optional'])
 
-    logger.info(f"{node_id} {class_type} {param} {param_value}, class input {class_input}")
+    logger.debug(f"{node_id} {class_type} {param} {param_value}, class input {class_input}")
 
     input_config = {}
     if isinstance(class_input[param][0], str):

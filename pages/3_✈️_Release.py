@@ -66,8 +66,7 @@ with template_col:
         api_data = apps[release_app]['api_conf']
         app_data = apps[release_app]['app_conf']
 
-        if 'comfy_client' not in st.session_state.keys():
-            comfy_client = init_comfy_client()
+        comfy_client = init_comfy_client()
         comfy_client = st.session_state['comfy_client']
 
         template_name = 'default'

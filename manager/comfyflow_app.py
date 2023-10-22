@@ -66,8 +66,7 @@ with st.container():
             app_data = apps[app_name]['app_conf']
             api_data = apps[app_name]['api_conf']
 
-            if 'comfy_client' not in st.session_state.keys():
-                init_comfy_client()
+            init_comfy_client()
             comfy_client = st.session_state['comfy_client']
 
             from modules.comfyflow import Comfyflow

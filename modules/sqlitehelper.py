@@ -28,18 +28,18 @@ class SQLiteHelper:
         logger.info(f"db_conn: {self.db_conn}, app_talbe_name: {self.app_talbe_name}")
 
         # Create a table if it doesn't exist.
-        self._init_table()
+        self._init_app_table()
 
-        # load default apps
-        self._init_load_apps()
+        # load apps
+        # self._init_load_apps()
 
     @property
     def session(self):
         return self.db_conn.session
     
-    def _init_table(self):
+    def _init_app_table(self):
         with self.session as s:
-            logger.info(f"init table: {self.app_talbe_name}")
+            logger.info(f"init app table: {self.app_talbe_name}")
             sql = text(f'CREATE TABLE IF NOT EXISTS {self.app_talbe_name} (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT, image BLOB, app_conf TEXT, api_conf TEXT, preview_image BLOB, template TEXT, url TEXT, status TEXT, created_at NUMERIC, updated_at NUMERIC);')
             s.execute(sql)
 
@@ -51,15 +51,16 @@ class SQLiteHelper:
     def _init_load_apps(self):
         # Insert some data with conn.session.
         with self.session as s:
-            app_dirs = utils.listdirs('workflows')
-            if len(app_dirs) == 0:
-                logger.info(f"no apps found in workflows")
+            base_dir = '.comfyflow/workflows'
+            apps = utils.listdirs(base_dir)
+            if len(apps) == 0:
+                logger.info(f"no apps found in {base_dir}")
                 return
-            logger.info(f"init workflows, {app_dirs}")
-            for app_dir in app_dirs:
+            logger.info(f"init workflows, {apps}")
+            for app_name in apps:
                 try:
                     app = {}
-                    app_conf = f"workflows/{app_dir}/app.json"
+                    app_conf = f"{base_dir}/{app_name}/app.json"
                     with open(app_conf, 'r') as f:
                         app_json = json.load(f)
                         app['name'] = app_json['name']
@@ -70,18 +71,18 @@ class SQLiteHelper:
                     sql = text(f'SELECT * FROM {self.app_talbe_name} WHERE name=:name;')
                     ret = s.execute(sql, {'name': app['name']}).fetchone()
                     if ret is not None:
-                        logger.info(f"app {app_dir} exists, skip")
+                        logger.info(f"app {app_name} exists, skip")
                         continue
                     else:
-                        logger.info(f"app {app_dir} not exists, insert {app}")
+                        logger.info(f"app {app_name} not exists, insert {app}")
                         
                         # load api_conf
-                        api_conf = f"workflows/{app_dir}/prompt.json"
+                        api_conf = f"{base_dir}/{app_name}/prompt.json"
                         with open(api_conf, 'r') as f:
                             api_json = json.load(f)
                             app['api_conf'] = json.dumps(api_json)
                         
-                        image = f"workflows/{app_dir}/app.png"
+                        image = f"{base_dir}/{app_name}/app.png"
                         if os.path.exists(image):
                             # update image
                             app['image'] = open(image, 'rb').read()
@@ -91,11 +92,12 @@ class SQLiteHelper:
                         sql = text(f'INSERT INTO {self.app_talbe_name} (name, description, image, app_conf, api_conf) VALUES (:name, :description, :image, :app_conf, :api_conf);')
                         s.execute(sql, app)
                 except Exception as e:
-                    logger.error(f"load app {app_dir} failed, {e}")
+                    logger.error(f"load app {app_name} failed, {e}")
             s.commit()
 
     def get_apps(self):
         with self.session as s:
+            logger.info("get apps from db")
             sql = text(f'SELECT * FROM {self.app_talbe_name};')
             apps = s.execute(sql).fetchall()
             return apps

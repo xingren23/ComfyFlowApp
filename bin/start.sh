@@ -6,6 +6,9 @@ PROJECT_PATH=$(dirname $(dirname "$CUR_DIR"))
 echo "$PROJECT_PATH"
 cd $PROJECT_PATH
 
+# set LOGURU_LEVEL to ERROR
+export LOGURU_LEVEL=INFO
+
 # app name
 APP_NAME="Home"
 # script params

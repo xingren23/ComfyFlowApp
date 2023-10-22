@@ -5,7 +5,6 @@ import streamlit as st
 import modules.page as page
 from modules.utils import load_apps, init_comfy_client
 
-
 logger.info("Loading preview page")
 
 page.page_header()
@@ -22,8 +21,7 @@ with st.container():
     api_data = apps[preview_app]['api_conf']
     app_data = apps[preview_app]['app_conf']
     
-    if 'comfy_client' not in st.session_state.keys():
-        init_comfy_client()
+    init_comfy_client()
     comfy_client = st.session_state['comfy_client']
 
     comfy_flow = Comfyflow(comfy_client=comfy_client, api_data=api_data, app_data=app_data)
