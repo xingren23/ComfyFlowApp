@@ -48,23 +48,23 @@ def page_header():
         badge(type="twitter", name="xingren23", url="https://twitter.com/xingren23")
 
 parser = argparse.ArgumentParser(description='Comfyflow manager')
-parser.add_argument('--app', type=str, default='', help='comfyflow app name')
+parser.add_argument('--app', type=str, default='', help='comfyflow app id')
 args = parser.parse_args()
 
 page_header()
 
 with st.container():
     load_apps()
-    app_name = args.app
-    apps = st.session_state['comfyflow_apps']
-
-    if app_name not in apps.keys():
-        st.warning(f"App {app_name} does not exist!")
+    apps = st.session_state['comfyflow_apps_id']
+    
+    app_id = int(args.app)
+    if app_id not in apps.keys():
+        st.warning(f"App {app_id} does not exist in apps: {apps.keys()}")
     else:
-        app_status = apps[app_name]['status']
+        app_status = apps[app_id]['status']
         if app_status == 'released':
-            app_data = apps[app_name]['app_conf']
-            api_data = apps[app_name]['api_conf']
+            app_data = apps[app_id]['app_conf']
+            api_data = apps[app_id]['api_conf']
 
             init_comfy_client()
             comfy_client = st.session_state['comfy_client']
@@ -72,4 +72,4 @@ with st.container():
             from modules.comfyflow import Comfyflow
             comfy_flow = Comfyflow(comfy_client=comfy_client, api_data=api_data, app_data=app_data)
         else:
-            st.warning(f"App hasn't released, {app_name} status {app_status}")
+            st.warning(f"App hasn't released, {app_id} status {app_status}")

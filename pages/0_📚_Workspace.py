@@ -106,7 +106,7 @@ with st.container():
                     app_port = int(server_addr.split(":")[1]) + int(app['id'])
                     url = f"http://localhost:{app_port}"
 
-                    ret = start_app(app['name'], url)
+                    ret = start_app(app['name'], app['id'], url)
                     if ret == "running":
                         sqlitehelper.update_app_url(app['name'], url)
                         logger.info(f"App {app['name']} is running yet, {app['url']}")

@@ -14,6 +14,8 @@ def load_apps():
     apps = sqlitehelper.get_apps()
     app_map = {app['name']: app for app in apps}
     st.session_state['comfyflow_apps'] = app_map  
+    app_id_map = {app['id']: app for app in apps}
+    st.session_state['comfyflow_apps_id'] = app_id_map
     logger.info(f"load apps: {app_map.keys()}")
 
 def init_comfy_client():

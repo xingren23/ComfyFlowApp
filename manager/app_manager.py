@@ -22,7 +22,7 @@ class CommandThread(threading.Thread):
 
 def is_process_running(app_name, args):
     """
-    ['/usr/local/anaconda3/bin/python', '/usr/local/anaconda3/bin/streamlit', 'run', 'comfyflow_app.py', '--server.port', '8198', '--server.address', 'localhost', '--', '--app', 'rembg']
+    ['/usr/local/anaconda3/bin/python', '/usr/local/anaconda3/bin/streamlit', 'run', 'comfyflow_app.py', '--server.port', '8198', '--server.address', 'localhost', '--', '--app', '11']
     """
     for process in psutil.process_iter(attrs=['pid', 'cmdline']):
         if process.info['cmdline']:
@@ -35,7 +35,7 @@ def is_process_running(app_name, args):
 
 def kill_all_process(app_name, args):
     """
-    ['/usr/local/anaconda3/bin/python', '/usr/local/anaconda3/bin/streamlit', 'run', 'comfyflow_app.py', '--server.port', '8198', '--server.address', 'localhost', '--', '--app', 'rembg']
+    ['/usr/local/anaconda3/bin/python', '/usr/local/anaconda3/bin/streamlit', 'run', 'comfyflow_app.py', '--server.port', '8198', '--server.address', 'localhost', '--', '--app', '11']
     """
     for process in psutil.process_iter(attrs=['pid', 'cmdline']):
         if process.info['cmdline']:
@@ -78,11 +78,11 @@ def remove_app_home(app_name):
         logger.info(f"App {app_name} does not exist, path: {app_path}")
         return False
 
-def start_app(app_name, url):
+def start_app(app_name, app_id, url):
     # url, parse server and port
     address = url.split("//")[1].split(":")[0]
     port = url.split("//")[1].split(":")[1]
-    command = f"streamlit run comfyflow_app.py --server.port {port} --server.address {address} -- --app '{app_name}'"
+    command = f"streamlit run comfyflow_app.py --server.port {port} --server.address {address} -- --app {app_id}"
     if is_process_running(app_name, ["run", "comfyflow_app.py", str(port), address]):
         logger.info(f"App {app_name} is already running, url: {url}")
         return "running"
