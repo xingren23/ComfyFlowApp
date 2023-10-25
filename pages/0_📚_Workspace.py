@@ -67,6 +67,8 @@ def click_start_app(name, id, status):
         server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')
         # comfyflowapp address
         app_server = config.get_option('server.address')
+        if app_server is None or app_server == "":
+            app_server = "localhost"
         app_port = int(server_addr.split(":")[1]) + int(id)
         url = f"http://{app_server}:{app_port}"
 

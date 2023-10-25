@@ -235,9 +235,9 @@ class Comfyflow:
                                 if node is None:
                                     output_image = self.get_output_images()
                                     if output_image is not None:
-                                        img_placeholder.image(output_image, use_column_width=True, caption='Output Image')
+                                        img_placeholder.image(output_image, use_column_width=True)
 
-                                    output_progress.progress(len(executed_nodes)/node_size, text="Generate image finished")
+                                    output_progress.progress(1.0, text="Generate image finished")
                                     logger.info("Generating image finished")
                                     st.session_state[f'{app_name}_previewed'] = True
                                     break
