@@ -7,6 +7,7 @@ from loguru import logger
 import queue
 
 import streamlit as st
+from streamlit_extras.row import row
 from modules.page import custom_text_area
 
 class Comfyflow:
@@ -108,7 +109,12 @@ class Comfyflow:
                 return images_output
         
 
-    def create_ui_input(self, node_id, node_inputs):
+    def create_ui_input(self, node_id, node_inputs, disabled):
+        def random_seed(param_key):
+            random_value = random.randint(0, 0xffffffffffffffff)
+            st.session_state[param_key] = random_value
+            logger.info(f"update {param_key} with random {random_value}")
+            
         custom_text_area()
         for param_item in node_inputs:
             param_node = node_inputs[param_item]
@@ -131,7 +137,16 @@ class Comfyflow:
                 param_step = param_node['step']
                             
                 param_key = f"{node_id}_{param_name}"
-                st.number_input(param_name, value =param_default, key=param_key, help=param_help, min_value=param_min, max_value=param_max, step=param_step)
+                # TODO: FIXME, 
+                if disabled:
+                    st.number_input(param_name, value =param_default, key=param_key, help=param_help, min_value=param_min, max_value=param_max, step=param_step)
+                else:
+                    if param_item == 'seed' or param_item == 'noise_seed':
+                        seed_row = row([0.8, 0.2], vertical_align="bottom")
+                        seed_row.number_input(param_name, value =param_default, key=param_key, help=param_help, min_value=param_min, step=param_step)
+                        seed_row.button("Rand", on_click=random_seed, args=(param_key,))
+                    else:
+                        st.number_input(param_name, value =param_default, key=param_key, help=param_help, min_value=param_min, max_value=param_max, step=param_step)
             elif param_type == "SELECT":
                 param_name = param_node['name']
                 param_default = param_node['default']
@@ -185,7 +200,7 @@ class Comfyflow:
                 for node_id in self.app_json['inputs']:
                     node = self.app_json['inputs'][node_id]
                     node_inputs = node['inputs']
-                    self.create_ui_input(node_id, node_inputs)
+                    self.create_ui_input(node_id, node_inputs, disabled)
 
                 gen_button = st.button(label='Generate', use_container_width=True, disabled=disabled, on_click=self.generate)
 

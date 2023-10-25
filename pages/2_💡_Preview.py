@@ -33,7 +33,10 @@ with st.container():
             comfyflow = Comfyflow(comfy_client=get_comfy_client(), api_data=api_data, app_data=app_data)
             comfyflow.create_ui()
             if status == AppStatus.CREATED.value:
-                previewed = st.session_state.get(f"{preview_app}_previewed", False)
-                if previewed:
-                    get_sqlite_instance().update_app_preview(preview_app)
-                    logger.info(f"update preview status for app: {preview_app}")
+                if f"{preview_app}_previewed" in st.session_state:
+                    previewed = st.session_state[f"{preview_app}_previewed"]
+                    if previewed:
+                        get_sqlite_instance().update_app_preview(preview_app)
+                        logger.info(f"update preview status for app: {preview_app}")
+
+                        

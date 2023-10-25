@@ -11,11 +11,15 @@ from streamlit import config
 
 
 def create_app_info_ui(app):
+    
     app_row = row([1, 5.8, 1.2, 2], vertical_align="bottom")
-    if app["image"] is not None:
-        app_row.image(app["image"])
-    else:
-        app_row.image("./public/images/app-150.png")
+    try:
+        if app["image"] is not None:
+            app_row.image(app["image"])
+        else:
+            app_row.image("./public/images/app-150.png")
+    except Exception as e:
+        logger.error(f"load app image error, {e}")
 
     # get description limit to 200 chars
     description = app["description"]
@@ -77,7 +81,7 @@ def click_start_app(name, id, status):
         else:
             logger.info(f"Start app {name} failed")
     else: 
-        logger.warning("Please release this app first")
+        logger.warning(f"Please release this app {name} first")
 
 
 def click_stop_app(name, status, url):
@@ -176,6 +180,7 @@ with st.container():
         else:
             for app in apps:
                 st.divider()
+                logger.info(f"load app info {app}")
                 create_app_info_ui(app)
                 create_operation_ui(app)
             

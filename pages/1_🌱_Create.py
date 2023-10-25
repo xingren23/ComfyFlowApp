@@ -8,6 +8,7 @@ import json
 import streamlit as st
 import modules.page as page
 from streamlit_extras.row import row
+from streamlit_extras.switch_page_button import switch_page
 from modules import get_comfy_object_info, get_sqlite_instance
 
 NODE_SEP = '||'
@@ -389,7 +390,8 @@ with st.container():
                                          key="output_param1_desc", help="Input param description")
 
     with page.stylable_button_container():
-        submit_button = st.button("Submit", key='create_submit_app', use_container_width=True, 
+        operation_row = row([0.15, 0.7, 0.15])
+        submit_button = operation_row.button("Submit", key='create_submit_app', use_container_width=True, 
                                   help="Submit app params",on_click=submit_app)     
         if submit_button:
             submit_info = st.session_state.get('create_submit_info')
@@ -399,3 +401,12 @@ with st.container():
                 st.error("Submit app error, app name has existed")
             else:
                 st.error("Submit app error, please check up app params")
+
+        operation_row.empty()
+
+        next_placeholder = operation_row.empty()
+        # submit_info = st.session_state.get('create_submit_info')
+        # if submit_info == 'success':
+        #     next_button = next_placeholder.button("Next: Preview", use_container_width=True, help="Go to Preview app")
+        #     if next_button:
+        #         switch_page("Preview")

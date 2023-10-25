@@ -161,9 +161,9 @@ class SQLiteHelper:
             s.execute(sql, dict(name=name))
             s.commit()
 
-    def update_app_url(self, id, url):
+    def update_app_url(self, name, url):
         with self.session as s:
-            logger.info(f"update app url: {id} {url}")
-            sql = text(f'UPDATE {self.app_talbe_name} SET url=:url, updated_at=datetime("now") WHERE id=:id;')
-            s.execute(sql, dict(url=url, id=id))
+            logger.info(f"update app url: {name} {url}")
+            sql = text(f'UPDATE {self.app_talbe_name} SET url=:url, updated_at=datetime("now") WHERE name=:name;')
+            s.execute(sql, dict(url=url, name=name))
             s.commit()      
