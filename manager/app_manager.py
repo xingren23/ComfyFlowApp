@@ -4,6 +4,7 @@ import threading
 import subprocess
 import psutil
 import shutil
+from modules.sqlitehelper import AppStatus
 
 class CommandThread(threading.Thread):
     def __init__(self, path, command):
@@ -85,7 +86,7 @@ def start_app(app_name, app_id, url):
     command = f"streamlit run comfyflow_app.py --server.port {port} --server.address {address} -- --app {app_id}"
     if is_process_running(app_name, ["run", "comfyflow_app.py", str(port), address]):
         logger.info(f"App {app_name} is already running, url: {url}")
-        return "running"
+        return AppStatus.RUNNING.value
     else:
         logger.info(f"start comfyflow app {app_name}")
         app_path = make_app_home(app_name)
@@ -95,7 +96,7 @@ def start_app(app_name, app_id, url):
         app_thread = CommandThread(app_path, command)
         app_thread.start()
         logger.info(f"App {app_name} started, url: {url}")
-        return "started"
+        return AppStatus.STARTED.value
     
 def stop_app(app_name, url):
     # url, parse server and port
@@ -105,8 +106,8 @@ def stop_app(app_name, url):
         logger.info(f"stop comfyflow app {app_name}")
         kill_all_process(app_name, ["run", "comfyflow_app.py", str(port), address])
         remove_app_home(app_name)
-        return "stopping"
+        return AppStatus.STOPPING.value
     else:
         logger.info(f"App {app_name} is not running, url: {url}")
-        return "stopped"
+        return AppStatus.STOPPED.value
 

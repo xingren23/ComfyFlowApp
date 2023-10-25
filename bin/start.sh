@@ -7,7 +7,7 @@ echo "$PROJECT_PATH"
 cd $PROJECT_PATH
 
 # set LOGURU_LEVEL to ERROR
-export LOGURU_LEVEL=INFO
+export LOGURU_LEVEL=DEBUG
 
 # app name
 APP_NAME="Home"

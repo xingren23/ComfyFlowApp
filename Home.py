@@ -3,18 +3,9 @@ from loguru import logger
 import streamlit as st
 import modules.page as page
 
-def init_apps():
-    if 'comfyflow_apps' not in st.session_state.keys():
-        from modules.sqlitehelper import SQLiteHelper
-        sqlitehelper = SQLiteHelper()
-        apps = sqlitehelper.get_apps()
-        st.session_state['comfyflow_apps'] = apps
-
 logger.info("Loading home page")
 
-page.page_header()
-
-init_apps()
+page.page_init()
 
 with st.container():
     st.markdown("## 📌 Welcome to ComfyFlowApp")

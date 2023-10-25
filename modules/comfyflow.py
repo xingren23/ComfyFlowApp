@@ -4,8 +4,11 @@ import json
 import copy
 from PIL import Image
 from loguru import logger
+import queue
 
 import streamlit as st
+from modules.page import custom_text_area
+from modules import get_sqlite_instance
 
 class Comfyflow:
     def __init__(self, comfy_client, api_data, app_data) -> Any:
@@ -13,75 +16,92 @@ class Comfyflow:
         self.comfy_client = comfy_client
         self.api_json = json.loads(api_data)
         self.app_json = json.loads(app_data)
-        self.create_ui()
 
     def generate(self):
         prompt = copy.deepcopy(self.api_json)
-        #set prompt inputs
-        for node_id in self.app_json['inputs']:
-            node = self.app_json['inputs'][node_id]
-            node_inputs = node['inputs']
-            for param_item in node_inputs:
-                logger.info(f"update param {param_item}, {node_inputs[param_item]}")
-                param_type = node_inputs[param_item]['type']
-                if param_type == "TEXT":
-                    param_name = node_inputs[param_item]['name']
-                    param_key = f"{node_id}_{param_name}"
-                    param_value = st.session_state[param_key]
-                    logger.info(f"update param {param_key} {param_name} {param_value}")
-                    prompt[node_id]["inputs"][param_item] = param_value
-
-                elif param_type == "NUMBER":
-                    param_name = node_inputs[param_item]['name']
-                    param_key = f"{node_id}_{param_name}"
-                    param_value = st.session_state[param_key]
-                    logger.info(f"update param {param_key} {param_name} {param_value}")
-                    if (param_name == "seed" or param_name == "noise_seed") and param_value == -1:
-                        param_max = node_inputs[param_item]['max']
-                        param_value = random.randint(0, param_max)
-                        logger.info(f"update random param {param_name} {param_value}")
-                        st.session_state[param_key] = param_value
-                    
-                    prompt[node_id]["inputs"][param_item] = param_value
-
-                elif param_type == "SELECT":
-                    param_name = node_inputs[param_item]['name']
-                    param_key = f"{node_id}_{param_name}"
-                    param_value = st.session_state[param_key]
-                    logger.info(f"update param {param_key} {param_name} {param_value}")
-                    prompt[node_id]["inputs"][param_item] = param_value
-
-                elif param_type == "CHECKBOX":
-                    param_name = node_inputs[param_item]['name']
-                    param_key = f"{node_id}_{param_name}"
-                    param_value = st.session_state[param_key]
-                    logger.info(f"update param {param_key} {param_name} {param_value}")
-                    prompt[node_id]["inputs"][param_item] = param_value
-
-                elif param_type == 'UPLOADIMAGE':
-                    param_name = node_inputs[param_item]['name']
-                    param_key = f"{node_id}_{param_name}"
-                    if param_key in st.session_state:
-                        param_value = st.session_state[param_key]
-                        
-                        logger.info(f"update param {param_key} {param_name} {param_value}")
-                        if param_value is not None:
-                            prompt[node_id]["inputs"][param_item] = param_value.name
-                        else:
-                            st.error(f"Please select input image for param {param_name}")
-                            return
-                            
-
-        #set prompt outputs
         if prompt is not None:
+            #set prompt inputs
+            for node_id in self.app_json['inputs']:
+                node = self.app_json['inputs'][node_id]
+                node_inputs = node['inputs']
+                for param_item in node_inputs:
+                    logger.info(f"update param {param_item}, {node_inputs[param_item]}")
+                    param_type = node_inputs[param_item]['type']
+                    if param_type == "TEXT":
+                        param_name = node_inputs[param_item]['name']
+                        param_key = f"{node_id}_{param_name}"
+                        param_value = st.session_state[param_key]
+                        logger.info(f"update param {param_key} {param_name} {param_value}")
+                        prompt[node_id]["inputs"][param_item] = param_value
+
+                    elif param_type == "NUMBER":
+                        param_name = node_inputs[param_item]['name']
+                        param_key = f"{node_id}_{param_name}"
+                        param_value = st.session_state[param_key]
+                        logger.info(f"update param {param_key} {param_name} {param_value}")
+                        if (param_name == "seed" or param_name == "noise_seed") and param_value == -1:
+                            param_max = node_inputs[param_item]['max']
+                            param_value = random.randint(0, param_max)
+                            logger.info(f"update random param {param_name} {param_value}")
+                            st.session_state[param_key] = param_value
+                        
+                        prompt[node_id]["inputs"][param_item] = param_value
+
+                    elif param_type == "SELECT":
+                        param_name = node_inputs[param_item]['name']
+                        param_key = f"{node_id}_{param_name}"
+                        param_value = st.session_state[param_key]
+                        logger.info(f"update param {param_key} {param_name} {param_value}")
+                        prompt[node_id]["inputs"][param_item] = param_value
+
+                    elif param_type == "CHECKBOX":
+                        param_name = node_inputs[param_item]['name']
+                        param_key = f"{node_id}_{param_name}"
+                        param_value = st.session_state[param_key]
+                        logger.info(f"update param {param_key} {param_name} {param_value}")
+                        prompt[node_id]["inputs"][param_item] = param_value
+
+                    elif param_type == 'UPLOADIMAGE':
+                        param_name = node_inputs[param_item]['name']
+                        param_key = f"{node_id}_{param_name}"
+                        if param_key in st.session_state:
+                            param_value = st.session_state[param_key]
+                            
+                            logger.info(f"update param {param_key} {param_name} {param_value}")
+                            if param_value is not None:
+                                prompt[node_id]["inputs"][param_item] = param_value.name
+                            else:
+                                st.error(f"Please select input image for param {param_name}")
+                                return
+                            
             logger.info(f"Sending prompt to server, {prompt}")
-            images = self.comfy_client.gen_images(prompt)
-            for node_id in self.app_json['outputs']:
-                image_data = images[node_id]
-            return image_data
+            queue = st.session_state.get('progress_queue', None)
+            prompt_id = self.comfy_client.gen_images(prompt, queue)
+            st.session_state['preview_prompt_id'] = prompt_id
+
+            # update app status
+            get_sqlite_instance().update_app_preview(self.app_json['name'])
+
+    def get_output_images(self):
+        # get output images by prompt_id
+        prompt_id = st.session_state['preview_prompt_id']
+        if prompt_id is None:
+            return None
+        history = self.comfy_client.get_history(prompt_id)[prompt_id]
+        for node_id in self.app_json['outputs']:
+            node_output = history['outputs'][node_id]
+            if 'images' in node_output:
+                images_output = []
+                for image in node_output['images']:
+                    image_data = self.comfy_client.get_image(image['filename'], image['subfolder'], image['type'])
+                    images_output.append(image_data)
+                    
+                logger.info(f"Got images from server, {node_id}, {len(images_output)}")
+                return images_output
         
 
     def create_ui_input(self, node_id, node_inputs):
+        custom_text_area()
         for param_item in node_inputs:
             param_node = node_inputs[param_item]
             logger.info(f"create ui input: {param_item} {param_node}")
@@ -93,7 +113,7 @@ class Comfyflow:
                 param_max = param_node['max']
                             
                 param_key = f"{node_id}_{param_name}"
-                st.text_area(param_name, value =param_default, key=param_key, help=param_help, max_chars=param_max)
+                st.text_area(param_name, value =param_default, key=param_key, help=param_help, max_chars=param_max, height=500)
             elif param_type == "NUMBER":
                 param_name = param_node['name']
                 param_default = param_node['default']
@@ -140,6 +160,9 @@ class Comfyflow:
     def create_ui(self, disabled=False):      
         logger.info("Creating UI")  
 
+        if 'progress_queue' not in st.session_state:   
+            st.session_state['progress_queue'] = queue.Queue()
+        
         st.title(f'{self.app_json["name"]}')
         st.markdown(f'{self.app_json["description"]}')
         st.divider()
@@ -154,26 +177,52 @@ class Comfyflow:
                     node_inputs = node['inputs']
                     self.create_ui_input(node_id, node_inputs)
 
-                submit = st.button(label='Generate', use_container_width=True, disabled=disabled)
+                gen_button = st.button(label='Generate', use_container_width=True, disabled=disabled, on_click=self.generate)
 
         with output_col:
             # st.subheader('Outputs')
             with st.container():
-                if submit:
-                    output_image = self.generate()
-                    if output_image is None:
-                        st.error('Generate Failed!')
-                    else:
-                        logger.info("update output_image")
-                        st.image(output_image, use_column_width=True)
+                node_size = len(self.api_json)
+                executed_nodes = []
+                queue_remaining = self.comfy_client.queue_remaining()
+                output_queue_remaining = st.text(f"Queue: {queue_remaining}")
+                img_placeholder = st.empty()
+                if gen_button:
+                    # update progress
+                    output_progress = st.progress(value=0.0, text="Generate image")
+                    while True:
+                        try:
+                            progress_queue = st.session_state.get('progress_queue')
+                            event = progress_queue.get(timeout=3)
+                            logger.debug(f"event: {event}")
 
-                        # update preview image with first output image
-                        preview_image = output_image[0]
-                        st.session_state['preview_result'] = {'name': self.app_json['name'], 'image': preview_image}
-
-                        st.success('Generate Success!')
+                            event_type = event['type']
+                            if event_type == 'status':
+                                remaining = event['data']['exec_info']['queue_remaining']
+                                output_queue_remaining.text(f"Queue: {remaining}")
+                            elif event_type == 'execution_cached':
+                                executed_nodes.extend(event['data']['nodes'])
+                                output_progress.progress(len(executed_nodes)/node_size, text="Generate image...")
+                            elif event_type == 'executing':
+                                node = event['data']
+                                if node is None:
+                                    output_progress.progress(len(executed_nodes)/node_size, text="Generate image done")
+                                    logger.info("Generating image done")
+                                    break
+                                else:
+                                    executed_nodes.append(node)
+                                    output_progress.progress(len(executed_nodes)/node_size, text="Generating image done")
+                            elif event_type == 'b_preview':
+                                preview_image = event['data']
+                                img_placeholder.image(preview_image, use_column_width=True, caption="Preview")
+                        except Exception as e:
+                            logger.warning(f"get progress exception, {e}")
+                            st.warning(f"get progress exception, {e}")
+                            break
                 else:
                     output_image = Image.open('./public/images/output-none.png')
                     logger.info("default output_image")
-                    st.image(output_image, use_column_width=True, caption='None Image, Generate it!')
+                    img_placeholder.image(output_image, use_column_width=True, caption='None Image, Generate it!')
+                    
+              
 
