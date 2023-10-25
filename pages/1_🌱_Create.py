@@ -4,6 +4,7 @@ from loguru import logger
 from PIL import Image, ImageOps
 from PIL.PngImagePlugin import PngInfo
 import json
+import shutil
 
 import streamlit as st
 import modules.page as page
@@ -283,7 +284,7 @@ def submit_app():
         image_file_path = f'{workflow_path}/app.png'
         if os.path.exists(image_file_path):
             os.remove(image_file_path)
-        os.rename(upload_image, image_file_path)
+        shutil.copyfile(upload_image, image_file_path)
         logger.debug(f"save image to {image_file_path}")
 
         # submit to sqlite
@@ -345,13 +346,7 @@ with st.container():
             name_col1, desc_col2 = st.columns([0.2, 0.8])
             with name_col1:
                 app_name_text = st.text_input("App Name *", value="", placeholder="input app name",
-                              key="create_app_name", help="Input app name", on_change=check_app_name)
-                exist_app_name = st.session_state.get('create_exist_app_name')
-                if exist_app_name is not None:
-                    if exist_app_name:
-                        st.error("App name has existed, please change app name")
-                    st.session_state['create_exist_app_name'] = None
-                    
+                              key="create_app_name", help="Input app name")    
 
             with desc_col2:
                 st.text_input("App Description *", value="", placeholder="input app description",
