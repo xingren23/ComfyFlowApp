@@ -19,7 +19,19 @@ class Comfyflow:
     def generate(self):
         prompt = copy.deepcopy(self.api_json)
         if prompt is not None:
-            #set prompt inputs
+            # update seed and noise_seed for random, if not set
+            for node_id in prompt:
+                node = prompt[node_id]
+                node_inputs = node['inputs']
+                for param_name in node_inputs:
+                    param_value = node_inputs[param_name]
+                    if isinstance(param_value, int):
+                        if (param_name == "seed" or param_name == "noise_seed"):
+                            random_value = random.randint(0, 0xffffffffffffffff)
+                            prompt[node_id]['inputs'][param_name] = random_value
+                            logger.info(f"update prompt with random, {node_id} {param_name} {param_value} to {random_value}")
+
+            # update prompt inputs with app_json config
             for node_id in self.app_json['inputs']:
                 node = self.app_json['inputs'][node_id]
                 node_inputs = node['inputs']
