@@ -286,19 +286,32 @@ def submit_app():
         logger.debug(f"save image to {image_file_path}")
 
         # submit to sqlite
-        app = {}
-        app['name'] = app_config['name']
-        app['description'] = app_config['description']
-        app['app_conf'] = json.dumps(app_config)
-        app['api_conf'] = prompt
-        app['status'] = 'created'
-        app['image'] = open(image_file_path, 'rb').read()
-        get_sqlite_instance().create_app(app)
+        
+        if get_sqlite_instance().get_app(app_config['name']):
+            st.session_state['create_submit_info'] = "exist"
+        else:
+            app = {}
+            app['name'] = app_config['name']
+            app['description'] = app_config['description']
+            app['app_conf'] = json.dumps(app_config)
+            app['api_conf'] = prompt
+            app['status'] = 'created'
+            app['image'] = open(image_file_path, 'rb').read()
+            get_sqlite_instance().create_app(app)
 
-        st.success(f"Submit app successfully, {app_config['name']}")
+            logger.info(f"submit app successfully, {app_config['name']}")
+            st.session_state['create_submit_info'] = "success"
     else:
-        st.error("Submit app failed, please check workflow image and config params")
+        logger.info(f"submit app error, {app_config['name']}")
+        st.session_state['create_submit_info'] = "error"
 
+def check_app_name():
+    app_name_text = st.session_state['create_app_name']
+    app = get_sqlite_instance().get_app(app_name_text)
+    if app:
+        st.session_state['create_exist_app_name'] = True
+    else:
+        st.session_state['create_exist_app_name'] = False
 
 logger.info("Loading create page")
 page.page_init()
@@ -330,8 +343,15 @@ with st.container():
         with st.container():
             name_col1, desc_col2 = st.columns([0.2, 0.8])
             with name_col1:
-                st.text_input("App Name *", value="", placeholder="input app name",
-                              key="create_app_name", help="Input app name")
+                app_name_text = st.text_input("App Name *", value="", placeholder="input app name",
+                              key="create_app_name", help="Input app name", on_change=check_app_name)
+                exist_app_name = st.session_state.get('create_exist_app_name')
+                if exist_app_name is not None:
+                    if exist_app_name:
+                        st.error("App name has existed, please change app name")
+                    st.session_state['create_exist_app_name'] = None
+                    
+
             with desc_col2:
                 st.text_input("App Description *", value="", placeholder="input app description",
                               key="create_app_description", help="Input app description")
@@ -369,5 +389,13 @@ with st.container():
                                          key="output_param1_desc", help="Input param description")
 
     with page.stylable_button_container():
-        submit_button = st.button("Submit", key='create_submit_app', use_container_width=True, help="Submit app params",
-                                  on_click=submit_app)            
+        submit_button = st.button("Submit", key='create_submit_app', use_container_width=True, 
+                                  help="Submit app params",on_click=submit_app)     
+        if submit_button:
+            submit_info = st.session_state.get('create_submit_info')
+            if submit_info == 'success':
+                st.success("Submit app successfully")
+            elif submit_info == 'exist':
+                st.error("Submit app error, app name has existed")
+            else:
+                st.error("Submit app error, please check up app params")

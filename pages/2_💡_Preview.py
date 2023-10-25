@@ -4,6 +4,7 @@ from modules.comfyflow import Comfyflow
 import streamlit as st
 import modules.page as page
 from modules import get_comfy_client, get_sqlite_instance
+from modules.sqlitehelper import AppStatus
 
 
 logger.info("Loading preview page")
@@ -26,7 +27,13 @@ with st.container():
             logger.info(f"preview app: {preview_app}")
             
             app = app_name_map[preview_app]
+            status = app['status']
             api_data = app['api_conf']
             app_data = app['app_conf']
             comfyflow = Comfyflow(comfy_client=get_comfy_client(), api_data=api_data, app_data=app_data)
             comfyflow.create_ui()
+            if status == AppStatus.CREATED.value:
+                previewed = st.session_state.get(f"{preview_app}_previewed", False)
+                if previewed:
+                    get_sqlite_instance().update_app_preview(preview_app)
+                    logger.info(f"update preview status for app: {preview_app}")

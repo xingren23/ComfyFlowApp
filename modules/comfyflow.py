@@ -8,7 +8,6 @@ import queue
 
 import streamlit as st
 from modules.page import custom_text_area
-from modules import get_sqlite_instance
 
 class Comfyflow:
     def __init__(self, comfy_client, api_data, app_data) -> Any:
@@ -78,9 +77,6 @@ class Comfyflow:
             queue = st.session_state.get('progress_queue', None)
             prompt_id = self.comfy_client.gen_images(prompt, queue)
             st.session_state['preview_prompt_id'] = prompt_id
-
-            # update app status
-            get_sqlite_instance().update_app_preview(self.app_json['name'])
 
     def get_output_images(self):
         # get output images by prompt_id
@@ -163,8 +159,10 @@ class Comfyflow:
         if 'progress_queue' not in st.session_state:   
             st.session_state['progress_queue'] = queue.Queue()
         
-        st.title(f'{self.app_json["name"]}')
-        st.markdown(f'{self.app_json["description"]}')
+        app_name = self.app_json['name']
+        app_description = self.app_json['description']
+        st.title(f'{app_name}')
+        st.markdown(f'{app_description}')
         st.divider()
 
         input_col, output_col = st.columns([0.4, 0.6], gap="medium")
@@ -179,6 +177,7 @@ class Comfyflow:
 
                 gen_button = st.button(label='Generate', use_container_width=True, disabled=disabled, on_click=self.generate)
 
+
         with output_col:
             # st.subheader('Outputs')
             with st.container():
@@ -186,14 +185,15 @@ class Comfyflow:
                 executed_nodes = []
                 queue_remaining = self.comfy_client.queue_remaining()
                 output_queue_remaining = st.text(f"Queue: {queue_remaining}")
+                progress_placeholder = st.empty()
                 img_placeholder = st.empty()
                 if gen_button:
                     # update progress
-                    output_progress = st.progress(value=0.0, text="Generate image")
+                    output_progress = progress_placeholder.progress(value=0.0, text="Generate image")
                     while True:
                         try:
                             progress_queue = st.session_state.get('progress_queue')
-                            event = progress_queue.get(timeout=3)
+                            event = progress_queue.get()
                             logger.debug(f"event: {event}")
 
                             event_type = event['type']
@@ -206,23 +206,28 @@ class Comfyflow:
                             elif event_type == 'executing':
                                 node = event['data']
                                 if node is None:
-                                    output_progress.progress(len(executed_nodes)/node_size, text="Generate image done")
-                                    logger.info("Generating image done")
+                                    output_image = self.get_output_images()
+                                    if output_image is not None:
+                                        img_placeholder.image(output_image, use_column_width=True, caption='Output Image')
+
+                                    output_progress.progress(len(executed_nodes)/node_size, text="Generate image finished")
+                                    logger.info("Generating image finished")
+                                    st.session_state[f'{app_name}_previewed'] = True
                                     break
                                 else:
                                     executed_nodes.append(node)
-                                    output_progress.progress(len(executed_nodes)/node_size, text="Generating image done")
+                                    output_progress.progress(len(executed_nodes)/node_size, text="Generating image...")
                             elif event_type == 'b_preview':
                                 preview_image = event['data']
                                 img_placeholder.image(preview_image, use_column_width=True, caption="Preview")
                         except Exception as e:
                             logger.warning(f"get progress exception, {e}")
-                            st.warning(f"get progress exception, {e}")
-                            break
+                            st.warning(f"get progress exception {e}")
                 else:
                     output_image = Image.open('./public/images/output-none.png')
                     logger.info("default output_image")
                     img_placeholder.image(output_image, use_column_width=True, caption='None Image, Generate it!')
-                    
-              
+
+                
+    
 
