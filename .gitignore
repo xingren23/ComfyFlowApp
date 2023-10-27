@@ -3,10 +3,9 @@ __pycache__/
 *.log
 .vscode/*
 .VSCodeCounter/*
-.uploads/*
-.devcontainer/*
-.comfyflow/*
-maanager/__pycache__/*
-.apps/*
-comfyflow.db
+creator/.uploads/*
+creator/.comfyflow/*
+creator/maanager/__pycache__/*
+creator/.apps/*
+creator/comfyflow.db
 ```

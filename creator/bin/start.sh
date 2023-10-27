@@ -12,6 +12,6 @@ export LOGURU_LEVEL=DEBUG
 # app name
 APP_NAME="Home"
 # script params
-nohup streamlit run "$APP_NAME.py" > app.log 2>&1 &
+nohup streamlit run "$APP_NAME.py" > creator.log 2>&1 &
 
 echo "Starting $APP_NAME..."
