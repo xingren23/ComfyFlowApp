@@ -2,7 +2,6 @@ import streamlit as st
 import argparse
 from loguru import logger
 from streamlit_extras.badges import badge
-from modules.sqlitehelper import AppStatus
 
 from modules import get_sqlite_instance, get_comfy_client
 

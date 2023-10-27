@@ -18,11 +18,12 @@ comfyflow_apps table
 """
 # enum app status
 class AppStatus(Enum):
-
+    RELEASED = "Released"
     DOWNLOADING = "Downloading"
     DOWNLOADED = "Downloaded"
     INSTALLING = "Installing"
     INSTALLED = "Installed"
+    ERROR = "Error"
 
 
 class SQLiteHelper:
@@ -54,6 +55,14 @@ class SQLiteHelper:
             sql = text(f'SELECT id, name, description, image, app_conf, api_conf, template, url, status FROM {self.app_talbe_name} order by id;')
             apps = s.execute(sql).fetchall()
             return apps
+        
+    def get_my_apps(self):
+        # get installed apps
+        with self.session as s:
+            logger.info("get my apps from db")
+            sql = text(f'SELECT id, name, description, image, app_conf, api_conf, template, url, status FROM {self.app_talbe_name} WHERE status=:status order by id;')
+            apps = s.execute(sql, {'status': AppStatus.INSTALLED.value}).fetchall()
+            return apps
 
     def get_app(self, name):
         with self.session as s:
@@ -74,6 +83,13 @@ class SQLiteHelper:
             logger.info(f"delete app: {name}")
             sql = text(f'DELETE FROM {self.app_talbe_name} WHERE name=:name;')
             s.execute(sql, dict(name=name))
+            s.commit()
+
+    def update_app_status(self, id, status):
+        with self.session as s:
+            logger.info(f"update app status: {id}, {status}")
+            sql = text(f'UPDATE {self.app_talbe_name} SET status=:status WHERE id=:id;')
+            s.execute(sql, dict(id=id, status=status))
             s.commit()
 
        

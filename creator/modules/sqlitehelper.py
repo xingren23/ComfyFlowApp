@@ -11,6 +11,7 @@ comfyflow_apps table
     image BLOB
     app_conf TEXT
     api_conf TEXT
+    preview_image BLOB
     template TEXT
     url TEXT
     status TEXT
