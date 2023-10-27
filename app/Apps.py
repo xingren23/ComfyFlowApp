@@ -1,9 +1,11 @@
+import os
 from loguru import logger
 import streamlit as st
 from modules import get_sqlite_instance, get_comfy_client
 import modules.page as page
 from streamlit_extras.row import row
 from streamlit_extras.switch_page_button import switch_page
+import subprocess   
 
 def uninstall_app(app):
     logger.info(f"uninstall app {app['name']}")
@@ -46,6 +48,35 @@ def create_app_info_ui(app):
     if enter_button:
         logger.info(f"enter app {app['name']}")
 
+def check_comfyui_alive():
+    try:
+        get_comfy_client().queue_remaining()
+        return True
+    except Exception as e:
+        logger.error(f"check comfyui alive error, {e}")
+        return False
+    
+def start_comfyui():
+    try:
+        if check_comfyui_alive():
+            logger.info("comfyui is alive")
+            return True
+
+        logger.info("start comfyui")
+        server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')
+        address, port = server_addr.split(":")
+        command = f"python3 main.py --server.port {port} --server.address {address}"
+        path = "repositories/ComfyUI"
+        result = subprocess.run(command, shell=True, cwd=path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if result.returncode == 0:
+            logger.info("start comfyui output:", result.stdout)
+            return True
+        else:
+            logger.warning(f"start comfyui {command} return ", result.stderr)
+            return False
+    except Exception as e:
+        logger.error(f"start comfyui error, {e}")
+
 page.page_init()
 
 with st.container():
@@ -58,9 +89,10 @@ with st.container():
                 app_data = app['app_conf']
                 api_data = app['api_conf']
 
-                # check comfy_client
-                remaining = get_comfy_client().queue_remaining()
-                logger.info(f"comfy client queue remaining {remaining}")
+                # check comfyui is alive                
+                if not start_comfyui():
+                    st.error("start comfyui error.")
+                    st.stop()
 
                 from modules.comfyflow import Comfyflow
                 comfy_flow = Comfyflow(comfy_client=get_comfy_client(), api_data=api_data, app_data=app_data)
