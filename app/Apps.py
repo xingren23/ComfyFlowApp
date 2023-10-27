@@ -6,6 +6,7 @@ import modules.page as page
 from streamlit_extras.row import row
 from streamlit_extras.switch_page_button import switch_page
 import subprocess   
+from threading import Thread
 
 def uninstall_app(app):
     logger.info(f"uninstall app {app['name']}")
@@ -55,25 +56,43 @@ def check_comfyui_alive():
     except Exception as e:
         logger.error(f"check comfyui alive error, {e}")
         return False
-    
+
+class ComfyUIThread(Thread):
+    def __init__(self, server_addr):
+        Thread.__init__(self)
+        self.server_addr = server_addr
+
+    def run(self):
+        try:
+            address, port = self.server_addr.split(":")
+            # start local comfyui
+            if address == "localhost" or address == "127.0.0.1":
+                command = f"python3 main.py --port {port}"
+                path = "repositories/ComfyUI"
+                comfyui_log = open('comfyui.log', 'w')
+                subprocess.run(command, cwd=path, stdout=comfyui_log, stderr=comfyui_log, text=True)
+                comfyui_log.close()
+                return True
+            else:
+                # start remote comfyui
+                st.error(f"could not start remote comfyui, {address}")
+                return False
+        except Exception as e:
+            logger.error(f"start comfyui error, {e}")
+
+
 def start_comfyui():
     try:
         if check_comfyui_alive():
             logger.info("comfyui is alive")
             return True
 
-        logger.info("start comfyui")
+        logger.info("start comfyui ...")
         server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')
-        address, port = server_addr.split(":")
-        command = f"python3 main.py --server.port {port} --server.address {address}"
-        path = "repositories/ComfyUI"
-        result = subprocess.run(command, shell=True, cwd=path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        if result.returncode == 0:
-            logger.info("start comfyui output:", result.stdout)
-            return True
-        else:
-            logger.warning(f"start comfyui {command} return ", result.stderr)
-            return False
+        comfyui_thread = ComfyUIThread(server_addr)
+        comfyui_thread.start()
+        logger.info("comfyui started")
+        return True
     except Exception as e:
         logger.error(f"start comfyui error, {e}")
 
@@ -89,7 +108,7 @@ with st.container():
                 app_data = app['app_conf']
                 api_data = app['api_conf']
 
-                # check comfyui is alive                
+                # start comfyui
                 if not start_comfyui():
                     st.error("start comfyui error.")
                     st.stop()
