@@ -119,7 +119,7 @@ with st.container():
                     st.error(f"start app error, {app['name']}")
                     st.stop()
                 else:
-                    st.success(f"start app success, {app['name']}")
+                    logger.info(f"start app success, {app['name']}")
 
                 from modules.comfyflow import Comfyflow
                 comfy_flow = Comfyflow(comfy_client=get_comfy_client(), api_data=api_data, app_data=app_data)
