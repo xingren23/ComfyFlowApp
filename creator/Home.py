@@ -30,7 +30,7 @@ with st.container():
     st.image('./public/images/comfy-workflow.png',
              caption='ComfyUI workflow')
     st.markdown("""
-                        :two: Workspace：manage application in Workspace, including create & edit app, preview app, release app, and start & stop app, etc.
+                        :two: Workspace：manage application in Workspace, including create & edit app, preview app, start & stop app, and publish app to store, etc.
                         """)
     st.image('./public/images/comfy-workspace.png',
              caption='Upload workflow image')

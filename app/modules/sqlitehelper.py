@@ -18,7 +18,7 @@ comfyflow_apps table
 """
 # enum app status
 class AppStatus(Enum):
-    RELEASED = "Released"
+    PUBLISHED = "Published"
     DOWNLOADING = "Downloading"
     DOWNLOADED = "Downloaded"
     INSTALLING = "Installing"

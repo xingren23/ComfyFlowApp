@@ -22,7 +22,7 @@ comfyflow_apps table
 class AppStatus(Enum):
     CREATED = "Created"
     PREVIEWED = "Previewed"
-    RELEASED = "Released"
+    PUBLISHED = "Published"
     RUNNING = "Running"
     STARTED = "Started"
     STOPPING = "Stopping"
@@ -77,7 +77,7 @@ class SQLiteHelper:
         with self.session as s:
             app['status'] = AppStatus.CREATED.value
             logger.info(f"insert app: {app['name']} {app['description']}")
-            sql = text(f'INSERT INTO {self.app_talbe_name} (name, description, image, app_conf, api_conf, status, created_at) VALUES (:name, :description, :image, :app_conf, :api_conf, :status, datetime("now"));')
+            sql = text(f'INSERT INTO {self.app_talbe_name} (name, description, image, template, app_conf, api_conf, status, created_at) VALUES (:name, :description, :image, :template, :app_conf, :api_conf, :status, datetime("now"));')
             s.execute(sql, app)
             s.commit()
 
@@ -97,12 +97,12 @@ class SQLiteHelper:
             s.execute(sql, dict(status=AppStatus.PREVIEWED.value, name=name))
             s.commit()
     
-    def update_app_release(self, name, template):
-        # update release
+    def update_app_publish(self, name, template):
+        # update publish
         with self.session as s:
-            logger.info(f"update app release: {name} {template}")
+            logger.info(f"update app publish: {name} {template}")
             sql = text(f'UPDATE {self.app_talbe_name} SET template=:template, status=:status, updated_at=datetime("now") WHERE name=:name;')
-            s.execute(sql, dict(template=template, status=AppStatus.RELEASED.value, name=name))
+            s.execute(sql, dict(template=template, status=AppStatus.PUBLISHED.value, name=name))
             s.commit()
 
     def delete_app(self, name):

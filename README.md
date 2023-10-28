@@ -52,7 +52,7 @@ set COMFYUI_SERVER_ADDR=127.0.0.1:8188
 - Develop：develop workflow in ComfyUI, refer to [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
 ![图1](docs/images/comfy-workflow.png)
 
-- Workspace：manage application in Workspace, including create & edit app, preview app, release app, and start & stop app, etc.
+- Workspace：manage application in Workspace, including create & edit app, preview app, publish app, and start & stop app, etc.
 ![图2](docs/images/comfy-workspace.png)
 
     - (1)Create App：upload workflow image, configure app parameters, and generate webapp.
@@ -61,11 +61,12 @@ set COMFYUI_SERVER_ADDR=127.0.0.1:8188
     - (2)Preview App：preview webapp, and check if the webapp is working properly.
 ![图4](docs/images/comfy-preview-app.png)
 
-    - (3)Release App：release webapp, and generate webapp link.
+    - (3)Start & Stop App：start webapp, and access webapp link.
+![图6](docs/images/comfy-app.png)
+
+    - (4)Release App：release webapp, and generate webapp link.
 ![图5](docs/images/comfy-release-app.png)
 
-    - (4)Start & Stop App：start webapp, and access webapp link.
-![图6](docs/images/comfy-app.png)
        
 ### 📌 Related Projects
 - [ComfyUI](https://github.com/comfyanonymous/ComfyUI)

@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 from loguru import logger
 from PIL import Image, ImageOps
+import io
 from PIL.PngImagePlugin import PngInfo
 import json
 import shutil
@@ -30,36 +31,12 @@ def format_output_node_info(param):
     node_id, class_type, input_values = params_value.split(NODE_SEP)
     return f"{node_id}:{class_type}:{input_values}"
 
-def process_workflow_meta(image_upload, savefile):
+def process_workflow_meta(image_upload):
     # parse meta data from image, save image to local
     try:
         logger.info(f"process_workflow_meta, {image_upload}")
         img = Image.open(image_upload)
         tran_img = ImageOps.exif_transpose(img)
-
-        # save meta data to file
-        if savefile:
-            base_path = f'.comfyflow/temp/{datetime.today().strftime("%Y-%m-%d")}'
-            # get filename and extension
-            file_id = image_upload.file_id
-            file_name, _ = os.path.splitext(os.path.basename(image_upload.name))
-            save_to_file = f'{base_path}/{file_id}_{file_name}.png'
-
-            os.makedirs(os.path.dirname(save_to_file), exist_ok=True)
-            metadata = PngInfo()
-            for x in tran_img.info:
-                # logger.info(f"image meta data, {x}:{tran_img.info[x]}")
-                # save as json file
-                file_path = f'{base_path}/{file_id}_{file_name}_{x}.json'
-                with open(file_path, 'w') as json_file:
-                    json_file.write(tran_img.info[x])
-
-                # TODO: fix no metadata
-                metadata.add_text(x, json.dumps(img.info[x]))
-            logger.info(f"save image to {save_to_file} with meta data, {metadata}")
-            img.save(save_to_file, format='png', PngInfo=metadata, compress_level=4)
-            st.session_state['create_upload_image_file'] = save_to_file
-
         return tran_img.info
     except Exception as e:
         logger.error(f"process_workflow_meta error, {e}")
@@ -125,11 +102,11 @@ def process_image_change():
                 logger.info(f"create_prompt_outputs, {outputs}")
                 st.session_state['create_prompt_outputs'] = outputs 
 
-                st.success("parse comfyui workflow from image successfully")
+                st.success("parse workflow from image successfully")
             else:
-                st.error("parse comfyui workflow from image error, please check up comfyui can run this workflow.")
+                st.error("parse workflow from image error, please check up comfyui is alive and can run this workflow.")
         else:
-            st.error("the image don't contain comfyui workflow")
+            st.error("the image don't contain workflow info")
     else:
         st.session_state['create_prompt'] = None
         st.session_state['create_prompt_inputs'] = {}
@@ -262,33 +239,7 @@ def gen_app_config():
 def submit_app():
     app_config = gen_app_config()
     if app_config:
-        # check app dir
-        workflow_path = f'.comfyflow/workflows/{app_config["name"]}'
-        os.makedirs(workflow_path, exist_ok=True)
-
-        # save app config
-        app_file_path = f'{workflow_path}/app.json'
-        with open(app_file_path, 'w') as f:
-            logger.debug(f"save app config to {app_file_path}, {app_config}")
-            json.dump(app_config, f)
-
-        # upload prompt.json
-        prompt_file_path = f'{workflow_path}/prompt.json'
-        with open(prompt_file_path, 'w') as f:
-            prompt = st.session_state['create_prompt']
-            logger.debug(f"save prompt to {prompt_file_path}, {prompt}")
-            f.write(prompt)
-
-        # upload workflow image
-        upload_image = st.session_state['create_upload_image_file']
-        image_file_path = f'{workflow_path}/app.png'
-        if os.path.exists(image_file_path):
-            os.remove(image_file_path)
-        shutil.copyfile(upload_image, image_file_path)
-        logger.debug(f"save image to {image_file_path}")
-
         # submit to sqlite
-        
         if get_sqlite_instance().get_app(app_config['name']):
             st.session_state['create_submit_info'] = "exist"
         else:
@@ -296,9 +247,10 @@ def submit_app():
             app['name'] = app_config['name']
             app['description'] = app_config['description']
             app['app_conf'] = json.dumps(app_config)
-            app['api_conf'] = prompt
+            app['api_conf'] = st.session_state['create_prompt']
             app['status'] = 'created'
-            app['image'] = open(image_file_path, 'rb').read()
+            app['template'] = 'default'
+            app['image'] = st.session_state['create_upload_image'].read()
             get_sqlite_instance().create_app(app)
 
             logger.info(f"submit app successfully, {app_config['name']}")
@@ -319,7 +271,13 @@ logger.info("Loading create page")
 page.page_init()
 
 with st.container():
-    st.title("🌱 Create app from comfyui workflow")
+    
+    with page.stylable_button_container():
+        header_row = row([0.85, 0.15], vertical_align="top")
+        header_row.title("🌱 Create app from comfyui workflow")
+        back_button = header_row.button("Back Workspace", help="Back to your workspace", key="create_back_workspace")
+        if back_button:
+            switch_page("Workspace")
 
     # upload workflow image and config params
     with st.expander("### :one: Upload image of comfyui workflow", expanded=True):
@@ -383,15 +341,17 @@ with st.container():
                 help="Input param name")
             param_output1_row.text_input("App Output Description", value="", placeholder="Param Description",
                                          key="output_param1_desc", help="Input param description")
-
-    with page.stylable_button_container():
+            
+    
+    with st.container():
         operation_row = row([0.15, 0.7, 0.15])
-        submit_button = operation_row.button("Submit", key='create_submit_app', use_container_width=True, 
-                                  help="Submit app params",on_click=submit_app)     
+        submit_button = operation_row.button("Submit", key='create_submit_app', type="primary",
+                                            use_container_width=True, 
+                                            help="Submit app params",on_click=submit_app)     
         if submit_button:
             submit_info = st.session_state.get('create_submit_info')
             if submit_info == 'success':
-                st.success("Submit app successfully")
+                st.success("Submit app successfully, back your workspace or preview this app")
             elif submit_info == 'exist':
                 st.error("Submit app error, app name has existed")
             else:

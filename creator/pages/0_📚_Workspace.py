@@ -11,7 +11,6 @@ from streamlit import config
 
 
 def create_app_info_ui(app):
-    
     app_row = row([1, 5.8, 1.2, 2], vertical_align="bottom")
     try:
         if app["image"] is not None:
@@ -35,7 +34,7 @@ def create_app_info_ui(app):
         app_status = f"🌱 {app_status}"
     elif app_status == AppStatus.PREVIEWED.value:
         app_status = f"💡 {app_status}"
-    elif app_status == AppStatus.RELEASED.value:
+    elif app_status == AppStatus.PUBLISHED.value:
         app_status = f"✈️ {app_status}"
     app_row.markdown(f"""
                     #### Status
@@ -51,9 +50,9 @@ def click_preview_app(name):
     st.session_state['preview_select_app'] = name
 
 
-def click_release_app(name, status):
-    logger.info(f"release app: {name} status: {status}")
-    st.session_state['release_select_app'] = name
+def click_publish_app(name, status):
+    logger.info(f"publish app: {name} status: {status}")
+    st.session_state['publish_select_app'] = name
     
 
 def click_delete_app(name):
@@ -63,7 +62,7 @@ def click_delete_app(name):
 
 def click_start_app(name, id, status):
     logger.info(f"start app: {name} status: {status}")
-    if status == AppStatus.RELEASED.value:
+    if status == AppStatus.PREVIEWED.value:
         server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')
         # comfyflowapp address
         app_server = config.get_option('server.address')
@@ -83,12 +82,12 @@ def click_start_app(name, id, status):
         else:
             logger.info(f"Start app {name} failed")
     else: 
-        logger.warning(f"Please release this app {name} first")
+        logger.warning(f"Please preview this app {name} first")
 
 
 def click_stop_app(name, status, url):
     logger.info(f"stop app: {name} status: {status} url: {url}")
-    if status == AppStatus.RELEASED.value:
+    if status == AppStatus.PREVIEWED.value:
         if url == "":
             logger.info(f"App {name} url is empty, maybe it is stopped")
             st.session_state['app_stop_ret'] = AppStatus.STOPPED.value
@@ -104,38 +103,24 @@ def click_stop_app(name, status, url):
             else:
                 logger.error(f"Stop app {name} failed, please check the log")
     else:
-        logger.warning("Please release this app first")
+        logger.warning("Please preview this app first")
 
 def create_operation_ui(app):
     id = app['id']
     name = app['name']
     status = app['status']
     url = app['url']
-    operate_row = row([1, 1, 1, 4, 1, 1], vertical_align="bottom")
+    operate_row = row([1.1, 0.9, 0.9, 4.9, 1.1, 1.1], vertical_align="bottom")
     preview_button = operate_row.button("💡Preview", help="Preview and check the app", 
                                         key=f"{id}-button-preview", 
                                         on_click=click_preview_app, args=(name,))
     if preview_button:
         switch_page("Preview")
 
-    release_button = operate_row.button("✈️Release", help="Release the app with template", 
-                                        key=f"{id}-button-release",
-                                        on_click=click_release_app, args=(name, status,))
-    if release_button:
-        if status == AppStatus.CREATED.value:
-            st.error("Please preview and check this app first")
-        else:
-            switch_page("Release")
-
-    operate_row.button("🗑 Delete", help="Delete the app", key=f"{id}-button-delete", 
-                       on_click=click_delete_app, args=(name,))
-
-    operate_row.markdown("")
-
     start_button = operate_row.button("▶️ Start", help="Start the app", key=f"{id}-button-start", 
                        on_click=click_start_app, args=(name, id, status))
     if start_button:
-        if status == AppStatus.RELEASED.value:
+        if status == AppStatus.PREVIEWED.value:
             app_start_ret = st.session_state['app_start_ret']
             if app_start_ret == AppStatus.RUNNING.value:
                 st.info(f"App {name} is running yet, you could share {url} to your friends")
@@ -144,12 +129,12 @@ def create_operation_ui(app):
             else:
                 st.error(f"Start app {name} failed")
         else:
-            st.warning("Please release this app first")
+            st.warning("Please preview this app first")
         
     stop_button = operate_row.button("⏹️ Stop", help="Stop the app", key=f"{id}-button-stop",
                        on_click=click_stop_app, args=(name, status, url))
     if stop_button:
-        if status == AppStatus.RELEASED.value:
+        if status == AppStatus.PREVIEWED.value:
             app_stop_ret = st.session_state['app_stop_ret']
             if app_stop_ret == AppStatus.STOPPING.value:
                 st.success(f"Stop app {name} success, {url}")
@@ -158,7 +143,26 @@ def create_operation_ui(app):
             else:
                 st.error(f"Stop app {name} failed, please check the log")
         else:
-            st.warning("Please release this app first")
+            st.warning("Please preview this app first")        
+
+    operate_row.markdown("")
+
+    operate_row.button("🗑 Delete", help="Delete the app", key=f"{id}-button-delete", 
+                       on_click=click_delete_app, args=(name,))
+    
+    if status == AppStatus.PUBLISHED.value:
+        operate_row.button("✈️ Publish", help="Publish the app with template", 
+                                        key=f"{id}-button-publish",
+                                        disabled=True)
+    else:
+        publish_button = operate_row.button("✈️ Publish", help="Publish the app with template", 
+                                        key=f"{id}-button-publish",
+                                        on_click=click_publish_app, args=(name, status,))
+        if publish_button:
+            if status == AppStatus.CREATED.value:
+                st.error("Please preview and check this app first")
+            else:
+                switch_page("Publish")
 
 
 logger.info("Loading workspace page")
@@ -166,7 +170,7 @@ page.page_init()
 
 with st.container():
     with page.stylable_button_container():
-        header_row = row([0.88, 0.12], vertical_align="bottom")
+        header_row = row([0.88, 0.12], vertical_align="top")
         header_row.markdown("""
             ### My Workspace
         """)

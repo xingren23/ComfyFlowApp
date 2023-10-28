@@ -127,7 +127,7 @@ def create_app_info_ui(app):
         status_queue = queue.Queue()
         st.session_state[f'{app["id"]}_progress_queue'] = status_queue
     status_queue = st.session_state.get(f'{app["id"]}_progress_queue')
-    if app_status == AppStatus.RELEASED.value or app_status == AppStatus.ERROR.value:
+    if app_status == AppStatus.PUBLISHED.value or app_status == AppStatus.ERROR.value:
         install_button = app_row.button("Install", help="Install app from app store",
                                          key=f"install_{app['id']}",
                                          on_click=install_app, args=(app, status_queue))
