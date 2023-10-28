@@ -67,10 +67,10 @@ class ComfyUIThread(Thread):
             address, port = self.server_addr.split(":")
             # start local comfyui
             if address == "localhost" or address == "127.0.0.1":
-                command = f"python3 main.py --port {port}"
-                path = "repositories/ComfyUI"
+                command = f"python3 main.py --port {port} --disable-auth-launch"
+                path = "./repositories/ComfyUI"
                 comfyui_log = open('comfyui.log', 'w')
-                subprocess.run(command, cwd=path, stdout=comfyui_log, stderr=comfyui_log, text=True)
+                subprocess.run(command, cwd=path, shell=True, stdout=comfyui_log, stderr=comfyui_log, text=True)
                 comfyui_log.close()
                 return True
             else:
@@ -78,7 +78,7 @@ class ComfyUIThread(Thread):
                 st.error(f"could not start remote comfyui, {address}")
                 return False
         except Exception as e:
-            logger.error(f"start comfyui error, {e}")
+            logger.error(f"running comfyui error, {e}")
 
 
 def start_comfyui():
@@ -91,8 +91,14 @@ def start_comfyui():
         server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')
         comfyui_thread = ComfyUIThread(server_addr)
         comfyui_thread.start()
-        logger.info("comfyui started")
-        return True
+        # wait 2 seconds for comfyui start
+        comfyui_thread.join(2)
+        if comfyui_thread.is_alive():
+            logger.info("start comfyui success")
+            return True
+        else:
+            logger.error("start comfyui timeout")
+            return False
     except Exception as e:
         logger.error(f"start comfyui error, {e}")
 
@@ -110,8 +116,10 @@ with st.container():
 
                 # start comfyui
                 if not start_comfyui():
-                    st.error("start comfyui error.")
+                    st.error(f"start app error, {app['name']}")
                     st.stop()
+                else:
+                    st.success(f"start app success, {app['name']}")
 
                 from modules.comfyflow import Comfyflow
                 comfy_flow = Comfyflow(comfy_client=get_comfy_client(), api_data=api_data, app_data=app_data)
