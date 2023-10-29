@@ -11,7 +11,7 @@ from streamlit import config
 
 
 def create_app_info_ui(app):
-    app_row = row([1, 5.8, 1.2, 2], vertical_align="bottom")
+    app_row = row([1, 5.8, 2, 1.2], vertical_align="bottom")
     try:
         if app["image"] is not None:
             app_row.image(app["image"])
@@ -28,7 +28,12 @@ def create_app_info_ui(app):
                     #### {app['name']}
                     {description}
                     """)
-            
+
+    app_row.markdown(f"""
+                    #### Web Site
+                    🌐 {app['url']}
+                    """)
+       
     app_status = app['status']
     if app_status == AppStatus.CREATED.value:
         app_status = f"🌱 {app_status}"
@@ -40,10 +45,7 @@ def create_app_info_ui(app):
                     #### Status
                     {app_status}
                     """)
-    app_row.markdown(f"""
-                    #### Web Site
-                    🌐 {app['url']}
-                    """)
+    
 
 def click_preview_app(name):
     logger.info(f"preview app: {name}")
@@ -60,9 +62,16 @@ def click_delete_app(name):
     get_sqlite_instance().delete_app(name)
 
 
+def ready_start_app(status):
+    if status == AppStatus.PREVIEWED.value or status == AppStatus.PUBLISHED.value:
+        return True
+    else:
+        return False
+
+
 def click_start_app(name, id, status):
     logger.info(f"start app: {name} status: {status}")
-    if status == AppStatus.PREVIEWED.value:
+    if ready_start_app(status):
         server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')
         # comfyflowapp address
         app_server = config.get_option('server.address')
@@ -84,10 +93,9 @@ def click_start_app(name, id, status):
     else: 
         logger.warning(f"Please preview this app {name} first")
 
-
 def click_stop_app(name, status, url):
     logger.info(f"stop app: {name} status: {status} url: {url}")
-    if status == AppStatus.PREVIEWED.value:
+    if ready_start_app(status):
         if url == "":
             logger.info(f"App {name} url is empty, maybe it is stopped")
             st.session_state['app_stop_ret'] = AppStatus.STOPPED.value
@@ -120,7 +128,7 @@ def create_operation_ui(app):
     start_button = operate_row.button("▶️ Start", help="Start the app", key=f"{id}-button-start", 
                        on_click=click_start_app, args=(name, id, status))
     if start_button:
-        if status == AppStatus.PREVIEWED.value:
+        if ready_start_app(status):
             app_start_ret = st.session_state['app_start_ret']
             if app_start_ret == AppStatus.RUNNING.value:
                 st.info(f"App {name} is running yet, you could share {url} to your friends")
@@ -134,7 +142,7 @@ def create_operation_ui(app):
     stop_button = operate_row.button("⏹️ Stop", help="Stop the app", key=f"{id}-button-stop",
                        on_click=click_stop_app, args=(name, status, url))
     if stop_button:
-        if status == AppStatus.PREVIEWED.value:
+        if ready_start_app(status):
             app_stop_ret = st.session_state['app_stop_ret']
             if app_stop_ret == AppStatus.STOPPING.value:
                 st.success(f"Stop app {name} success, {url}")

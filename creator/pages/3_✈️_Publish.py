@@ -1,36 +1,35 @@
 from loguru import logger
 import json
-import re
+from urllib.parse import urlparse
 import streamlit as st
 import modules.page as page
 from modules import get_sqlite_instance
 from modules.sqlitehelper import AppStatus
 from streamlit_extras.row import row
 from streamlit_extras.switch_page_button import switch_page
+from huggingface_hub import hf_hub_url, get_hf_file_metadata
 
-def parsed_model_url(model_url, save_path):
+MODEL_SEP = '##'
+
+def check_model_url(model_url):
     # parse model info from download url, 
     # eg: https://huggingface.co/segmind/SSD-1B/blob/main/unet/diffusion_pytorch_model.fp16.safetensors
 
     # only support huggingface model hub
-    pattern = r"https://huggingface\.co/([^/]+)/([^/]+)/blob/main/(.+)"
-    match = re.search(pattern, model_url)    
-    if match:
-        org = match.group(1)
-        repoid = match.group(2)
-        subfolder = match.group(3).rstrip('/')  # 去除末尾的斜杠
-        subfolder_parts = subfolder.split('/')
-        filename = subfolder_parts[-1]
-        subfolder_path = '/'.join(subfolder_parts[:-1])
-        save_model_name = f"{org}_{repoid}_{subfolder_path}_{filename}".replace('/', '_')
-        return {
-            "org": org,
-            "repoid": repoid,
-            "subfolder": subfolder_path,
-            "filename": filename,
-            "save_path": save_path,
-            "save_name": save_model_name
-        }
+    parsed_url = urlparse(model_url)
+    path_parts = parsed_url.path.split('/')
+    repo_id = '/'.join(path_parts[1:3])  # 从第3和第4个元素获取repo_id
+    subfolder = '/'.join(path_parts[5:-1])  # 从第7个到倒数第2个元素获取subfolder
+    filename = path_parts[-1]  # 最后一个元素是filename
+    logger.debug(f"repo_id: {repo_id}, subfolder: {subfolder}, filename: {filename}")
+    if repo_id and filename:
+        
+        hf_url = hf_hub_url(repo_id, filename, subfolder=subfolder)
+        if hf_url:
+            hf_meta = get_hf_file_metadata(url=hf_url)
+            logger.debug(f"hf_meta, {hf_meta}")
+            return hf_meta
+        
 
 
 logger.info("Loading publish page")
@@ -100,11 +99,13 @@ with st.container():
                     st.warning("Invalid node, please check node info.")
                 else:
                     # check model url
+                    model_size = 0
                     models = {}
                     for node_id in api_data_json:
                         inputs = api_data_json[node_id]['inputs']
                         class_type = api_data_json[node_id]['class_type']
                         if class_type in object_model:
+                            model_node_inputs = {}
                             model_name_path = object_model[class_type]
                             for param in inputs:
                                 if param in model_name_path:
@@ -115,24 +116,27 @@ with st.container():
                                         st.stop()
                                     else:
                                         model_url = st.session_state[model_input_name]
-                                        model = parsed_model_url(model_url, model_path)
-                                        if model:
-                                            inputs[param] = model['save_name']
-                                            
-                                            models[model_input_name] = model
+                                        model_meta = check_model_url(model_url)
+                                        if model_meta:
+                                            model_node_inputs[param] = {
+                                                "url": model_url,
+                                                "size": model_meta.size,
+                                                "path": model_path,
+                                            }
                                         else:
                                             st.warning(f"Invalid model url for {model_input_name}")
                                             st.stop()
+                            if model_node_inputs:
+                                models[node_id] = {"inputs": model_node_inputs}
                             
                     
                     # update app_conf and status
                     app_data_json['models'] = models
                     app_data = json.dumps(app_data_json)
-                    logger.info(f"update models, {app_data_json} {api_data_json}")
-                    # get_sqlite_instance().update_app_publish(app_name, app_data)
+                    logger.info(f"update models, {app_data_json}")
+                    get_sqlite_instance().update_app_publish(app_name, app_data)
 
                     # call api to publish app
 
                     
-                    st.success("Publish success!")
-                    st.stop()
+                    st.success("Publish success, you can share this app with your friends.")
