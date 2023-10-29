@@ -91,7 +91,7 @@ def parse_prompt(prompt_info):
 def process_image_change():
     upload_image = st.session_state['create_upload_image']
     if upload_image:
-        metas = process_workflow_meta(upload_image, True)
+        metas = process_workflow_meta(upload_image)
         if metas and 'prompt' in metas.keys():
             st.session_state['create_prompt'] = metas.get('prompt')
             inputs, outputs = parse_prompt(metas.get('prompt'))

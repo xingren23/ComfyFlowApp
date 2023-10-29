@@ -11,9 +11,9 @@ from streamlit_extras.switch_page_button import switch_page
 def parsed_model_url(model_url, save_path):
     # parse model info from download url, 
     # eg: https://huggingface.co/segmind/SSD-1B/blob/main/unet/diffusion_pytorch_model.fp16.safetensors
-    # 定义正则表达式模式
+
+    # only support huggingface model hub
     pattern = r"https://huggingface\.co/([^/]+)/([^/]+)/blob/main/(.+)"
-    # 使用 re.search() 函数进行匹配
     match = re.search(pattern, model_url)    
     if match:
         org = match.group(1)
@@ -21,13 +21,15 @@ def parsed_model_url(model_url, save_path):
         subfolder = match.group(3).rstrip('/')  # 去除末尾的斜杠
         subfolder_parts = subfolder.split('/')
         filename = subfolder_parts[-1]
-        subfolder_parts = subfolder_parts[:-1]  # 去除最后一个部分以获得子目录
+        subfolder_path = '/'.join(subfolder_parts[:-1])
+        save_model_name = f"{org}_{repoid}_{subfolder_path}_{filename}".replace('/', '_')
         return {
             "org": org,
             "repoid": repoid,
-            "subfolder": subfolder_parts,
+            "subfolder": subfolder_path,
             "filename": filename,
-            "save_path": save_path
+            "save_path": save_path,
+            "save_name": save_model_name
         }
 
 
@@ -94,7 +96,7 @@ with st.container():
             publish_button = st.button("Publish", key='publish_button', type='primary', 
                       help="Publish app to store and share with your friends")
             if publish_button:
-                if st.session_state['publish_invalid_node']:
+                if 'publish_invalid_node' in st.session_state:
                     st.warning("Invalid node, please check node info.")
                 else:
                     # check model url
@@ -115,15 +117,18 @@ with st.container():
                                         model_url = st.session_state[model_input_name]
                                         model = parsed_model_url(model_url, model_path)
                                         if model:
+                                            inputs[param] = model['save_name']
+                                            
                                             models[model_input_name] = model
                                         else:
                                             st.warning(f"Invalid model url for {model_input_name}")
                                             st.stop()
+                            
                     
                     # update app_conf and status
                     app_data_json['models'] = models
                     app_data = json.dumps(app_data_json)
-                    logger.info(f"update models, {app_data}")
+                    logger.info(f"update models, {app_data_json} {api_data_json}")
                     # get_sqlite_instance().update_app_publish(app_name, app_data)
 
                     # call api to publish app
