@@ -46,7 +46,9 @@ with st.container():
                         st.success(f"Preview app {preview_app} success, back your workspace and start the app.")
                         get_sqlite_instance().update_app_preview(preview_app)
                         logger.info(f"update preview status for app: {preview_app}")
+                        st.stop()
                     else:
                         st.warning(f"Preview app {preview_app} failed.")
+                    
 
                         

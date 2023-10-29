@@ -352,6 +352,7 @@ with st.container():
             submit_info = st.session_state.get('create_submit_info')
             if submit_info == 'success':
                 st.success("Submit app successfully, back your workspace or preview this app")
+                st.stop()
             elif submit_info == 'exist':
                 st.error("Submit app error, app name has existed")
             else:

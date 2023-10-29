@@ -97,12 +97,12 @@ class SQLiteHelper:
             s.execute(sql, dict(status=AppStatus.PREVIEWED.value, name=name))
             s.commit()
     
-    def update_app_publish(self, name, template):
+    def update_app_publish(self, name, app_conf):
         # update publish
         with self.session as s:
-            logger.info(f"update app publish: {name} {template}")
-            sql = text(f'UPDATE {self.app_talbe_name} SET template=:template, status=:status, updated_at=datetime("now") WHERE name=:name;')
-            s.execute(sql, dict(template=template, status=AppStatus.PUBLISHED.value, name=name))
+            logger.info(f"update app publish: {name} {app_conf}")
+            sql = text(f'UPDATE {self.app_talbe_name} SET app_conf=:app_conf, status=:status, updated_at=datetime("now") WHERE name=:name;')
+            s.execute(sql, dict(app_conf=app_conf, status=AppStatus.PUBLISHED.value, name=name))
             s.commit()
 
     def delete_app(self, name):
