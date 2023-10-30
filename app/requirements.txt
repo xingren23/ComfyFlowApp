@@ -1,0 +1,8 @@
+loguru>=0.7.0
+SQLAlchemy>=1.4, <2.0
+streamlit>=1.27.2
+streamlit-extras>=0.3.4
+websocket-client>=0.58.0
+psutil>=5.9.5
+huggingface_hub>=3.12.2
+pygit2>=1.6.1

@@ -28,7 +28,7 @@ class AppStatus(Enum):
 
 class SQLiteHelper:
     def __init__(self) -> None:
-        self.db_conn = st.experimental_connection('comfyflow_apps', type='sql')
+        self.db_conn = st.experimental_connection('comfyflow_db', type='sql')
         self.app_talbe_name = 'comfyflow_apps'
         self._init_table()
         logger.info(f"db_conn: {self.db_conn}, app_talbe_name: {self.app_talbe_name}")

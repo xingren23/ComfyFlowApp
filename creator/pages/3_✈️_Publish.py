@@ -1,5 +1,6 @@
 from loguru import logger
 import json
+import os
 from urllib.parse import urlparse
 import streamlit as st
 import modules.page as page
@@ -18,12 +19,14 @@ def check_model_url(model_url):
     # only support huggingface model hub
     parsed_url = urlparse(model_url)
     path_parts = parsed_url.path.split('/')
-    repo_id = '/'.join(path_parts[1:3])  # 从第3和第4个元素获取repo_id
-    subfolder = '/'.join(path_parts[5:-1])  # 从第7个到倒数第2个元素获取subfolder
+    repo_id = '/'.join(path_parts[1:3])  
+    if len(path_parts[5:-1]) > 0:
+        subfolder = os.path.sep.join(path_parts[5:-1])  
+    else:
+        subfolder = None
     filename = path_parts[-1]  # 最后一个元素是filename
     logger.debug(f"repo_id: {repo_id}, subfolder: {subfolder}, filename: {filename}")
     if repo_id and filename:
-        
         hf_url = hf_hub_url(repo_id, filename, subfolder=subfolder)
         if hf_url:
             hf_meta = get_hf_file_metadata(url=hf_url)

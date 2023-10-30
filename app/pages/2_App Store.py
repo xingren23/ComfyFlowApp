@@ -7,7 +7,7 @@ from streamlit_extras.row import row
 from threading import Thread
 from modules.sqlitehelper import AppStatus
 import queue
-from modules.download import download_model, get_local_model_file
+
 
 def bytes_to_human_readable(size_in_bytes, decimal_places=2):
     for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
@@ -34,6 +34,7 @@ class InstallThread(Thread):
         self.api_conf_json = json.loads(app["api_conf"])
         self.queue = queue
 
+
     def dispatch_event(self, event):            
             if self.queue is not None:
                 logger.debug(f"Dispatch event, {event}")
@@ -42,6 +43,10 @@ class InstallThread(Thread):
                 logger.info("queue is none")
 
     def run(self):
+        from modules.launch import prepare_comfyui_path
+        prepare_comfyui_path()
+
+        from modules.download import download_model, get_local_model_file
         try:
             models_size = 0
             models = []
@@ -87,7 +92,15 @@ class InstallThread(Thread):
                     for param in inputs:
                         model_info = inputs[param]
                         local_model_file = get_local_model_file(model_info['url'])
-                        self.api_conf_json[node_id]['inputs'][param] = local_model_file
+                        if local_model_file is not None:
+                            self.api_conf_json[node_id]['inputs'][param] = local_model_file
+                            logger.debug(f"update api_conf_json: {node_id} {param} {local_model_file}")
+                        else:
+                            status_info = f"parse local model file from {model_info['url']} failed"
+                            status_event = ProgressEventState(self.app_id, status_info, ProgressEventState.ERROR)
+                            self.dispatch_event(status_event)
+                            return 
+
                 logger.debug(f"api_conf_json: {self.api_conf_json}")
                 get_sqlite_instance().update_api_conf(self.app_id, json.dumps(self.api_conf_json))
 

@@ -1,4 +1,5 @@
 import os
+import sys
 from loguru import logger
 import streamlit as st
 from modules import get_sqlite_instance, get_comfy_client
@@ -7,6 +8,8 @@ from streamlit_extras.row import row
 from streamlit_extras.switch_page_button import switch_page
 import subprocess   
 from threading import Thread
+from modules.launch import prepare_comfyui_path
+
 
 def uninstall_app(app):
     logger.info(f"uninstall app {app['name']}")
@@ -54,23 +57,23 @@ def check_comfyui_alive():
         get_comfy_client().queue_remaining()
         return True
     except Exception as e:
-        logger.error(f"check comfyui alive error, {e}")
+        logger.warning(f"check comfyui alive error, {e}")
         return False
 
 class ComfyUIThread(Thread):
-    def __init__(self, server_addr):
+    def __init__(self, server_addr, path):
         Thread.__init__(self)
         self.server_addr = server_addr
+        self.path = path
 
     def run(self):
         try:
             address, port = self.server_addr.split(":")
             # start local comfyui
             if address == "localhost" or address == "127.0.0.1":
-                command = f"python3 main.py --port {port} --disable-auto-launch"
-                path = "./repositories/ComfyUI"
+                command = f"python main.py --port {port} --disable-auto-launch"
                 comfyui_log = open('comfyui.log', 'w')
-                subprocess.run(command, cwd=path, shell=True, stdout=comfyui_log, stderr=comfyui_log, text=True)
+                subprocess.run(command, cwd=self.path, shell=True, stdout=comfyui_log, stderr=comfyui_log, text=True)
                 comfyui_log.close()
                 return True
             else:
@@ -88,15 +91,17 @@ def start_comfyui():
             return True
 
         logger.info("start comfyui ...")
+
+        comfyui_path = prepare_comfyui_path()
         server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')
-        comfyui_thread = ComfyUIThread(server_addr)
+        comfyui_thread = ComfyUIThread(server_addr, comfyui_path)
         comfyui_thread.start()
         # wait 2 seconds for comfyui start
         comfyui_thread.join(2)
         if comfyui_thread.is_alive():
             logger.info("start comfyui success")
             return True
-        else:
+        else:   
             logger.error("start comfyui timeout")
             return False
     except Exception as e:
