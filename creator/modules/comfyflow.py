@@ -254,7 +254,4 @@ class Comfyflow:
                     output_image = Image.open('./public/images/output-none.png')
                     logger.info("default output_image")
                     img_placeholder.image(output_image, use_column_width=True, caption='None Image, Generate it!')
-
-                
-    
-
+                                

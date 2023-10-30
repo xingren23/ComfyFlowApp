@@ -1,0 +1,48 @@
+{
+    "CheckpointLoaderSimple": {
+        "ckpt_name": "checkpoints"
+    },
+    "CheckpointLoader": {
+        "ckpt_name": "checkpoints"
+    },
+    "LoraLoader": {
+        "lora_name": "loras"
+    },
+    "unCLIPCheckpointLoader": {
+        "ckpt_name": "checkpoints"
+    },
+    "GLIGENLoader": {
+        "gligen_name": "gligen"
+    },
+    "StyleModelLoader": {
+        "style_model_name": "style_models"
+    },
+    "CLIPVisionLoader": {
+        "clip_name": "clip_vision"
+    },
+    "DualCLIPLoader": {
+        "clip_name1": "clip_vision",
+        "clip_name2": "clip_vision"
+    },
+    "CLIPLoader": {
+        "clip_name": "clip"
+    },
+    "UNETLoader": {
+        "unet_name": "unet"
+    },
+    "DiffControlNetLoader": {
+        "control_net_name": "controlnet"
+    },
+    "ControlNetLoader": {
+        "control_net_name": "controlnet"
+    },
+    "VAELoader": {
+        "vae_name": "vae"
+    },
+    "HypernetworkLoader": {
+        "hypernetwork_name": "hypernetworks"
+    },
+    "UpscaleModelLoader": {
+        "model_name": "upscale_models"
+    }
+}   

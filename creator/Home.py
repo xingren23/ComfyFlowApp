@@ -27,12 +27,12 @@ with st.container():
     st.markdown("""
                         :one: Develop：develop workflow in ComfyUI, refer to [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
                         """)
-    st.image('./docs/images/comfy-workflow.png',
+    st.image('./public/images/comfy-workflow.png',
              caption='ComfyUI workflow')
     st.markdown("""
-                        :two: Workspace：manage application in Workspace, including create & edit app, preview app, release app, and start & stop app, etc.
+                        :two: Workspace：manage application in Workspace, including create & edit app, preview app, start & stop app, and publish app to store, etc.
                         """)
-    st.image('./docs/images/comfy-workspace.png',
+    st.image('./public/images/comfy-workspace.png',
              caption='Upload workflow image')
 
     st.markdown("""

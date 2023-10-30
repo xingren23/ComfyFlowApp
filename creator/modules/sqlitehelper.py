@@ -1,5 +1,3 @@
-import os
-import json
 from loguru import logger
 import streamlit as st
 from sqlalchemy import text
@@ -24,7 +22,7 @@ comfyflow_apps table
 class AppStatus(Enum):
     CREATED = "Created"
     PREVIEWED = "Previewed"
-    RELEASED = "Released"
+    PUBLISHED = "Published"
     RUNNING = "Running"
     STARTED = "Started"
     STOPPING = "Stopping"
@@ -54,53 +52,6 @@ class SQLiteHelper:
             s.commit()
             logger.info(f"init app table {self.app_talbe_name} and index")
 
-    def _init_apps(self):
-        # Insert some data with conn.session.
-        with self.session as s:
-            base_dir = '.comfyflow/workflows'
-            apps = utils.listdirs(base_dir)
-            if len(apps) == 0:
-                logger.info(f"no apps found in {base_dir}")
-                return
-            logger.info(f"init workflows, {apps}")
-            for app_name in apps:
-                try:
-                    app = {}
-                    app_conf = f"{base_dir}/{app_name}/app.json"
-                    with open(app_conf, 'r') as f:
-                        app_json = json.load(f)
-                        app['name'] = app_json['name']
-                        app['description'] = app_json['description']
-                        app['app_conf'] = json.dumps(app_json)
-                    
-                    # check if app exists
-                    sql = text(f'SELECT * FROM {self.app_talbe_name} WHERE name=:name;')
-                    ret = s.execute(sql, {'name': app['name']}).fetchone()
-                    if ret is not None:
-                        logger.info(f"app {app_name} exists, skip")
-                        continue
-                    else:
-                        logger.info(f"app {app_name} not exists, insert {app}")
-                        
-                        # load api_conf
-                        api_conf = f"{base_dir}/{app_name}/prompt.json"
-                        with open(api_conf, 'r') as f:
-                            api_json = json.load(f)
-                            app['api_conf'] = json.dumps(api_json)
-                        
-                        image = f"{base_dir}/{app_name}/app.png"
-                        if os.path.exists(image):
-                            # update image
-                            app['image'] = open(image, 'rb').read()
-                        else:
-                            app['image'] = None
-
-                        sql = text(f'INSERT INTO {self.app_talbe_name} (name, description, image, app_conf, api_conf) VALUES (:name, :description, :image, :app_conf, :api_conf);')
-                        s.execute(sql, app)
-                except Exception as e:
-                    logger.error(f"load app {app_name} failed, {e}")
-            s.commit()
-
     def get_all_apps(self):
         with self.session as s:
             logger.info("get apps from db")
@@ -126,7 +77,7 @@ class SQLiteHelper:
         with self.session as s:
             app['status'] = AppStatus.CREATED.value
             logger.info(f"insert app: {app['name']} {app['description']}")
-            sql = text(f'INSERT INTO {self.app_talbe_name} (name, description, image, app_conf, api_conf, status, created_at) VALUES (:name, :description, :image, :app_conf, :api_conf, :status, datetime("now"));')
+            sql = text(f'INSERT INTO {self.app_talbe_name} (name, description, image, template, app_conf, api_conf, status, created_at) VALUES (:name, :description, :image, :template, :app_conf, :api_conf, :status, datetime("now"));')
             s.execute(sql, app)
             s.commit()
 
@@ -146,12 +97,12 @@ class SQLiteHelper:
             s.execute(sql, dict(status=AppStatus.PREVIEWED.value, name=name))
             s.commit()
     
-    def update_app_release(self, name, template):
-        # update release
+    def update_app_publish(self, name, app_conf):
+        # update publish
         with self.session as s:
-            logger.info(f"update app release: {name} {template}")
-            sql = text(f'UPDATE {self.app_talbe_name} SET template=:template, status=:status, updated_at=datetime("now") WHERE name=:name;')
-            s.execute(sql, dict(template=template, status=AppStatus.RELEASED.value, name=name))
+            logger.info(f"update app publish: {name} {app_conf}")
+            sql = text(f'UPDATE {self.app_talbe_name} SET app_conf=:app_conf, status=:status, updated_at=datetime("now") WHERE name=:name;')
+            s.execute(sql, dict(app_conf=app_conf, status=AppStatus.PUBLISHED.value, name=name))
             s.commit()
 
     def delete_app(self, name):

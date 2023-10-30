@@ -3,6 +3,8 @@ from modules.comfyflow import Comfyflow
 
 import streamlit as st
 import modules.page as page
+from streamlit_extras.row import row
+from streamlit_extras.switch_page_button import switch_page
 from modules import get_comfy_client, get_sqlite_instance
 from modules.sqlitehelper import AppStatus
 
@@ -11,7 +13,12 @@ logger.info("Loading preview page")
 page.page_init()
 
 with st.container():
-    st.title("💡 Preview and check app")
+    with page.stylable_button_container():
+        header_row = row([0.85, 0.15], vertical_align="top")
+        header_row.title("💡 Preview and check app")
+        back_button = header_row.button("Back Workspace", help="Back to your workspace", key='preview_back_workspace')
+        if back_button:
+            switch_page("Workspace")
 
     apps = get_sqlite_instance().get_all_apps()
     app_name_map = {app['name']: app for app in apps}
@@ -36,7 +43,12 @@ with st.container():
                 if f"{preview_app}_previewed" in st.session_state:
                     previewed = st.session_state[f"{preview_app}_previewed"]
                     if previewed:
+                        st.success(f"Preview app {preview_app} success, back your workspace and start the app.")
                         get_sqlite_instance().update_app_preview(preview_app)
                         logger.info(f"update preview status for app: {preview_app}")
+                        st.stop()
+                    else:
+                        st.warning(f"Preview app {preview_app} failed.")
+                    
 
                         
