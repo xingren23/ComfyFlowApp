@@ -1,5 +1,5 @@
 from loguru import logger
-import time
+import json
 import streamlit as st
 from modules.page import page_init
 from modules import get_sqlite_instance
@@ -7,17 +7,32 @@ from streamlit_extras.row import row
 from threading import Thread
 from modules.sqlitehelper import AppStatus
 import queue
+from modules.download import download_model, get_local_model_file
+
+def bytes_to_human_readable(size_in_bytes, decimal_places=2):
+    for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+        if size_in_bytes < 1024.0:
+            break
+        size_in_bytes /= 1024.0
+    return f"{size_in_bytes:.{decimal_places}f} {unit}"
+
+class ProgressEventState():
+    RUNNING = "running"
+    COMPLETE = "complete"
+    ERROR = "error"
+    def __init__(self, app_id, info, state) -> None:
+        self.app_id = app_id
+        self.info = info
+        self.state = state
 
 class InstallThread(Thread):
     def __init__(self, app, queue):
         super(InstallThread, self).__init__()
         self.app_id = app["id"]
         self.app_name = app["name"]
-        self.app_api = app["api_conf"]
+        self.app_conf_json = json.loads(app["app_conf"])
+        self.api_conf_json = json.loads(app["api_conf"])
         self.queue = queue
-
-    def parse_app_api(self):
-        pass
 
     def dispatch_event(self, event):            
             if self.queue is not None:
@@ -28,30 +43,62 @@ class InstallThread(Thread):
 
     def run(self):
         try:
-            logger.info(f"App {self.app_name} started to install")
-            status_event = {'app_id': self.app_id, 'type': 'status', 
-                            'data': {'info': f"App {self.app_name} started to download", 'state': 'running'}}
+            models_size = 0
+            models = []
+            logger.debug(f"app_conf_json: {self.app_conf_json}")
+            if 'models' in self.app_conf_json:
+                node_models = self.app_conf_json['models']
+                for node_id in node_models:
+                    inputs = node_models[node_id]['inputs']
+                    for param in inputs:
+                        model_info = inputs[param]
+                        models_size += model_info['size']
+                        models.append(model_info)
+            status_info = f"App {self.app_name} started to download {len(models)} models, total size {bytes_to_human_readable(models_size)}"
+            status_event = ProgressEventState(self.app_id, status_info, ProgressEventState.RUNNING)
             self.dispatch_event(status_event)
 
-            time.sleep(5)  
-            status_event = {'app_id': self.app_id, 'type': 'status', 
-                            'data': {'info': f"App {self.app_name} download finished", 'state': 'running'}}
+            # download 
+            download_size = 0
+            for model in models:
+                model_url = model['url']
+                model_path = model['path']
+                ret = download_model(model_url=model_url, model_path=model_path)
+                if ret is None:
+                    status_info = f":red[download model from {model_url} to {model_path} failed]"
+                    status_event = ProgressEventState(self.app_id, status_info, ProgressEventState.ERROR)
+                    self.dispatch_event(status_event)
+                    return
+                else:
+                    download_size += model['size']
+                    status_info = f"download model from {model_url} to {model_path}, size {bytes_to_human_readable(model['size'])}, percent {download_size / models_size * 100:.2f}%"
+                    status_event = ProgressEventState(self.app_id, status_info, ProgressEventState.RUNNING)
+                    self.dispatch_event(status_event)
+
+            status_info = f"App {self.app_name} download finished"
+            status_event = ProgressEventState(self.app_id, status_info, ProgressEventState.RUNNING)
             self.dispatch_event(status_event)
 
-            time.sleep(1)
-            status_event = {'app_id': self.app_id, 'type': 'status',
-                            'data': {'info': f"App {self.app_name} started to install", 'state': 'running'}}
-            self.dispatch_event(status_event)
+            # install, update api_conf
+            if 'models' in self.app_conf_json:
+                node_models = self.app_conf_json['models']
+                for node_id in node_models:
+                    inputs = node_models[node_id]['inputs']
+                    for param in inputs:
+                        model_info = inputs[param]
+                        local_model_file = get_local_model_file(model_info['url'])
+                        self.api_conf_json[node_id]['inputs'][param] = local_model_file
+                logger.debug(f"api_conf_json: {self.api_conf_json}")
+                get_sqlite_instance().update_api_conf(self.app_id, json.dumps(self.api_conf_json))
 
-            time.sleep(5)
-            status_event = {'app_id': self.app_id, 'type': 'status',
-                            'data': {'info': f"App {self.app_name} install finished", 'state': 'complete'}}
+            status_info = f"App {self.app_name} install success"
+            status_event = ProgressEventState(self.app_id, status_info, ProgressEventState.COMPLETE)
             self.dispatch_event(status_event)
             logger.info(f"App {self.app_name} installed")
         except Exception as e:
             logger.error(f"Install app error, {e}")
-            status_event = {'app_id': self.app_id, 'type': 'status',
-                            'data': {'info': f"App {self.app_name} install error", 'state': 'error'}}
+            status_info = f"App {self.app_name} install error, {e}"
+            status_event = ProgressEventState(self.app_id, status_info, ProgressEventState.ERROR)
             self.dispatch_event(status_event)
 
 
@@ -59,6 +106,8 @@ def install_app(app, queue):
     logger.info(f"Start install thread for {app['name']} ...")
     install_thread = InstallThread(app, queue)
     install_thread.start()
+    # install_thread.join()
+    # logger.info(f"Install thread for {app['name']} finished")
     
 def update_install_progress(app, status_queue):
     get_sqlite_instance().update_app_status(app["id"], AppStatus.INSTALLING.value)
@@ -67,24 +116,24 @@ def update_install_progress(app, status_queue):
             try:
                 status_event = status_queue.get()
                 logger.debug(f"Got install status event {status_event}")
-                if status_event['type'] == 'status':
-                    info = status_event['data']['info']
-                    state = status_event['data']['state']
-                    if state == 'running':
-                        install_progress.write(info)
-                    elif state == 'complete':
-                        install_progress.write(info)
-                        install_progress.update(label=f"Install app {app['name']} success", state="complete", expanded=False)
-                        get_sqlite_instance().update_app_status(app["id"], AppStatus.INSTALLED.value)
-                        break
-                    elif state == 'error':
-                        install_progress.write(info)
-                        install_progress.update(label=f"Install app {app['name']} error", state="error", expanded=False)
-                        get_sqlite_instance().update_app_status(app["id"], AppStatus.ERROR.value)
-                        break
+                info = status_event.info
+                state = status_event.state
+                if state == ProgressEventState.RUNNING:
+                    install_progress.write(info)
+                elif state == ProgressEventState.COMPLETE:
+                    install_progress.write(info)
+                    install_progress.update(label=f"Install app {app['name']} success", state="complete", expanded=True)
+                    get_sqlite_instance().update_app_status(app["id"], AppStatus.INSTALLED.value)
+                    break
+                elif state == ProgressEventState.ERROR:
+                    install_progress.write(info)
+                    install_progress.update(label=f"Install app {app['name']} error", state="error", expanded=True)
+                    get_sqlite_instance().update_app_status(app["id"], AppStatus.ERROR.value)
+                    break
             except Exception as e:
                 logger.warning(f"Queue get error {e}")
                 continue
+
 
 def show_install_status(app):
     if app["status"] == AppStatus.INSTALLING.value:
@@ -156,6 +205,9 @@ with st.container():
             st.divider()
             logger.info(f"load app info for {app['name']}")
             create_app_info_ui(app)
+
+            # update app status
+            app = get_sqlite_instance().get_app_by_id(app["id"])
             show_install_status(app)
 
     

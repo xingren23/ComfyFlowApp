@@ -92,4 +92,11 @@ class SQLiteHelper:
             s.execute(sql, dict(id=id, status=status))
             s.commit()
 
+    def update_api_conf(self, id, api_conf):
+        with self.session as s:
+            logger.info(f"update app api_conf: {id}, {api_conf}")
+            sql = text(f'UPDATE {self.app_talbe_name} SET api_conf=:api_conf WHERE id=:id;')
+            s.execute(sql, dict(id=id, api_conf=api_conf))
+            s.commit()
+
        
