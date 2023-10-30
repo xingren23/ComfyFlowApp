@@ -7,4 +7,3 @@ creator/.apps/*
 creator/comfyflow.db
 app/comfyflow.db
 .devcontainer/*
-```
