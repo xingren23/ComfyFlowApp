@@ -13,28 +13,28 @@ from streamlit import config
 def create_app_info_ui(app):
     app_row = row([1, 5.8, 2, 1.2], vertical_align="bottom")
     try:
-        if app["image"] is not None:
-            app_row.image(app["image"])
+        if app.image is not None:
+            app_row.image(app.image)
         else:
             app_row.image("./public/images/app-150.png")
     except Exception as e:
         logger.error(f"load app image error, {e}")
 
     # get description limit to 200 chars
-    description = app["description"]
+    description = app.description
     if len(description) > 160:
         description = description[:160] + "..."                
     app_row.markdown(f"""
-                    #### {app['name']}
+                    #### {app.name}
                     {description}
                     """)
 
     app_row.markdown(f"""
                     #### Web Site
-                    🌐 {app['url']}
+                    🌐 {app.url}
                     """)
        
-    app_status = app['status']
+    app_status = app.status
     if app_status == AppStatus.CREATED.value:
         app_status = f"🌱 {app_status}"
     elif app_status == AppStatus.PREVIEWED.value:
@@ -114,10 +114,10 @@ def click_stop_app(name, status, url):
         logger.warning("Please preview this app first")
 
 def create_operation_ui(app):
-    id = app['id']
-    name = app['name']
-    status = app['status']
-    url = app['url']
+    id = app.id
+    name = app.name
+    status = app.status
+    url = app.url
     operate_row = row([1.1, 0.9, 0.9, 4.9, 1.1, 1.1], vertical_align="bottom")
     preview_button = operate_row.button("💡Preview", help="Preview and check the app", 
                                         key=f"{id}-button-preview", 

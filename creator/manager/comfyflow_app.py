@@ -56,7 +56,7 @@ page_header()
 
 with st.container():
     apps = get_sqlite_instance().get_all_apps()
-    app_id_map = { str(app['id']): app for app in apps} 
+    app_id_map = { str(app.id): app for app in apps} 
     app_id = args.app
     logger.info(f"load app app_id {app_id}")
 
@@ -64,8 +64,8 @@ with st.container():
         st.warning(f"App {app_id} hasn't existed")
     else:
         app = app_id_map[app_id]
-        app_data = app['app_conf']
-        api_data = app['api_conf']
+        app_data = app.app_conf
+        api_data = app.api_conf
 
         from modules.comfyflow import Comfyflow
         comfy_flow = Comfyflow(comfy_client=get_comfy_client(), api_data=api_data, app_data=app_data)

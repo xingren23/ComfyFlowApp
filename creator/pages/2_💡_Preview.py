@@ -21,7 +21,7 @@ with st.container():
             switch_page("Workspace")
 
     apps = get_sqlite_instance().get_all_apps()
-    app_name_map = {app['name']: app for app in apps}
+    app_name_map = {app.name: app for app in apps}
     app_opts = list(app_name_map.keys())
     if len(app_opts) == 0:
         st.warning("Please create a new app first.")
@@ -34,9 +34,9 @@ with st.container():
             logger.info(f"preview app: {preview_app}")
             
             app = app_name_map[preview_app]
-            status = app['status']
-            api_data = app['api_conf']
-            app_data = app['app_conf']
+            status = app.status
+            api_data = app.api_conf
+            app_data = app.app_conf
             comfyflow = Comfyflow(comfy_client=get_comfy_client(), api_data=api_data, app_data=app_data)
             comfyflow.create_ui()
             if status == AppStatus.CREATED.value:

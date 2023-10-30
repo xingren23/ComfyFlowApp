@@ -48,7 +48,7 @@ with st.container():
 
     
     apps = get_sqlite_instance().get_all_apps()
-    app_name_map = {app['name']: app for app in apps if app['status'] == AppStatus.PREVIEWED.value} 
+    app_name_map = {app.name: app for app in apps if app.status == AppStatus.PREVIEWED.value} 
     preview_app_opts = list(app_name_map.keys())
     if len(preview_app_opts) == 0:
         st.warning("No app is available to publish, please preview app first.")
@@ -59,9 +59,9 @@ with st.container():
             st.selectbox("My Apps", options=preview_app_opts, key='publish_select_app', help="Select a app to publish.")
 
             app = app_name_map[st.session_state['publish_select_app']]
-            app_name = app['name']
-            api_data_json = json.loads(app['api_conf'])
-            app_data_json = json.loads(app['app_conf'])
+            app_name = app.name
+            api_data_json = json.loads(app.api_conf)
+            app_data_json = json.loads(app.app_conf)
 
             # config app nodes
             with open('public/comfyui/object_info.json', 'r') as f:

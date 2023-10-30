@@ -28,10 +28,10 @@ class ProgressEventState():
 class InstallThread(Thread):
     def __init__(self, app, queue):
         super(InstallThread, self).__init__()
-        self.app_id = app["id"]
-        self.app_name = app["name"]
-        self.app_conf_json = json.loads(app["app_conf"])
-        self.api_conf_json = json.loads(app["api_conf"])
+        self.app_id = app.id
+        self.app_name = app.name
+        self.app_conf_json = json.loads(app.app_conf)
+        self.api_conf_json = json.loads(app.api_conf)
         self.queue = queue
 
 
@@ -116,15 +116,15 @@ class InstallThread(Thread):
 
 
 def install_app(app, queue):
-    logger.info(f"Start install thread for {app['name']} ...")
+    logger.info(f"Start install thread for {app.name} ...")
     install_thread = InstallThread(app, queue)
     install_thread.start()
     # install_thread.join()
-    # logger.info(f"Install thread for {app['name']} finished")
+    # logger.info(f"Install thread for {app.name} finished")
     
 def update_install_progress(app, status_queue):
-    get_sqlite_instance().update_app_status(app["id"], AppStatus.INSTALLING.value)
-    with st.status(f"Waiting for install {app['name']} ...", state="running", expanded=True) as install_progress:
+    get_sqlite_instance().update_app_status(app.id, AppStatus.INSTALLING.value)
+    with st.status(f"Waiting for install {app.name} ...", state="running", expanded=True) as install_progress:
         while True:
             try:
                 status_event = status_queue.get()
@@ -135,13 +135,13 @@ def update_install_progress(app, status_queue):
                     install_progress.write(info)
                 elif state == ProgressEventState.COMPLETE:
                     install_progress.write(info)
-                    install_progress.update(label=f"Install app {app['name']} success", state="complete", expanded=True)
-                    get_sqlite_instance().update_app_status(app["id"], AppStatus.INSTALLED.value)
+                    install_progress.update(label=f"Install app {app.name} success", state="complete", expanded=True)
+                    get_sqlite_instance().update_app_status(app.id, AppStatus.INSTALLED.value)
                     break
                 elif state == ProgressEventState.ERROR:
                     install_progress.write(info)
-                    install_progress.update(label=f"Install app {app['name']} error", state="error", expanded=True)
-                    get_sqlite_instance().update_app_status(app["id"], AppStatus.ERROR.value)
+                    install_progress.update(label=f"Install app {app.name} error", state="error", expanded=True)
+                    get_sqlite_instance().update_app_status(app.id, AppStatus.ERROR.value)
                     break
             except Exception as e:
                 logger.warning(f"Queue get error {e}")
@@ -149,31 +149,31 @@ def update_install_progress(app, status_queue):
 
 
 def show_install_status(app):
-    if app["status"] == AppStatus.INSTALLING.value:
-        st.info(f"App {app['name']} is installing ...")
-    elif app["status"] == AppStatus.INSTALLED.value:
-        st.success(f"App {app['name']} is installed")
-    elif app["status"] == AppStatus.ERROR.value:
-        st.error(f"App {app['name']} install error")
+    if app.status == AppStatus.INSTALLING.value:
+        st.info(f"App {app.name} is installing ...")
+    elif app.status == AppStatus.INSTALLED.value:
+        st.success(f"App {app.name} is installed")
+    elif app.status == AppStatus.ERROR.value:
+        st.error(f"App {app.name} install error")
 
 page_init()
 
 def create_app_info_ui(app): 
     app_row = row([1, 6.8, 1.2, 1], vertical_align="bottom")
     try:
-        if app["image"] is not None:
-            app_row.image(app["image"])
+        if app.image is not None:
+            app_row.image(app.image)
         else:
             app_row.image("public/images/app-150.png")
     except Exception as e:
         logger.error(f"load app image error, {e}")
 
     # get description limit to 200 chars
-    description = app["description"]
+    description = app.description
     if len(description) > 160:
         description = description[:160] + "..."                
     app_row.markdown(f"""
-                    #### {app['name']}
+                    #### {app.name}
                     {description}
                     """)
             
@@ -183,22 +183,22 @@ def create_app_info_ui(app):
                     {app_author}
                     """)
     
-    app_status = app["status"]
+    app_status = app.status
     
-    if f'{app["id"]}_progress_queue' not in st.session_state:
+    if f'{app.id}_progress_queue' not in st.session_state:
         status_queue = queue.Queue()
-        st.session_state[f'{app["id"]}_progress_queue'] = status_queue
-    status_queue = st.session_state.get(f'{app["id"]}_progress_queue')
+        st.session_state[f'{app.id}_progress_queue'] = status_queue
+    status_queue = st.session_state.get(f'{app.id}_progress_queue')
     if app_status == AppStatus.PUBLISHED.value or app_status == AppStatus.ERROR.value:
         install_button = app_row.button("Install", help="Install app from app store",
-                                         key=f"install_{app['id']}",
+                                         key=f"install_{app.id}",
                                          on_click=install_app, args=(app, status_queue))
         if install_button:
             update_install_progress(app, status_queue)  
 
     elif app_status == AppStatus.INSTALLING.value or app_status == AppStatus.INSTALLED.value:
         reinstall_button = app_row.button("ReInstall", help="Install app from app store", 
-                                          key=f"install_{app['id']}",
+                                          key=f"install_{app.id}",
                                           on_click=install_app, args=(app, status_queue))
         if reinstall_button:
             update_install_progress(app, status_queue)
@@ -216,11 +216,11 @@ with st.container():
         apps = get_sqlite_instance().get_all_apps()
         for app in apps:
             st.divider()
-            logger.info(f"load app info for {app['name']}")
+            logger.info(f"load app info for {app.name}")
             create_app_info_ui(app)
 
             # update app status
-            app = get_sqlite_instance().get_app_by_id(app["id"])
+            app = get_sqlite_instance().get_app_by_id(app.id)
             show_install_status(app)
 
     
