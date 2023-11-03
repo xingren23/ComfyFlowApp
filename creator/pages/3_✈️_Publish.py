@@ -1,10 +1,11 @@
 from loguru import logger
 import json
 import os
+import base64
 from urllib.parse import urlparse
 import streamlit as st
 import modules.page as page
-from modules import get_sqlite_instance
+from modules import get_sqlite_instance, get_comfyflow_model_info, get_comfyflow_object_info, publish_app
 from modules.sqlitehelper import AppStatus
 from streamlit_extras.row import row
 from streamlit_extras.switch_page_button import switch_page
@@ -48,7 +49,7 @@ with st.container():
 
     
     apps = get_sqlite_instance().get_all_apps()
-    app_name_map = {app.name: app for app in apps if app.status == AppStatus.PREVIEWED.value} 
+    app_name_map = {app.name: app for app in apps if app.status == AppStatus.PREVIEWED.value or app.status == AppStatus.PUBLISHED.value} 
     preview_app_opts = list(app_name_map.keys())
     if len(preview_app_opts) == 0:
         st.warning("No app is available to publish, please preview app first.")
@@ -64,9 +65,9 @@ with st.container():
             app_data_json = json.loads(app.app_conf)
 
             # config app nodes
-            with open('public/comfyui/object_info.json', 'r') as f:
-                object_info = json.load(f)
-                with st.expander("Parse comfyui node info", expanded=True):
+            with st.expander("Parse comfyui node info", expanded=True):
+                object_info = get_comfyflow_object_info()
+                if object_info:
                     for node_id in api_data_json:
                         inputs = api_data_json[node_id]['inputs']
                         class_type = api_data_json[node_id]['class_type']
@@ -75,13 +76,14 @@ with st.container():
                         else:
                             st.write(f":red[Node info not found\, {node_id}\:{class_type}]")
                             st.session_state['publish_invalid_node'] = True
+                else:
+                    st.warning("Get comfyflow object_info error")
+                    st.stop()
 
-            # load comfyui/object_model from json
-            with open('public/comfyui/object_model.json', 'r') as f:
-                object_model = json.load(f)
-
-                # config app models
-                with st.expander("Config app models", expanded=True):
+            # config app models
+            with st.expander("Config app models", expanded=True):
+                object_model = get_comfyflow_model_info()
+                if object_model:
                     for node_id in api_data_json:
                         inputs = api_data_json[node_id]['inputs']
                         class_type = api_data_json[node_id]['class_type']
@@ -93,8 +95,10 @@ with st.container():
                                     model_input_name = f"{node_id}:{class_type}:{inputs[param]}"
                                     input_model_row.text_input("App model name", value=model_input_name, help="App model name")
                                     input_model_row.text_input("Input model url", key=model_input_name, help="Input model url of huggingface model hub")
+                else:
+                    st.warning("Get comfyflow model_info error")
+                    st.stop()
                                                         
-            
             publish_button = st.button("Publish", key='publish_button', type='primary', 
                       help="Publish app to store and share with your friends")
             if publish_button:
@@ -136,10 +140,15 @@ with st.container():
                     # update app_conf and status
                     app_data_json['models'] = models
                     app_data = json.dumps(app_data_json)
-                    logger.info(f"update models, {app_data_json}")
+                    logger.info(f"update models, {app_data}")
                     get_sqlite_instance().update_app_publish(app_name, app_data)
 
-                    # call api to publish app
+                    # convert image to base64
+                    image_base64 = base64.b64encode(app.image).decode('utf-8')
 
-                    
-                    st.success("Publish success, you can share this app with your friends.")
+                    # call api to publish app
+                    ret = publish_app(app.name, app.description, image_base64, app_data, app.api_conf, app.template, AppStatus.PUBLISHED.value)
+                    if ret:
+                        st.success("Publish success, you can share this app with your friends.")
+                    else:
+                        st.error("Publish app error")

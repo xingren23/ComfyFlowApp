@@ -2,11 +2,12 @@ from loguru import logger
 import json
 import streamlit as st
 from modules.page import page_init
-from modules import get_sqlite_instance
+from modules import get_sqlite_instance, get_comfyflow_apps
 from streamlit_extras.row import row
 from threading import Thread
 from modules.sqlitehelper import AppStatus
 import queue
+from modules.page import stylable_button_container
 
 
 def bytes_to_human_readable(size_in_bytes, decimal_places=2):
@@ -86,6 +87,7 @@ class InstallThread(Thread):
 
             # install, update api_conf
             if 'models' in self.app_conf_json:
+                logger.debug(f"api_conf_json: {self.api_conf_json}")
                 node_models = self.app_conf_json['models']
                 for node_id in node_models:
                     inputs = node_models[node_id]['inputs']
@@ -156,8 +158,6 @@ def show_install_status(app):
     elif app.status == AppStatus.ERROR.value:
         st.error(f"App {app.name} install error")
 
-page_init()
-
 def create_app_info_ui(app): 
     app_row = row([1, 6.8, 1.2, 1], vertical_align="bottom")
     try:
@@ -203,14 +203,29 @@ def create_app_info_ui(app):
         if reinstall_button:
             update_install_progress(app, status_queue)
 
+
+page_init()
+
 with st.container():
-    with st.container():
-        st.markdown("""
+    with stylable_button_container():
+        header_row = row([0.85, 0.15], vertical_align="bottom")
+        header_row.markdown("""
             ### App Store
-        """)
-        st.markdown("""
             This is a simple app store, you could explore and install apps from here.
         """)
+        sync_button = header_row.button("Sync", help="Sync apps from comfyflow.app", key="sync_apps")
+        if sync_button:
+            logger.info("sync_apps_to_local_db")
+            comfyflow_apps = get_comfyflow_apps()
+            if not comfyflow_apps:
+                st.error("get_comfyflow_apps failed")
+            else:
+                sqliteInstance = get_sqlite_instance()
+                sync_apps = sqliteInstance.sync_apps(comfyflow_apps)
+                if len(sync_apps) == 0:
+                    st.info("No new apps to sync")
+                else:
+                    st.success(f"Sync apps {sync_apps} success")
 
     with st.container():
         apps = get_sqlite_instance().get_all_apps()

@@ -1,4 +1,5 @@
 import os
+from io import BytesIO
 from loguru import logger
 import streamlit as st
 import modules.page as page
@@ -14,7 +15,8 @@ def create_app_info_ui(app):
     app_row = row([1, 5.8, 2, 1.2], vertical_align="bottom")
     try:
         if app.image is not None:
-            app_row.image(app.image)
+            
+            app_row.image(BytesIO(app.image))
         else:
             app_row.image("./public/images/app-150.png")
     except Exception as e:
@@ -158,19 +160,14 @@ def create_operation_ui(app):
     operate_row.button("🗑 Delete", help="Delete the app", key=f"{id}-button-delete", 
                        on_click=click_delete_app, args=(name,))
     
-    if status == AppStatus.PUBLISHED.value:
-        operate_row.button("✈️ Publish", help="Publish the app with template", 
-                                        key=f"{id}-button-publish",
-                                        disabled=True)
-    else:
-        publish_button = operate_row.button("✈️ Publish", help="Publish the app with template", 
+    publish_button = operate_row.button("✈️ Publish", help="Publish the app with template", 
                                         key=f"{id}-button-publish",
                                         on_click=click_publish_app, args=(name, status,))
-        if publish_button:
-            if status == AppStatus.CREATED.value:
-                st.error("Please preview and check this app first")
-            else:
-                switch_page("Publish")
+    if publish_button:
+        if status == AppStatus.CREATED.value:
+            st.error("Please preview and check this app first")
+        else:
+            switch_page("Publish")
 
 
 logger.info("Loading workspace page")

@@ -1,4 +1,5 @@
 from loguru import logger
+import base64
 import streamlit as st
 from sqlalchemy import text
 from enum import Enum
@@ -8,7 +9,7 @@ comfyflow_apps table
     id INTEGER
     name TEXT
     description TEXT
-    image BLOB
+    image TEXT
     app_conf TEXT
     api_conf TEXT
     template TEXT
@@ -40,7 +41,7 @@ class SQLiteHelper:
     def _init_table(self):
         # Create a table if it doesn't exist.
         with self.session as s:
-            sql = text(f'CREATE TABLE IF NOT EXISTS {self.app_talbe_name} (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT, image BLOB, app_conf TEXT, api_conf TEXT, template TEXT, url TEXT, status TEXT, created_at TEXT, updated_at TEXT);')
+            sql = text(f'CREATE TABLE IF NOT EXISTS {self.app_talbe_name} (id INTEGER PRIMARY KEY, name TEXT, description TEXT, image TEXT, app_conf TEXT, api_conf TEXT, template TEXT, url TEXT, status TEXT, created_at TEXT, updated_at TEXT);')
             s.execute(sql)
 
             # create index on name
@@ -48,6 +49,29 @@ class SQLiteHelper:
             s.execute(sql)
             s.commit()
             logger.info(f"init app table {self.app_talbe_name} and index")
+
+    def sync_apps(self, apps):
+        # sync apps from comfyflow.app
+        with self.session as s:
+            logger.info("sync apps from comfyflow.app")
+            sql = text(f'SELECT id FROM {self.app_talbe_name} order by id;')
+            local_apps = s.execute(sql).fetchall()
+            local_app_ids = [app.id for app in local_apps]
+            logger.info(f"local_app_ids: {local_app_ids}")
+            sync_apps = []
+            for app in apps:
+                if app['id'] in local_app_ids:
+                    logger.info(f"app {app['id']} already installed")
+                    continue
+                # convert base64 image to bytes
+                base64_data = app['image'].split(',')[-1]
+                image_bytes = base64.b64decode(base64_data)
+                sql = text(f'INSERT INTO {self.app_talbe_name} (id, name, description, image, app_conf, api_conf, template, status, created_at, updated_at) VALUES (:id, :name, :description, :image, :app_conf, :api_conf, :template, :status, datetime("now"), datetime("now") );')
+                s.execute(sql, dict(id=app['id'], name=app['name'], description=app['description'], image=image_bytes, app_conf=app['app_conf'], api_conf=app['api_conf'], template=app['template'], status=AppStatus.PUBLISHED.value))
+                s.commit()
+                sync_apps.append(app['name'])
+                logger.info(f"insert app {app['name']} to db")
+            return sync_apps
 
     def get_all_apps(self):
         with self.session as s:

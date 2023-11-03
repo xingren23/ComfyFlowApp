@@ -43,7 +43,7 @@ with st.container():
                 if f"{preview_app}_previewed" in st.session_state:
                     previewed = st.session_state[f"{preview_app}_previewed"]
                     if previewed:
-                        st.success(f"Preview app {preview_app} success, back your workspace and start the app.")
+                        st.success(f"Preview app {preview_app} success, back to workspace, you could start or publish the app.")
                         get_sqlite_instance().update_app_preview(preview_app)
                         logger.info(f"update preview status for app: {preview_app}")
                         st.stop()

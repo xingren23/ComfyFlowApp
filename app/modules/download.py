@@ -1,6 +1,5 @@
 from loguru import logger
 import os
-import requests
 from urllib.parse import urlparse
 from huggingface_hub import hf_hub_download
 from repositories.ComfyUI.folder_paths import folder_names_and_paths
