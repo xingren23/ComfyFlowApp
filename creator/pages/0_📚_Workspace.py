@@ -157,7 +157,7 @@ def create_operation_ui(app):
 
     operate_row.markdown("")
 
-    operate_row.button("🗑 Delete", help="Delete the app", key=f"{id}-button-delete", 
+    operate_row.button("🚮 Delete", help="Delete the app", key=f"{id}-button-delete", 
                        on_click=click_delete_app, args=(name,))
     
     publish_button = operate_row.button("✈️ Publish", help="Publish the app with template", 

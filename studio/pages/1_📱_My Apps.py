@@ -45,7 +45,7 @@ def create_app_info_ui(app):
                     #### Author
                     {app_author}
                     """)
-    uninstall_button = app_row.button("Uninstall", help="Uninstall app from app store",
+    uninstall_button = app_row.button("🚮 Uninstall", help="Uninstall app from app store",
                                       key=f"uninstall_{app.id}", on_click=uninstall_app, args=(app,))
     if uninstall_button:
         logger.info(f"uninstall app {app.name}")
@@ -146,7 +146,7 @@ with st.container():
                 with page.stylable_button_container():
                     header_row = row([0.85, 0.15], vertical_align="bottom")
                     header_row.markdown("""
-                            ###💡 My Apps
+                            ### My Apps
                         """)
                     explore_button = header_row.button(
                         "Explore Apps", help="Explore more apps from app store.")

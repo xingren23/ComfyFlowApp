@@ -197,13 +197,13 @@ def create_app_info_ui(app):
         st.session_state[f'{app.id}_progress_queue'] = status_queue
     status_queue = st.session_state.get(f'{app.id}_progress_queue')
     if app_status == AppStatus.INSTALLING.value or app_status == AppStatus.INSTALLED.value:
-        reinstall_button = app_row.button("ReInstall", help="Install app from app store", 
+        reinstall_button = app_row.button("📲 ReInstall", help="Install app from app store", 
                                           key=f"install_{app.id}",
                                           on_click=install_app, args=(app, status_queue))
         if reinstall_button:
             update_install_progress(app, status_queue)
     else:
-        install_button = app_row.button("Install", help="Install app from app store",
+        install_button = app_row.button("📲 Install", help="Install app from app store",
                                          key=f"install_{app.id}",
                                          on_click=install_app, args=(app, status_queue))
         if install_button:
@@ -218,7 +218,7 @@ with st.container():
     with stylable_button_container():
         header_row = row([0.85, 0.15], vertical_align="bottom")
         header_row.markdown("""
-            ###📱 App Store
+            ### App Store
             This is a simple app store, you could explore and install apps from here.
         """)
         sync_button = header_row.button("Refresh", help="Sync apps from comfyflow.app", key="sync_apps")
