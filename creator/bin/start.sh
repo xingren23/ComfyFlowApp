@@ -7,10 +7,10 @@ echo "$PROJECT_PATH"
 cd $PROJECT_PATH
 
 # set LOGURU_LEVEL to ERROR
-export LOGURU_LEVEL=DEBUG
+export LOGURU_LEVEL=INFO
 
 # app name
-APP_NAME="Home"
+APP_NAME="Developer"
 # script params
 nohup streamlit run "$APP_NAME.py" > creator.log 2>&1 &
 
