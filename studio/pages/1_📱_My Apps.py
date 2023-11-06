@@ -22,7 +22,7 @@ def enter_app(app):
 
 
 def create_app_info_ui(app):
-    app_row = row([1, 5.8, 1.2, 1, 1], vertical_align="bottom")
+    app_row = row([1, 5.4, 1.2, 1.2, 1], vertical_align="bottom")
     try:
         if app.image is not None:
             app_row.image(app.image)

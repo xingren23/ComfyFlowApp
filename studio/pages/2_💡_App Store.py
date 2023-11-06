@@ -166,7 +166,7 @@ def show_install_status(app):
         st.error(f"App {app.name} install error")
 
 def create_app_info_ui(app): 
-    app_row = row([1, 6.8, 1.2, 1], vertical_align="bottom")
+    app_row = row([1, 6.6, 1.2, 1.2], vertical_align="bottom")
     try:
         if app.image is not None:
             app_row.image(app.image)
