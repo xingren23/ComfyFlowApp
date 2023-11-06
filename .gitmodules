@@ -1,0 +1,3 @@
+[submodule "stduio/repositories/ComfyUI"]
+	path = studio/repositories/ComfyUI
+	url = https://github.com/xingren23/ComfyUI
