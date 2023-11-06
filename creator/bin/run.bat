@@ -10,6 +10,6 @@ cd /d %PROJECT_DIR%
 set LOGURU_LEVEL=INFO
 
 :: start server
-streamlit run Developer.py
+streamlit run Creator.py
 
 endlocal

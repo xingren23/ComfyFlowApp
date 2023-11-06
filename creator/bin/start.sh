@@ -10,7 +10,7 @@ cd $PROJECT_PATH
 export LOGURU_LEVEL=INFO
 
 # app name
-APP_NAME="Developer"
+APP_NAME="Creator"
 # script params
 nohup streamlit run "$APP_NAME.py" > creator.log 2>&1 &
 

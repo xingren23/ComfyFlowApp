@@ -108,7 +108,7 @@ with st.container():
     else:
         with st.container():
             if not st.session_state['authentication_status']:
-                st.warning("Please go to home page to login first.")
+                st.warning("Please go to creator page to login first.")
 
             st.selectbox("My Apps", options=preview_app_opts, key='publish_select_app', help="Select a app to publish.")
 
