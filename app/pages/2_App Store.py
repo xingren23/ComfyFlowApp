@@ -221,23 +221,23 @@ with st.container():
             ### App Store
             This is a simple app store, you could explore and install apps from here.
         """)
-        sync_button = header_row.button("Sync", help="Sync apps from comfyflow.app", key="sync_apps")
+        sync_button = header_row.button("Refresh", help="Sync apps from comfyflow.app", key="sync_apps")
         if sync_button:
             # get apps from comfyflow.app
-            comfyflow_api = os.getenv('COMFYFLOW_API_URL', default='http://localhost:8787')
+            comfyflow_api = os.getenv('COMFYFLOW_API_URL', default='https://api.comfyflwo.app')
             cookies = {auth_instance.cookie_name: auth_instance.get_token()}
             logger.debug(f"get all app from {comfyflow_api}, with cookies: {cookies}")
             ret = requests.get(f"{comfyflow_api}/api/app/all", cookies=cookies)
             if ret.status_code != 200:
-                st.error(f"Sync apps from {comfyflow_api} failed, {ret.text}")
+                st.error(f"Refresh apps from {comfyflow_api} failed, {ret.text}")
             else:
                 comfyflow_apps = ret.json()
                 sqliteInstance = get_sqlite_instance()
                 sync_apps = sqliteInstance.sync_apps(comfyflow_apps)
                 if len(sync_apps) == 0:
-                    st.info("All apps have synced to local")
+                    st.info("All apps have refreshed")
                 else:
-                    st.success(f"Sync apps {sync_apps} from {comfyflow_api} success")
+                    st.success(f"Refresh apps {sync_apps} from {comfyflow_api} success")
 
     with st.container():
         if not st.session_state['authentication_status']:

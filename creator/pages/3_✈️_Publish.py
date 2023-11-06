@@ -2,10 +2,11 @@ from loguru import logger
 import json
 import os
 import base64
+import requests
 from urllib.parse import urlparse
 import streamlit as st
 import modules.page as page
-from modules import get_sqlite_instance, get_comfyflow_model_info, get_comfyflow_object_info, publish_app
+from modules import get_sqlite_instance, get_auth_instance
 from modules.sqlitehelper import AppStatus
 from streamlit_extras.row import row
 from streamlit_extras.switch_page_button import switch_page
@@ -33,13 +34,63 @@ def check_model_url(model_url):
             hf_meta = get_hf_file_metadata(url=hf_url)
             logger.debug(f"hf_meta, {hf_meta}")
             return hf_meta
-        
 
+
+def get_comfyflow_object_info(cookies=None):
+    comfyflow_api = os.getenv('COMFYFLOW_API_URL', default='https://api.comfyflwo.app')
+
+    # request comfyflow object info
+    object_info = requests.get(f"{comfyflow_api}/api/comfyflow/object_info", cookies=cookies)
+    if object_info.status_code != 200:
+        logger.error(f"Get comfyflow object info failed, {object_info.text}")
+        st.session_state['get_comfyflow_object_info_error'] = f"Get comfyflow object info failed, {object_info.text}"
+        return None
+    logger.info(f"get_comfyflow_object_info, {object_info}")
+    return object_info.json()
+
+
+def get_comfyflow_model_info(cookies=None):
+    comfyflow_api = os.getenv(
+        'COMFYFLOW_API_URL', default='https://api.comfyflwo.app')
+    # request comfyflow object info
+    model_info = requests.get(f"{comfyflow_api}/api/comfyflow/model_info", cookies=cookies)
+    if model_info.status_code != 200:
+        logger.error(f"Get comfyflow model info failed, {model_info.text}")
+        st.session_state['get_comfyflow_model_info_error'] = f"Get comfyflow model info failed, {model_info.text}"
+        return None
+    logger.info(f"get_comfyflow_model_info, {model_info}")
+    return model_info.json()        
+
+def publish_app(name, description, image, app_conf, api_conf, template, status, cookies=None):
+    
+    comfyflow_api = os.getenv(
+        'COMFYFLOW_API_URL', default='https://api.comfyflwo.app')
+    # post app to comfyflow.app
+    app = {
+        "name": name,
+        "description": description,
+        "image": image,
+        "app_conf": app_conf,
+        "api_conf": api_conf,
+        "template": template,
+        "status": status
+    }
+    logger.debug(f"publish app to comfyflow.app, {app}")
+    ret = requests.post(f"{comfyflow_api}/api/app/publish", json=app, cookies=cookies)
+    if ret.status_code != 200:
+        logger.error(f"publish app failed, {name} {ret.content}")
+        return None
+    else:
+        logger.info(f"publish app success, {name}")
+        return ret
 
 logger.info("Loading publish page")
 page.page_init()
 
 with st.container():
+    auth_instance = get_auth_instance()   
+    cookies = {auth_instance.cookie_name: auth_instance.get_token()} 
+
     with page.stylable_button_container():
         header_row = row([0.85, 0.15], vertical_align="top")
         header_row.title("✈️ Publish and share to friends")
@@ -56,6 +107,8 @@ with st.container():
         st.stop()
     else:
         with st.container():
+            if not st.session_state['authentication_status']:
+                st.warning("Please go to home page to login first.")
 
             st.selectbox("My Apps", options=preview_app_opts, key='publish_select_app', help="Select a app to publish.")
 
@@ -66,7 +119,7 @@ with st.container():
 
             # config app nodes
             with st.expander("Parse comfyui node info", expanded=True):
-                object_info = get_comfyflow_object_info()
+                object_info = get_comfyflow_object_info(cookies)
                 if object_info:
                     for node_id in api_data_json:
                         inputs = api_data_json[node_id]['inputs']
@@ -77,12 +130,12 @@ with st.container():
                             st.write(f":red[Node info not found\, {node_id}\:{class_type}]")
                             st.session_state['publish_invalid_node'] = True
                 else:
-                    st.warning("Get comfyflow object_info error")
+                    st.error(f"{st.session_state['get_comfyflow_object_info_error']}")
                     st.stop()
 
             # config app models
             with st.expander("Config app models", expanded=True):
-                object_model = get_comfyflow_model_info()
+                object_model = get_comfyflow_model_info(cookies)
                 if object_model:
                     for node_id in api_data_json:
                         inputs = api_data_json[node_id]['inputs']
@@ -96,7 +149,7 @@ with st.container():
                                     input_model_row.text_input("App model name", value=model_input_name, help="App model name")
                                     input_model_row.text_input("Input model url", key=model_input_name, help="Input model url of huggingface model hub")
                 else:
-                    st.warning("Get comfyflow model_info error")
+                    st.error(f"{st.session_state['get_comfyflow_model_info_error']}")
                     st.stop()
                                                         
             publish_button = st.button("Publish", key='publish_button', type='primary', 
@@ -147,7 +200,7 @@ with st.container():
                     image_base64 = base64.b64encode(app.image).decode('utf-8')
 
                     # call api to publish app
-                    ret = publish_app(app.name, app.description, image_base64, app_data, app.api_conf, app.template, AppStatus.PUBLISHED.value)
+                    ret = publish_app(app.name, app.description, image_base64, app_data, app.api_conf, app.template, AppStatus.PUBLISHED.value, cookies)
                     if ret:
                         st.success("Publish success, you can share this app with your friends.")
                     else:
