@@ -182,7 +182,7 @@ class Comfyflow:
                     image = Image.open(uploaded_file)
                     st.image(image, use_column_width=True, caption='Input Image')
 
-    def create_ui(self, disabled=False):      
+    def create_ui(self):      
         logger.info("Creating UI")  
 
         if 'progress_queue' not in st.session_state:   
@@ -197,7 +197,7 @@ class Comfyflow:
         st.markdown(f'{app_description}')
         st.divider()
 
-        input_col, output_col = st.columns([0.4, 0.6], gap="medium")
+        input_col, _, output_col, _ = st.columns([0.45, 0.05, 0.5, 0.1], gap="medium")
         with input_col:
             # st.subheader('Inputs')
             with st.container():
@@ -205,9 +205,9 @@ class Comfyflow:
                 for node_id in self.app_json['inputs']:
                     node = self.app_json['inputs'][node_id]
                     node_inputs = node['inputs']
-                    self.create_ui_input(node_id, node_inputs, disabled)
+                    self.create_ui_input(node_id, node_inputs)
 
-                gen_button = st.button(label='Generate', type='primary', use_container_width=True, disabled=disabled, on_click=self.generate)
+                gen_button = st.button(label='Generate', type='primary', use_container_width=True, on_click=self.generate)
 
 
         with output_col:

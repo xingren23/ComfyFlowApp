@@ -69,4 +69,4 @@ with st.container():
 
         from modules.comfyflow import Comfyflow
         comfy_flow = Comfyflow(comfy_client=get_comfy_client(), api_data=api_data, app_data=app_data)
-        comfy_flow.create_ui()
+        comfy_flow.create_ui(show_header=True)
