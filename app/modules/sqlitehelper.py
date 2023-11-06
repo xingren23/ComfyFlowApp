@@ -9,7 +9,7 @@ comfyflow_apps table
     id INTEGER
     name TEXT
     description TEXT
-    image TEXT
+    image BLOB
     app_conf TEXT
     api_conf TEXT
     template TEXT
@@ -24,6 +24,7 @@ class AppStatus(Enum):
     DOWNLOADED = "Downloaded"
     INSTALLING = "Installing"
     INSTALLED = "Installed"
+    UNINSTALLED = "Uninstalled"
     ERROR = "Error"
 
 
@@ -32,7 +33,7 @@ class SQLiteHelper:
         self.db_conn = st.experimental_connection('comfyflow_db', type='sql')
         self.app_talbe_name = 'comfyflow_apps'
         self._init_table()
-        logger.info(f"db_conn: {self.db_conn}, app_talbe_name: {self.app_talbe_name}")
+        logger.debug(f"db_conn: {self.db_conn}, app_talbe_name: {self.app_talbe_name}")
 
     @property
     def session(self):
@@ -53,11 +54,11 @@ class SQLiteHelper:
     def sync_apps(self, apps):
         # sync apps from comfyflow.app
         with self.session as s:
-            logger.info("sync apps from comfyflow.app")
+            logger.info(f"sync apps {apps}")
             sql = text(f'SELECT id FROM {self.app_talbe_name} order by id;')
             local_apps = s.execute(sql).fetchall()
             local_app_ids = [app.id for app in local_apps]
-            logger.info(f"local_app_ids: {local_app_ids}")
+            logger.debug(f"local_app_ids: {local_app_ids}")
             sync_apps = []
             for app in apps:
                 if app['id'] in local_app_ids:
@@ -80,24 +81,24 @@ class SQLiteHelper:
             apps = s.execute(sql).fetchall()
             return apps
         
-    def get_my_apps(self):
+    def get_my_installed_apps(self):
         # get installed apps
         with self.session as s:
-            logger.info("get my apps from db")
+            logger.debug("get my apps from db")
             sql = text(f'SELECT id, name, description, image, app_conf, api_conf, template, url, status FROM {self.app_talbe_name} WHERE status=:status order by id;')
             apps = s.execute(sql, {'status': AppStatus.INSTALLED.value}).fetchall()
             return apps
 
     def get_app(self, name):
         with self.session as s:
-            logger.info(f"get app by name: {name}")
+            logger.debug(f"get app by name: {name}")
             sql = text(f'SELECT * FROM {self.app_talbe_name} WHERE name=:name;')
             app = s.execute(sql, {'name': name}).fetchone()
             return app
         
     def get_app_by_id(self, id):
         with self.session as s:
-            logger.info(f"get app by id: {id}")
+            logger.debug(f"get app by id: {id}")
             sql = text(f'SELECT * FROM {self.app_talbe_name} WHERE id=:id;')
             app = s.execute(sql, {'id': id}).fetchone()
             return app

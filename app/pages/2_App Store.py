@@ -1,8 +1,11 @@
 from loguru import logger
 import json
+import os
+import requests
 import streamlit as st
+from streamlit.runtime.scriptrunner import add_script_run_ctx
 from modules.page import page_init
-from modules import get_sqlite_instance, get_comfyflow_apps
+from modules import get_sqlite_instance, get_auth_instance
 from streamlit_extras.row import row
 from threading import Thread
 from modules.sqlitehelper import AppStatus
@@ -25,6 +28,9 @@ class ProgressEventState():
         self.app_id = app_id
         self.info = info
         self.state = state
+
+    def __str__(self) -> str:
+        return f"ProgressEventState: app_id: {self.app_id}, info: {self.info}, state: {self.state}"
 
 class InstallThread(Thread):
     def __init__(self, app, queue):
@@ -120,6 +126,7 @@ class InstallThread(Thread):
 def install_app(app, queue):
     logger.info(f"Start install thread for {app.name} ...")
     install_thread = InstallThread(app, queue)
+    add_script_run_ctx(install_thread)
     install_thread.start()
     # install_thread.join()
     # logger.info(f"Install thread for {app.name} finished")
@@ -189,24 +196,25 @@ def create_app_info_ui(app):
         status_queue = queue.Queue()
         st.session_state[f'{app.id}_progress_queue'] = status_queue
     status_queue = st.session_state.get(f'{app.id}_progress_queue')
-    if app_status == AppStatus.PUBLISHED.value or app_status == AppStatus.ERROR.value:
+    if app_status == AppStatus.INSTALLING.value or app_status == AppStatus.INSTALLED.value:
+        reinstall_button = app_row.button("ReInstall", help="Install app from app store", 
+                                          key=f"install_{app.id}",
+                                          on_click=install_app, args=(app, status_queue))
+        if reinstall_button:
+            update_install_progress(app, status_queue)
+    else:
         install_button = app_row.button("Install", help="Install app from app store",
                                          key=f"install_{app.id}",
                                          on_click=install_app, args=(app, status_queue))
         if install_button:
             update_install_progress(app, status_queue)  
 
-    elif app_status == AppStatus.INSTALLING.value or app_status == AppStatus.INSTALLED.value:
-        reinstall_button = app_row.button("ReInstall", help="Install app from app store", 
-                                          key=f"install_{app.id}",
-                                          on_click=install_app, args=(app, status_queue))
-        if reinstall_button:
-            update_install_progress(app, status_queue)
-
 
 page_init()
 
 with st.container():
+    auth_instance = get_auth_instance()
+
     with stylable_button_container():
         header_row = row([0.85, 0.15], vertical_align="bottom")
         header_row.markdown("""
@@ -215,23 +223,30 @@ with st.container():
         """)
         sync_button = header_row.button("Sync", help="Sync apps from comfyflow.app", key="sync_apps")
         if sync_button:
-            logger.info("sync_apps_to_local_db")
-            comfyflow_apps = get_comfyflow_apps()
-            if not comfyflow_apps:
-                st.error("get_comfyflow_apps failed")
+            # get apps from comfyflow.app
+            comfyflow_api = os.getenv('COMFYFLOW_API_URL', default='http://localhost:8787')
+            cookies = {auth_instance.cookie_name: auth_instance.get_token()}
+            logger.debug(f"get all app from {comfyflow_api}, with cookies: {cookies}")
+            ret = requests.get(f"{comfyflow_api}/api/app/all", cookies=cookies)
+            if ret.status_code != 200:
+                st.error(f"Sync apps from {comfyflow_api} failed, {ret.text}")
             else:
+                comfyflow_apps = ret.json()
                 sqliteInstance = get_sqlite_instance()
                 sync_apps = sqliteInstance.sync_apps(comfyflow_apps)
                 if len(sync_apps) == 0:
-                    st.info("No new apps to sync")
+                    st.info("All apps have synced to local")
                 else:
-                    st.success(f"Sync apps {sync_apps} success")
+                    st.success(f"Sync apps {sync_apps} from {comfyflow_api} success")
 
     with st.container():
+        if not st.session_state['authentication_status']:
+            st.warning("Please go to home page to login first.")
+
         apps = get_sqlite_instance().get_all_apps()
         for app in apps:
             st.divider()
-            logger.info(f"load app info for {app.name}")
+            logger.debug(f"load app info for {app.name}")
             create_app_info_ui(app)
 
             # update app status

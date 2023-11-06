@@ -3,9 +3,9 @@ import streamlit_extras.app_logo as app_logo
 from streamlit_extras.badges import badge
 from streamlit_extras.stylable_container import stylable_container
 
-def page_init():    
+def page_init(layout="wide"):    
     st.set_page_config(page_title="ComfyFlowApp: Load a comfyui workflow as webapp in seconds.", 
-    page_icon=":artist:", layout="wide")
+    page_icon=":artist:", layout=layout)
 
     app_logo.add_logo("public/images/logo.png", height=70)
 
