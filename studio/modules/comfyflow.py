@@ -111,7 +111,7 @@ class Comfyflow:
     def back_myapps(self):
         st.session_state.pop('current_app')   
 
-    def create_ui_input(self, node_id, node_inputs, disabled):
+    def create_ui_input(self, node_id, node_inputs):
         def random_seed(param_key):
             random_value = random.randint(0, 0xffffffffffffffff)
             st.session_state[param_key] = random_value
@@ -139,16 +139,12 @@ class Comfyflow:
                 param_step = param_node['step']
                             
                 param_key = f"{node_id}_{param_name}"
-                # TODO: FIXME, 
-                if disabled:
-                    st.number_input(param_name, value =param_default, key=param_key, help=param_help, min_value=param_min, max_value=param_max, step=param_step)
+                if param_item == 'seed' or param_item == 'noise_seed':
+                    seed_row = row([0.8, 0.2], vertical_align="bottom")
+                    seed_row.number_input(param_name, value =param_default, key=param_key, help=param_help, min_value=param_min, step=param_step)
+                    seed_row.button("Rand", on_click=random_seed, args=(param_key,))
                 else:
-                    if param_item == 'seed' or param_item == 'noise_seed':
-                        seed_row = row([0.8, 0.2], vertical_align="bottom")
-                        seed_row.number_input(param_name, value =param_default, key=param_key, help=param_help, min_value=param_min, step=param_step)
-                        seed_row.button("Rand", on_click=random_seed, args=(param_key,))
-                    else:
-                        st.number_input(param_name, value =param_default, key=param_key, help=param_help, min_value=param_min, max_value=param_max, step=param_step)
+                    st.number_input(param_name, value =param_default, key=param_key, help=param_help, min_value=param_min, max_value=param_max, step=param_step)
             elif param_type == "SELECT":
                 param_name = param_node['name']
                 param_default = param_node['default']
