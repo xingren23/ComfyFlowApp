@@ -224,7 +224,7 @@ with st.container():
         sync_button = header_row.button("Refresh", help="Sync apps from comfyflow.app", key="sync_apps")
         if sync_button:
             # get apps from comfyflow.app
-            comfyflow_api = os.getenv('COMFYFLOW_API_URL', default='https://api.comfyflwo.app')
+            comfyflow_api = os.getenv('COMFYFLOW_API_URL', default='https://api.comfyflow.app')
             cookies = {auth_instance.cookie_name: auth_instance.get_token()}
             logger.debug(f"get all app from {comfyflow_api}, with cookies: {cookies}")
             ret = requests.get(f"{comfyflow_api}/api/app/all", cookies=cookies)

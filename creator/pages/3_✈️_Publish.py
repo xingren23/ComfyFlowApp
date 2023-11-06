@@ -37,7 +37,7 @@ def check_model_url(model_url):
 
 
 def get_comfyflow_object_info(cookies=None):
-    comfyflow_api = os.getenv('COMFYFLOW_API_URL', default='https://api.comfyflwo.app')
+    comfyflow_api = os.getenv('COMFYFLOW_API_URL', default='https://api.comfyflow.app')
 
     # request comfyflow object info
     object_info = requests.get(f"{comfyflow_api}/api/comfyflow/object_info", cookies=cookies)
@@ -51,7 +51,7 @@ def get_comfyflow_object_info(cookies=None):
 
 def get_comfyflow_model_info(cookies=None):
     comfyflow_api = os.getenv(
-        'COMFYFLOW_API_URL', default='https://api.comfyflwo.app')
+        'COMFYFLOW_API_URL', default='https://api.comfyflow.app')
     # request comfyflow object info
     model_info = requests.get(f"{comfyflow_api}/api/comfyflow/model_info", cookies=cookies)
     if model_info.status_code != 200:
@@ -64,7 +64,7 @@ def get_comfyflow_model_info(cookies=None):
 def publish_app(name, description, image, app_conf, api_conf, template, status, cookies=None):
     
     comfyflow_api = os.getenv(
-        'COMFYFLOW_API_URL', default='https://api.comfyflwo.app')
+        'COMFYFLOW_API_URL', default='https://api.comfyflow.app')
     # post app to comfyflow.app
     app = {
         "name": name,

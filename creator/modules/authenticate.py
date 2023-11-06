@@ -10,7 +10,7 @@ class MyAuthenticate(Authenticate):
     def __init__(self, cookie_name: str, key:str, cookie_expiry_days: float=30.0):
         super().__init__({"usernames": {}}, cookie_name, key, cookie_expiry_days, [])
         self._check_cookie()
-        self.comfyflow_url = os.getenv('COMFYFLOW_API_URL', default='https://api.comfyflwo.app')
+        self.comfyflow_url = os.getenv('COMFYFLOW_API_URL', default='https://api.comfyflow.app')
 
     def get_token(self) -> str:
         """
