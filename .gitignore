@@ -5,5 +5,5 @@ __pycache__/
 .VSCodeCounter/*
 creator/.apps/*
 creator/comfyflow.db
-app/comfyflow.db
+studio/comfyflow.db
 .devcontainer/*
