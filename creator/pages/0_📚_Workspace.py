@@ -181,7 +181,7 @@ with st.container():
         """)
         new_app_button = header_row.button("New App", help="Create a new app from comfyui workflow.")
         if new_app_button:
-            switch_page("Create")
+            switch_page("Develop")
 
     with st.container():
         apps = get_sqlite_instance().get_all_apps()
