@@ -119,6 +119,8 @@ def start_comfyui():
 page.page_init()
 
 with st.container():
+    auth_instance = get_auth_instance()
+    
     container_empty = st.empty()
     if 'current_app' in st.session_state:
         with container_empty:
