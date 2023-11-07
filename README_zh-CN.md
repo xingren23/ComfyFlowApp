@@ -58,13 +58,10 @@ sh bin/start.sh
 
 # 应用运行工具：Studio
 cd ComfyFlowApp/studio
-
 # 更新子模块ComfyUI
 git submodule update --init --recursive
-
 # 安装依赖
 pip install -r requirements.txt
-
 # 启动 Studio
 sh bin/start.sh
 ```
@@ -80,13 +77,6 @@ sh bin/start.sh
 ```
 
 [下载地址 v1.0.0](https://github.com/xingren23/ComfyFlowApp/releases/tag/v1.0.0)
-
-### 如何开发一个ComfyFlowApp？
-1. 在ComfyUI中开发工作流
-2. 在ComfyFlowApp Workspace 管理工作流，包括创建及编辑应用、预览应用、发布应用，以及启动和停止应用等；
-
-    **当你的应用启动后，你可以将应用链接分享给其他用户。**
-
 
 
 ## 相关项目

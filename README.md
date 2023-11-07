@@ -24,6 +24,7 @@ Users don't need to understand where to download models.
 Users don't need to know how to set up ComfyUI workflows.
 Users don't need to understand Python installation requirements.
 ComfyFlowApp helps application developers make these complexities transparent to users, who can use it like any other regular application.
+
 **In summary, if you want to share workflows developed in ComfyUI with other users, choosing ComfyFlowApp is the right choice.**
 
 ### Typical Use Cases
@@ -46,7 +47,7 @@ Professional creators or teams can use ComfyUI tools to develop valuable applica
 # download project
 git clone https://github.com/xingren23/ComfyFlowApp
 
-# Creator
+# Creator for developer
 cd ComfyFlowApp/creator
 # install requirements
 pip install -r requirements.txt
@@ -55,8 +56,10 @@ export COMFYUI_SERVER_ADDR=127.0.0.1:8188
 # start Creator
 sh bin/start.sh
 
-# Studio
+# Studio for user
 cd ComfyFlowApp/studio
+# update submodule ComfyUI
+git submodule update --init --recursive
 # install requirements
 pip install -r requirements.txt
 # start Studio
@@ -66,10 +69,10 @@ sh bin/start.sh
 - Windows
 You can download the integrated package, extract it, and run it directly without the need to install dependencies.
 ```base
-# Creator
+# Creator for developer
 click creator-run.bat to start
 
-# Studio
+# Studio for user
 click studio-run.bat to start
 ```
 
