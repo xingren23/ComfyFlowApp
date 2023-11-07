@@ -5,5 +5,4 @@ streamlit-extras==0.3.4
 websocket-client==0.58.0
 psutil==5.9.5
 huggingface_hub==0.16.4
-pygit2==1.6.1
 streamlit-authenticator==0.2.3
