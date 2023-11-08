@@ -79,7 +79,7 @@ def page_init(layout="wide"):
         st.sidebar.markdown("""
         <style>
         [data-testid='stSidebarNav'] > ul {
-            min-height: 60vh;
+            min-height: 65vh;
         } 
         </style>
         """, unsafe_allow_html=True)

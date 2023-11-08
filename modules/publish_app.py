@@ -7,9 +7,8 @@ from urllib.parse import urlparse, parse_qs
 import streamlit as st
 import modules.page as page
 from modules import get_workspace_model, get_auth_instance
-from modules.workspace import AppStatus
+from modules.workspace_model import AppStatus
 from streamlit_extras.row import row
-from streamlit_extras.switch_page_button import switch_page
 from huggingface_hub import hf_hub_url, get_hf_file_metadata
 
 MODEL_SEP = '##'

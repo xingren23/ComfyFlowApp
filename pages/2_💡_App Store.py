@@ -8,7 +8,7 @@ from modules.page import page_init
 from modules import get_myapp_model, get_auth_instance
 from streamlit_extras.row import row
 from threading import Thread
-from modules.workspace import AppStatus
+from modules.workspace_model import AppStatus
 import queue
 from modules.page import stylable_button_container
 

@@ -268,7 +268,7 @@ def check_app_name():
     else:
         st.session_state['create_exist_app_name'] = False
 
-def on_workspace():
+def on_new_workspace():
     st.session_state['new_app'] = False
 
 def new_app_ui():
@@ -276,7 +276,7 @@ def new_app_ui():
     with page.stylable_button_container():
         header_row = row([0.85, 0.15], vertical_align="top")
         header_row.title("🌱 Create app from comfyui workflow")
-        header_row.button("Back Workspace", help="Back to your workspace", key="create_back_workspace", on_click=on_workspace)
+        header_row.button("Back Workspace", help="Back to your workspace", key="create_back_workspace", on_click=on_new_workspace)
         
 
     # upload workflow image and config params

@@ -4,7 +4,7 @@ import threading
 import subprocess
 import psutil
 import shutil
-from modules.workspace import AppStatus
+from modules.workspace_model import AppStatus
 
 class CommandThread(threading.Thread):
     def __init__(self, path, command):

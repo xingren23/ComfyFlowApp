@@ -7,7 +7,7 @@ from modules import get_workspace_model
 from streamlit_extras.row import row
 from streamlit_extras.switch_page_button import switch_page
 from manager.app_manager import start_app, stop_app
-from modules.workspace import AppStatus
+from modules.workspace_model import AppStatus
 from streamlit import config
 from modules.new_app import new_app_ui
 from modules.preview_app import preview_app_ui
@@ -40,12 +40,6 @@ def create_app_info_ui(app):
                     """)
        
     app_status = app.status
-    if app_status == AppStatus.CREATED.value:
-        app_status = f"🌱 {app_status}"
-    elif app_status == AppStatus.PREVIEWED.value:
-        app_status = f"💡 {app_status}"
-    elif app_status == AppStatus.PUBLISHED.value:
-        app_status = f"✈️ {app_status}"
     app_row.markdown(f"""
                     #### Status
                     {app_status}
@@ -125,8 +119,8 @@ def create_operation_ui(app):
     name = app.name
     status = app.status
     url = app.url
-    operate_row = row([1.1, 0.9, 0.9, 4.9, 1.1, 1.1], vertical_align="bottom")
-    preview_button = operate_row.button("💡Preview", help="Preview and check the app", 
+    operate_row = row([1.2, 1.0, 1.0, 4.4, 1.2, 1.2], vertical_align="bottom")
+    preview_button = operate_row.button("✅ Preview", help="Preview and check the app", 
                                         key=f"{id}-button-preview", 
                                         on_click=click_preview_app, args=(name,))
     if preview_button:

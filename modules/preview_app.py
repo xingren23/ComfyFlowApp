@@ -1,12 +1,10 @@
 from loguru import logger
 from modules.comfyflow import Comfyflow
-
 import streamlit as st
 import modules.page as page
 from streamlit_extras.row import row
-from streamlit_extras.switch_page_button import switch_page
 from modules import get_comfy_client, get_workspace_model
-from modules.workspace import AppStatus
+from modules.workspace_model import AppStatus
 
 def on_new_workspace():
     st.session_state['preview_app'] = False

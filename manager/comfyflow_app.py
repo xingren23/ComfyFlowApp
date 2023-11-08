@@ -3,7 +3,7 @@ import argparse
 from loguru import logger
 from streamlit_extras.badges import badge
 
-from modules import get_sqlite_instance, get_comfy_client
+from modules import get_workspace_model, get_comfy_client
 
 def page_header():    
     st.set_page_config(page_title="ComfyFlowApp: Load a comfyui workflow as webapp in seconds.", 
@@ -55,7 +55,7 @@ args = parser.parse_args()
 page_header()
 
 with st.container():
-    apps = get_sqlite_instance().get_all_apps()
+    apps = get_workspace_model().get_all_apps()
     app_id_map = { str(app.id): app for app in apps} 
     app_id = args.app
     logger.info(f"load app app_id {app_id}")

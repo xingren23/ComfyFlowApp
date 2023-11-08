@@ -21,14 +21,14 @@ class AppStatus(Enum):
 @st.cache_resource
 def get_workspace_model():
     logger.info("get_workspace_instance")
-    from modules.workspace import WorkspaceModel
+    from modules.workspace_model import WorkspaceModel
     sqliteInstance = WorkspaceModel()
     return sqliteInstance
 
 @st.cache_resource
 def get_myapp_model():
     logger.info("get_myapp_model")
-    from modules.myapp import MyAppModel
+    from modules.myapp_model import MyAppModel
     myapp_model = MyAppModel()
     return myapp_model 
 
