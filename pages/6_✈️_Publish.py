@@ -3,7 +3,7 @@ import json
 import os
 import base64
 import requests
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 import streamlit as st
 import modules.page as page
 from modules import get_sqlite_instance, get_auth_instance
@@ -14,7 +14,8 @@ from huggingface_hub import hf_hub_url, get_hf_file_metadata
 
 MODEL_SEP = '##'
 
-def check_model_url(model_url):
+@st.cache_data(ttl=24*60*60)
+def get_huggingface_model_meta(model_url):
     # parse model info from download url, 
     # eg: https://huggingface.co/segmind/SSD-1B/blob/main/unet/diffusion_pytorch_model.fp16.safetensors
 
@@ -34,7 +35,45 @@ def check_model_url(model_url):
             hf_meta = get_hf_file_metadata(url=hf_url)
             logger.debug(f"hf_meta, {hf_meta}")
             return hf_meta
+        
+@st.cache_data(ttl=24*60*60)        
+def get_civitai_model_meta(model_version_url):
+    """
+    model_url: https://civitai.com/models/113362?modelVersionId=159291
+    api: https://github.com/civitai/civitai/wiki/REST-API-Reference#get-apiv1models-versionsmodelversionid
+    """
+    parsed_url = urlparse(model_version_url)
+    model_id = parsed_url.path.split('/')[-1]
+    model_version_id = parse_qs(parsed_url.query)['modelVersionId'][0]
+    ret = requests.get(f"https://civitai.com/api/v1/model-versions/{model_version_id}")
+    if ret.status_code != 200:
+        raise Exception(f"Failed to get model meta for {model_version_url}")
+    ret_json = ret.json()
+    assert str(model_id) == str(ret_json["modelId"])
+    model_meta = {}
+    # name
+    model_meta["id"] = model_id
+    # enum (Checkpoint, TextualInversion, Hypernetwork, AestheticGradient, LORA, Controlnet, Poses)
+    # modelVersions
+    model_meta["download_url"] = ret_json["downloadUrl"]
+    model_meta['model'] = ret_json["model"]
+    model_meta['files'] = ret_json["files"]
+    return model_meta
 
+def get_model_meta(model_url):
+    """
+    return model meta, eg: {'download_url': 'xxx', 'size': 123}
+    """
+    if model_url.startswith("https://huggingface.co"):
+        hf_meta = get_huggingface_model_meta(model_url)
+        hf_meta['model_url'] = model_url
+        return hf_meta
+    elif model_url.startswith("https://civitai.com"):
+        civitai_meta = get_civitai_model_meta(model_url)
+        civitai_meta['model_url'] = model_url
+        civitai_meta['size'] = civitai_meta['files'][0]['sizeKB'] * 1024
+        return civitai_meta
+        
 
 def get_comfyflow_object_info(cookies=None):
     comfyflow_api = os.getenv('COMFYFLOW_API_URL', default='https://api.comfyflow.app')
@@ -176,11 +215,11 @@ with st.container():
                                         st.stop()
                                     else:
                                         model_url = st.session_state[model_input_name]
-                                        model_meta = check_model_url(model_url)
+                                        model_meta = get_model_meta(model_url)
                                         if model_meta:
                                             model_node_inputs[param] = {
-                                                "url": model_url,
-                                                "size": model_meta.size,
+                                                "url": model_meta['model_url'],
+                                                "size": model_meta['size'],
                                                 "path": model_path,
                                             }
                                         else:

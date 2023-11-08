@@ -8,7 +8,7 @@ from modules.page import page_init
 from modules import get_sqlite_instance, get_auth_instance
 from streamlit_extras.row import row
 from threading import Thread
-from modules.sqlitehelper import AppStatus
+from modules.workspace import AppStatus
 import queue
 from modules.page import stylable_button_container
 
@@ -49,10 +49,7 @@ class InstallThread(Thread):
             else:
                 logger.info("queue is none")
 
-    def run(self):
-        from modules.launch import prepare_comfyui_path
-        prepare_comfyui_path()
-
+    def run(self):    
         from modules.download import download_model, get_local_model_file
         try:
             models_size = 0

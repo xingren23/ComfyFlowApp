@@ -43,7 +43,7 @@ class SQLiteHelper:
     def _init_table(self):
         # Create a table if it doesn't exist.
         with self.session as s:
-            sql = text(f'CREATE TABLE IF NOT EXISTS {self.app_talbe_name} (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT, image BLOB, app_conf TEXT, api_conf TEXT, template TEXT, url TEXT, status TEXT, created_at TEXT, updated_at TEXT);')
+            sql = text(f'CREATE TABLE IF NOT EXISTS {self.app_talbe_name} (id TEXT PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT, image TEXT, app_conf TEXT, api_conf TEXT, template TEXT, url TEXT, status TEXT, created_at TEXT, updated_at TEXT);')
             s.execute(sql)
 
             # create index on name

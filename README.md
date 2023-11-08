@@ -18,11 +18,12 @@ If you want to generate an image using AI tools, you can choose MidJourney, DALL
 
 If you need to share workflows developed in ComfyUI with other users, ComfyFlowApp can significantly lower the barrier for others to use your workflows:
 
-Users don't need to understand the principles of AI generation models.
-Users don't need to know the tuning parameters of various AI models.
-Users don't need to understand where to download models.
-Users don't need to know how to set up ComfyUI workflows.
-Users don't need to understand Python installation requirements.
+- Users don't need to understand the principles of AI generation models.
+- Users don't need to know the tuning parameters of various AI models.
+- Users don't need to understand where to download models.
+- Users don't need to know how to set up ComfyUI workflows.
+- Users don't need to understand Python installation requirements.
+
 ComfyFlowApp helps application developers make these complexities transparent to users, who can use it like any other regular application.
 
 **In summary, if you want to share workflows developed in ComfyUI with other users, choosing ComfyFlowApp is the right choice.**

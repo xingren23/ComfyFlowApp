@@ -1,6 +1,11 @@
+import os
 import streamlit as st
 from streamlit_extras.row import row
 from modules import page, get_auth_instance
+
+# CURRENT filename
+main_script_file = os.path.dirname(__file__)
+page.delete_page(main_script_file, "Workspace")
 
 page.page_init(layout="centered")
 

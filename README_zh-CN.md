@@ -7,7 +7,7 @@ ComfyFlowApp 是一个ComfyUI的扩展工具， 可以轻松从ComfyUI的工作�
 ![图1](docs/images/demo-workflow.png)
 ![图2](docs/images/demo-webapp.png)
 
-### 为什么需要ComfyFlowApp？
+### ComfyFlowApp 有什么用？
 如果你想通过AI工具来生成一张图片，可以选择的MidJourney、DALL-E3、Fairfly（Adobe），使用这些工具任何人都可以通过提示词来生成一幅精美的图片，如果你想进一步控制生成的结果，如让模特穿上指定的衣服，这些工具可能都无法实现，或者你所在的场景对图片版权有特殊的要求，你可以使用开源的Stable Diffusion来构建AI图片处理应用，可以选择Stable-Diffusion-WebUI或者ComfyUI，其中WebUI简单易用，插件生态丰富，可以满足很多场景的处理需求，而ComfyUI使用门槛较高，但支持更灵活的工作流定制，开发出满足各种场景需求的工作流。
 
 如果你需要将ComfyUI中开发的工作流分享给其他用户使用，ComfyFlowApp可以显著降低其他用户使用你的工作流的门槛。
@@ -16,11 +16,13 @@ ComfyFlowApp 是一个ComfyUI的扩展工具， 可以轻松从ComfyUI的工作�
 - 用户不需要懂模型从哪里下载；
 - 用户不需要懂如何搭建ComfyUI工作流；
 - 用户不需要懂Python安装环境；
+
 ComfyFlowApp 帮助应用开发者将这些复杂度对用户透明，用户只需要像普通应用一样使用即可。
 
 **总结，如果你需要将ComfyUI开发的工作流分享给其他用户使用，选择ComfyFlowApp就对了。**
 
 ### 典型使用场景
+
 **1）工作室或企业内部的分工协作**
 
 工作室或企业内部处于分工协作的需求，并不要求每个人都懂AI，懂各种模型，懂工作流搭建，典型的协作场景：一个人或几个人来构建AI应用，其他用户直接使用。

@@ -2,6 +2,22 @@ import streamlit as st
 import streamlit_extras.app_logo as app_logo
 from streamlit_extras.badges import badge
 from streamlit_extras.stylable_container import stylable_container
+from streamlit.source_util import (
+    get_pages,
+    _on_pages_changed
+)
+
+def init_project(main_script_path_str):
+    current_pages = get_pages(main_script_path_str)
+    print(current_pages)
+    for key, value in current_pages.items():
+        if value['page_name'] == page_name:
+            del current_pages[key]
+            break
+        else:
+            pass
+    _on_pages_changed.send()
+
 
 def page_init(layout="wide"):    
     st.set_page_config(page_title="ComfyFlowApp: Load a comfyui workflow as webapp in seconds.", 
