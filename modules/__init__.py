@@ -1,15 +1,36 @@
 import os
 from loguru import logger
 import streamlit as st
+from enum import Enum
+
+# enum app status
+class AppStatus(Enum):
+    CREATED = "Created"
+    PREVIEWED = "Previewed"
+    PUBLISHED = "Published"
+    RUNNING = "Running"
+    STARTED = "Started"
+    STOPPING = "Stopping"
+    STOPPED = "Stopped"
+    INSTALLING = "Installing"
+    INSTALLED = "Installed"
+    UNINSTALLED = "Uninstalled"
+    ERROR = "Error"
 
 
 @st.cache_resource
-def get_sqlite_instance():
-    logger.info("get_sqlite_instance")
-    from modules.sqlitehelper import SQLiteHelper
-    sqliteInstance = SQLiteHelper()
+def get_workspace_model():
+    logger.info("get_workspace_instance")
+    from modules.workspace import WorkspaceModel
+    sqliteInstance = WorkspaceModel()
     return sqliteInstance
 
+@st.cache_resource
+def get_myapp_model():
+    logger.info("get_myapp_model")
+    from modules.myapp import MyAppModel
+    myapp_model = MyAppModel()
+    return myapp_model 
 
 @st.cache_resource
 def get_comfy_client():

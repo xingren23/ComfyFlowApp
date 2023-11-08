@@ -3,12 +3,15 @@ from io import BytesIO
 from loguru import logger
 import streamlit as st
 import modules.page as page
-from modules import get_sqlite_instance
+from modules import get_workspace_model
 from streamlit_extras.row import row
 from streamlit_extras.switch_page_button import switch_page
 from manager.app_manager import start_app, stop_app
-from modules.sqlitehelper import AppStatus
+from modules.workspace import AppStatus
 from streamlit import config
+from modules.new_app import new_app_ui
+from modules.preview_app import preview_app_ui
+from modules.publish_app import publish_app_ui
 
 
 def create_app_info_ui(app):
@@ -52,16 +55,18 @@ def create_app_info_ui(app):
 def click_preview_app(name):
     logger.info(f"preview app: {name}")
     st.session_state['preview_select_app'] = name
+    st.session_state['preview_app'] = True
 
 
 def click_publish_app(name, status):
     logger.info(f"publish app: {name} status: {status}")
     st.session_state['publish_select_app'] = name
+    st.session_state['publish_app'] = True
     
 
 def click_delete_app(name):
     logger.info(f"delete app: {name}")
-    get_sqlite_instance().delete_app(name)
+    get_workspace_model().delete_app(name)
 
 
 def ready_start_app(status):
@@ -85,10 +90,10 @@ def click_start_app(name, id, status):
         ret = start_app(name, id, url)
         st.session_state['app_start_ret'] = ret
         if ret == AppStatus.RUNNING.value:
-            get_sqlite_instance().update_app_url(name, url)
+            get_workspace_model().update_app_url(name, url)
             logger.info(f"App {name} is running yet, you could share {url} to your friends")
         elif ret == AppStatus.STARTED.value:
-            get_sqlite_instance().update_app_url(name, url)
+            get_workspace_model().update_app_url(name, url)
             logger.info(f"Start app {name} success, you could share {url} to your friends")
         else:
             logger.info(f"Start app {name} failed")
@@ -105,10 +110,10 @@ def click_stop_app(name, status, url):
             ret = stop_app(name, url)
             st.session_state['app_stop_ret'] = ret
             if ret == AppStatus.STOPPING.value:
-                get_sqlite_instance().update_app_url(name, "")
+                get_workspace_model().update_app_url(name, "")
                 logger.info(f"Stop app {name} success, {url}")
             elif ret == AppStatus.STOPPED.value:
-                get_sqlite_instance().update_app_url(name, "")
+                get_workspace_model().update_app_url(name, "")
                 logger.info(f"App {name} has stopped, {url}")
             else:
                 logger.error(f"Stop app {name} failed, please check the log")
@@ -170,29 +175,38 @@ def create_operation_ui(app):
             switch_page("Publish")
 
 
+def new_app():
+    st.session_state['new_app'] = True
+
 logger.info("Loading workspace page")
 page.page_init()                
 
 with st.container():
-    with page.stylable_button_container():
-        header_row = row([0.88, 0.12], vertical_align="top")
-        header_row.markdown("""
-            ### My Workspace
-        """)
-        new_app_button = header_row.button("New App", help="Create a new app from comfyui workflow.")
-        if new_app_button:
-            switch_page("Develop")
+    if 'new_app' in st.session_state and st.session_state['new_app']:
+        new_app_ui()
+    elif 'preview_app' in st.session_state and st.session_state['preview_app']:
+        preview_app_ui()
+    elif 'publish_app' in st.session_state and st.session_state['publish_app']:
+        publish_app_ui()
+    else:
+        with page.stylable_button_container():
+            header_row = row([0.88, 0.12], vertical_align="top")
+            header_row.markdown("""
+                ### My Workspace
+            """)
+            new_app_button = header_row.button("New App", help="Create a new app from comfyui workflow.", on_click=new_app)
+        
 
-    with st.container():
-        apps = get_sqlite_instance().get_all_apps()
-        if len(apps) == 0:
-            st.divider()
-            st.info("No apps, please create a new app.")
-        else:
-            for app in apps:
+        with st.container():
+            apps = get_workspace_model().get_all_apps()
+            if len(apps) == 0:
                 st.divider()
-                logger.info(f"load app info {app}")
-                create_app_info_ui(app)
-                create_operation_ui(app)
+                st.info("No apps, please create a new app.")
+            else:
+                for app in apps:
+                    st.divider()
+                    logger.info(f"load app info {app}")
+                    create_app_info_ui(app)
+                    create_operation_ui(app)
             
             

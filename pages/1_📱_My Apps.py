@@ -1,19 +1,19 @@
 import os
 from loguru import logger
 import streamlit as st
-from modules import get_sqlite_instance, get_comfy_client, get_auth_instance
+from modules import get_myapp_model, get_comfy_client, get_auth_instance
 import modules.page as page
 from streamlit_extras.row import row
 from streamlit_extras.switch_page_button import switch_page
 import subprocess
 from threading import Thread
 from modules.launch import prepare_comfyui_path
-from modules.sqlitehelper import AppStatus
+from modules import AppStatus
 
 
 def uninstall_app(app):
     logger.info(f"uninstall app {app.name}")
-    get_sqlite_instance().update_app_status(app.id, AppStatus.UNINSTALLED.value)
+    get_myapp_model().update_app_status(app.id, AppStatus.UNINSTALLED.value)
 
 
 def enter_app(app):
@@ -138,8 +138,7 @@ with st.container():
                     logger.info(f"start app success, {app.name}")
 
                 from modules.comfyflow import Comfyflow
-                comfy_flow = Comfyflow(
-                    comfy_client=get_comfy_client(), api_data=api_data, app_data=app_data)
+                comfy_flow = Comfyflow(comfy_client=get_comfy_client(), api_data=api_data, app_data=app_data)
                 comfy_flow.create_ui()
     else:
         with container_empty:
@@ -159,7 +158,7 @@ with st.container():
                     if not st.session_state['authentication_status']:
                         st.warning("Please go to home page to login first.")
 
-                    apps = get_sqlite_instance().get_my_installed_apps()
+                    apps = get_myapp_model().get_my_installed_apps()
                     if len(apps) == 0:
                         st.divider()
                         st.info(

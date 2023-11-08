@@ -3,10 +3,6 @@ import streamlit as st
 from streamlit_extras.row import row
 from modules import page, get_auth_instance
 
-# CURRENT filename
-main_script_file = os.path.dirname(__file__)
-page.delete_page(main_script_file, "Workspace")
-
 page.page_init(layout="centered")
 
 with st.container():
@@ -15,7 +11,9 @@ with st.container():
         ## Welcome to ComfyFlowApp
         Load comfyui workflow as webapp in seconds, and share with your friends.
     """)
-    emtpy_button = header_row.empty()
+    logout_button = header_row.empty()   
+
+
     auth_instance = get_auth_instance()
     if not st.session_state['authentication_status']:
         login_tab, reg_tab = st.tabs(["Login", "Register"])
@@ -30,8 +28,10 @@ with st.container():
             except Exception as e:
                 st.error(f"Register failed, {e}")
     else: 
-        with emtpy_button:
+        with logout_button:
             auth_instance.logout("Logout")
+
+        
         with st.container():
             name = st.session_state['name']
             username = st.session_state['username']

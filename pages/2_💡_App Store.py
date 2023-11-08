@@ -5,7 +5,7 @@ import requests
 import streamlit as st
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 from modules.page import page_init
-from modules import get_sqlite_instance, get_auth_instance
+from modules import get_myapp_model, get_auth_instance
 from streamlit_extras.row import row
 from threading import Thread
 from modules.workspace import AppStatus
@@ -107,7 +107,7 @@ class InstallThread(Thread):
                             return 
 
                 logger.debug(f"api_conf_json: {self.api_conf_json}")
-                get_sqlite_instance().update_api_conf(self.app_id, json.dumps(self.api_conf_json))
+                get_myapp_model().update_api_conf(self.app_id, json.dumps(self.api_conf_json))
 
             status_info = f"App {self.app_name} install success"
             status_event = ProgressEventState(self.app_id, status_info, ProgressEventState.COMPLETE)
@@ -129,7 +129,7 @@ def install_app(app, queue):
     # logger.info(f"Install thread for {app.name} finished")
     
 def update_install_progress(app, status_queue):
-    get_sqlite_instance().update_app_status(app.id, AppStatus.INSTALLING.value)
+    get_myapp_model().update_app_status(app.id, AppStatus.INSTALLING.value)
     with st.status(f"Waiting for install {app.name} ...", state="running", expanded=True) as install_progress:
         while True:
             try:
@@ -142,12 +142,12 @@ def update_install_progress(app, status_queue):
                 elif state == ProgressEventState.COMPLETE:
                     install_progress.write(info)
                     install_progress.update(label=f"Install app {app.name} success", state="complete", expanded=True)
-                    get_sqlite_instance().update_app_status(app.id, AppStatus.INSTALLED.value)
+                    get_myapp_model().update_app_status(app.id, AppStatus.INSTALLED.value)
                     break
                 elif state == ProgressEventState.ERROR:
                     install_progress.write(info)
                     install_progress.update(label=f"Install app {app.name} error", state="error", expanded=True)
-                    get_sqlite_instance().update_app_status(app.id, AppStatus.ERROR.value)
+                    get_myapp_model().update_app_status(app.id, AppStatus.ERROR.value)
                     break
             except Exception as e:
                 logger.warning(f"Queue get error {e}")
@@ -229,7 +229,7 @@ with st.container():
                 st.error(f"Refresh apps from {comfyflow_api} failed, {ret.text}")
             else:
                 comfyflow_apps = ret.json()
-                sqliteInstance = get_sqlite_instance()
+                sqliteInstance = get_myapp_model()
                 sync_apps = sqliteInstance.sync_apps(comfyflow_apps)
                 if len(sync_apps) == 0:
                     st.info("All apps have refreshed")
@@ -240,14 +240,14 @@ with st.container():
         if not st.session_state['authentication_status']:
             st.warning("Please go to home page to login first.")
 
-        apps = get_sqlite_instance().get_all_apps()
+        apps = get_myapp_model().get_all_apps()
         for app in apps:
             st.divider()
             logger.debug(f"load app info for {app.name}")
             create_app_info_ui(app)
 
             # update app status
-            app = get_sqlite_instance().get_app_by_id(app.id)
+            app = get_myapp_model().get_app_by_id(app.id)
             show_install_status(app)
 
     

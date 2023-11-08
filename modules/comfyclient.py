@@ -12,6 +12,7 @@ class ComfyClient:
     def __init__(self, server_addr) -> None:
         self.client_id = str(uuid.uuid4())
         self.server_addr = server_addr
+        self.timeout = 3
         logger.info(f"Comfy client id: {self.client_id}")
 
     def get_node_class(self):

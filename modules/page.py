@@ -1,25 +1,38 @@
+from loguru import logger
+import os
 import streamlit as st
 import streamlit_extras.app_logo as app_logo
 from streamlit_extras.badges import badge
 from streamlit_extras.stylable_container import stylable_container
 from streamlit.source_util import (
     get_pages,
-    _on_pages_changed
+    _on_pages_changed,
+    invalidate_pages_cache,
 )
 
-def init_project(main_script_path_str):
-    current_pages = get_pages(main_script_path_str)
-    print(current_pages)
-    for key, value in current_pages.items():
-        if value['page_name'] == page_name:
-            del current_pages[key]
-            break
+def change_mode_pages():
+    if 'main_script_path' in st.session_state:
+        main_script_path = st.session_state['main_script_path']
+        mode = st.session_state['mode']
+        invalidate_pages_cache()
+        all_pages = get_pages(main_script_path)
+        if mode == "Studio":
+            pages = ['Home', 'My_Apps', "App_Store"]
         else:
-            pass
-    _on_pages_changed.send()
+            pages = [page['page_name'] for _, page in all_pages.items()]
+        logger.info(f"pages: {pages}, mode: {mode}")
+
+        current_pages = [key for key, value in all_pages.items() if value['page_name'] not in pages]
+        for key in current_pages:
+            all_pages.pop(key)
+            
+        _on_pages_changed.send()
 
 
-def page_init(layout="wide"):    
+def page_init(layout="wide"):
+    """
+    mode, studio or creator
+    """
     st.set_page_config(page_title="ComfyFlowApp: Load a comfyui workflow as webapp in seconds.", 
     page_icon=":artist:", layout=layout)
 
@@ -45,11 +58,28 @@ def page_init(layout="wide"):
             """
     st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
 
-    with st.sidebar:    
+
+    with st.sidebar:   
+        
+        if 'mode' not in st.session_state:
+            st.session_state['mode'] = "normal"
+        if 'main_script_path' not in st.session_state:
+            st.session_state['main_script_path'] = os.path.abspath('../Home.py')
+
+        st.markdown(f"Current Mode: {st.session_state['mode']} :smile:")
+
+        with exchange_button_container():
+            new_mode = "Creator" if st.session_state['mode'] == "Studio" else "Studio"   
+            exchange_button = st.button(f"Exchange To {new_mode}", key="exchange_button")
+            if exchange_button:
+                st.session_state['mode'] = new_mode
+                change_mode_pages()
+                st.rerun()
+
         st.sidebar.markdown("""
         <style>
         [data-testid='stSidebarNav'] > ul {
-            min-height: 70vh;
+            min-height: 60vh;
         } 
         </style>
         """, unsafe_allow_html=True)
@@ -60,13 +90,29 @@ def page_init(layout="wide"):
 
 def stylable_button_container():
     return stylable_container(
-        key="new_app_button",
+        key="app_button",
         css_styles="""
             button {
                 background-color: rgb(28 131 225);
                 color: white;
                 border-radius: 4px;
                 width: 120px;
+            }
+            button:hover, button:focus {
+                border: 0px solid rgb(28 131 225);
+            }
+        """,
+    )
+
+def exchange_button_container():
+    return stylable_container(
+        key="exchange_button",
+        css_styles="""
+            button {
+                background-color: rgb(28 131 225);
+                color: white;
+                border-radius: 4px;
+                width: 200px;
             }
             button:hover, button:focus {
                 border: 0px solid rgb(28 131 225);

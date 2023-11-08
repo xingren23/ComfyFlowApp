@@ -1,35 +1,24 @@
 from loguru import logger
 import streamlit as st
 from sqlalchemy import text
-from enum import Enum
+from modules import AppStatus
 
 """
 comfyflow_apps table
     id INTEGER
     name TEXT
     description TEXT
-    image BLOB
+    image TEXT
     app_conf TEXT
     api_conf TEXT
-    preview_image BLOB
     template TEXT
     url TEXT
     status TEXT
     created_at TEXT
     updated_at TEXT
 """
-# enum app status
-class AppStatus(Enum):
-    CREATED = "Created"
-    PREVIEWED = "Previewed"
-    PUBLISHED = "Published"
-    RUNNING = "Running"
-    STARTED = "Started"
-    STOPPING = "Stopping"
-    STOPPED = "Stopped"
 
-
-class SQLiteHelper:
+class WorkspaceModel:
     def __init__(self) -> None:
         self.db_conn = st.experimental_connection('comfyflow_db', type='sql')
         self.app_talbe_name = 'comfyflow_apps'
