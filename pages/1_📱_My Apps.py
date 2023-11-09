@@ -150,13 +150,13 @@ with st.container():
                             ### My Apps
                         """)
                     explore_button = header_row.button(
-                        "Explore Apps", help="Explore more apps from app store.")
+                        "Explore More", help="Explore more apps from app store.")
                     if explore_button:
                         switch_page("App Store")
 
                 with st.container():
                     if not st.session_state['authentication_status']:
-                        st.warning("Please go to home page to login first.")
+                        st.info("Please go to homepage for your login :point_left:")
 
                     apps = get_myapp_model().get_my_installed_apps()
                     if len(apps) == 0:

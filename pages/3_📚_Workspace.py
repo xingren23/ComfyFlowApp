@@ -12,6 +12,7 @@ from streamlit import config
 from modules.new_app import new_app_ui
 from modules.preview_app import preview_app_ui
 from modules.publish_app import publish_app_ui
+from modules import get_auth_instance
 
 
 def create_app_info_ui(app):
@@ -176,11 +177,14 @@ logger.info("Loading workspace page")
 page.page_init()                
 
 with st.container():
+    auth_instance = get_auth_instance()   
+
     if 'new_app' in st.session_state and st.session_state['new_app']:
         new_app_ui()
     elif 'preview_app' in st.session_state and st.session_state['preview_app']:
         preview_app_ui()
     elif 'publish_app' in st.session_state and st.session_state['publish_app']:
+        cookies = {auth_instance.cookie_name: auth_instance.get_token()} 
         publish_app_ui()
     else:
         with page.stylable_button_container():
@@ -189,9 +193,11 @@ with st.container():
                 ### My Workspace
             """)
             new_app_button = header_row.button("New App", help="Create a new app from comfyui workflow.", on_click=new_app)
-        
 
         with st.container():
+            if not st.session_state['authentication_status']:
+                st.info("Please go to homepage for your login ::point_left::")
+            
             apps = get_workspace_model().get_all_apps()
             if len(apps) == 0:
                 st.divider()

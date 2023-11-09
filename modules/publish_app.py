@@ -6,7 +6,7 @@ import requests
 from urllib.parse import urlparse, parse_qs
 import streamlit as st
 import modules.page as page
-from modules import get_workspace_model, get_auth_instance
+from modules import get_workspace_model
 from modules.workspace_model import AppStatus
 from streamlit_extras.row import row
 from huggingface_hub import hf_hub_url, get_hf_file_metadata
@@ -126,10 +126,8 @@ def on_publish_workspace():
     st.session_state['publish_app'] = False 
 
 
-def publish_app_ui():
+def publish_app_ui(cookies):
     logger.info("Loading publish page")
-    auth_instance = get_auth_instance()   
-    cookies = {auth_instance.cookie_name: auth_instance.get_token()} 
 
     with page.stylable_button_container():
         header_row = row([0.85, 0.15], vertical_align="top")

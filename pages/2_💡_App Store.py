@@ -121,6 +121,10 @@ class InstallThread(Thread):
 
 
 def install_app(app, queue):
+    if 'authentication_status' not in st.session_state or not st.session_state['authentication_status']:
+        logger.warning("Please go to homepage for your login ::point_left::")
+        return
+    
     logger.info(f"Start install thread for {app.name} ...")
     install_thread = InstallThread(app, queue)
     add_script_run_ctx(install_thread)
@@ -129,6 +133,9 @@ def install_app(app, queue):
     # logger.info(f"Install thread for {app.name} finished")
     
 def update_install_progress(app, status_queue):
+    if 'authentication_status' not in st.session_state or not st.session_state['authentication_status']:
+        return
+    
     get_myapp_model().update_app_status(app.id, AppStatus.INSTALLING.value)
     with st.status(f"Waiting for install {app.name} ...", state="running", expanded=True) as install_progress:
         while True:
@@ -238,7 +245,7 @@ with st.container():
 
     with st.container():
         if not st.session_state['authentication_status']:
-            st.warning("Please go to home page to login first.")
+            st.info("Please go to homepage for your login ::point_left::.")
 
         apps = get_myapp_model().get_all_apps()
         for app in apps:

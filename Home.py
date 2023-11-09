@@ -9,7 +9,7 @@ with st.container():
     header_row = row([0.85, 0.15], vertical_align="bottom")
     header_row.markdown("""
         ## Welcome to ComfyFlowApp
-        Load comfyui workflow as webapp in seconds, and share with your friends.
+        Develop a webapp from comfyui workflow in seconds, and share with others.
     """)
     logout_button = header_row.empty()   
 
@@ -38,12 +38,25 @@ with st.container():
             st.markdown(f"Hello, {name}({username}) :smile:")
             
             st.markdown("""
-                        ComfyFlowApp is an extension tool for ComfyUI. It helps convert ComfyUI workflows into web applications, making it easy for sharing with other users.
-
-                        Workflow developers create workflows using ComfyUI by combining ComfyUI nodes and custom extension nodes. ComfyUI workflows can perform complex tasks like generating user avatars or changing product backgrounds for e-commerce. This addresses many real-world work needs. However, for regular users, building workflows can be quite complicated and time-consuming. 
+                        ## 📌 What is ComfyFlowApp?
+                        ComfyFlowApp is an extension tool for ComfyUI, making it easy to create a user-friendly application from a ComfyUI workflow and share it with others.
+                        """)
+            st.markdown("""
+                        ### Why You Need ComfyFlowApp? 
+                        If you need to share workflows developed in ComfyUI with other users, ComfyFlowApp can significantly lower the barrier for others to use your workflows:
+                        - Users don't need to understand the principles of AI generation models. 
+                        - Users don't need to know the tuning parameters of various AI models. 
+                        - Users don't need to understand where to download models. 
+                        - Users don't need to know how to set up ComfyUI workflows. 
+                        - Users don't need to understand Python installation requirements.
                         
-                        ComfyFlowApp simplifies the way workflows are shared and used. Workflow developers can easily share their workflows as webapp with others, however users don't need to worry about the inner details of the workflow. They can simply use the webapp.
-            """)
+                        ComfyFlowApp helps application developers make these complexities transparent to users, who can use it like any other regular application.
+                        """)
+            st.markdown("""
+                        ### Typical Use Cases
+                        1) Studio or Internal Business Collaboration
+                        2) Professional Creators or Teams, Developing and Sharing Applications with a Wider Audience
+                        """)
             st.markdown("""
                         :point_right: Follow the repo [ComfyFlowApp](https://github.com/xingren23/ComfyFlowApp) to get the latest updates. 
                         
