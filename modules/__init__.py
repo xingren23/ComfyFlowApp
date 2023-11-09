@@ -45,7 +45,7 @@ def get_inner_comfy_client():
     logger.info("get_inner_comfy_client")
     from modules.comfyclient import ComfyClient
     server_addr = os.getenv('INNER_COMFYUI_SERVER_ADDR', default='localhost:9188')
-    comfy_client = ComfyClient(server_addr=server_addr, embedded=True)
+    comfy_client = ComfyClient(server_addr=server_addr)
     return comfy_client
 
 
