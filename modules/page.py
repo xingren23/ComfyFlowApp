@@ -66,8 +66,6 @@ def page_init(layout="wide"):
     st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
 
     with st.sidebar:   
-        
-
         with exchange_button_container():
             new_mode = "Creator" if st.session_state['mode'] == "Studio" else "Studio"   
             

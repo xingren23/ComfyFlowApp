@@ -1,7 +1,8 @@
-import os
 import streamlit as st
+from loguru import logger
 from streamlit_extras.row import row
-from modules import page, get_auth_instance
+from modules import page
+from modules.authenticate import MyAuthenticate
 
 page.page_init(layout="centered")
 
@@ -13,18 +14,18 @@ with st.container():
     """)
     logout_button = header_row.empty()   
 
+    auth_instance =  MyAuthenticate("comfyflow_token", "ComfyFlowApp： Load ComfyUI workflow as webapp in seconds.")
 
-    auth_instance = get_auth_instance()
     if not st.session_state['authentication_status']:
         login_tab, reg_tab = st.tabs(["Login", "Register"])
         with login_tab:
             try:
                 auth_instance.login("Login to ComfyFlowApp")
-            except Exception as e:
+            except Exception as e:  
                 st.error(f"Login failed, {e}")
         with reg_tab:
             try:
-                auth_instance.register_user("Register a new user of ComfyFlowApp", preauthorization=False)
+                auth_instance.register_user("Register a new user of ComfyFlowApp", preauthorization=False) 
             except Exception as e:
                 st.error(f"Register failed, {e}")
     else: 

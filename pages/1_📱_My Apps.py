@@ -1,7 +1,7 @@
 import os
 from loguru import logger
 import streamlit as st
-from modules import get_myapp_model, get_comfy_client, get_auth_instance
+from modules import get_myapp_model, get_inner_comfy_client
 import modules.page as page
 from streamlit_extras.row import row
 from streamlit_extras.switch_page_button import switch_page
@@ -9,6 +9,7 @@ import subprocess
 from threading import Thread
 from modules.launch import prepare_comfyui_path
 from modules import AppStatus
+from modules.authenticate import MyAuthenticate
 
 
 def uninstall_app(app):
@@ -56,15 +57,6 @@ def create_app_info_ui(app):
         logger.info(f"enter app {app.name}")
 
 
-def check_comfyui_alive():
-    try:
-        get_comfy_client().queue_remaining()
-        return True
-    except Exception as e:
-        logger.warning(f"check comfyui alive error, {e}")
-        return False
-
-
 class ComfyUIThread(Thread):
     def __init__(self, server_addr, path):
         Thread.__init__(self)
@@ -90,36 +82,42 @@ class ComfyUIThread(Thread):
         except Exception as e:
             logger.error(f"running comfyui error, {e}")
 
+def check_inner_comfyui_alive():
+    try:
+        get_inner_comfy_client().queue_remaining()
+        return True
+    except Exception as e:
+        logger.warning(f"check comfyui alive error, {e}")
+        return False
 
 def start_comfyui():
     try:
-        if check_comfyui_alive():
-            logger.info("comfyui is alive")
+        if check_inner_comfyui_alive():
+            logger.info("inner comfyui is alive")
             return True
 
-        logger.info("start comfyui ...")
+        logger.info("start inner comfyui ...")
 
         comfyui_path = prepare_comfyui_path()
-        server_addr = os.getenv('COMFYUI_SERVER_ADDR',
-                                default='localhost:8188')
+        server_addr = os.getenv('INNER_COMFYUI_SERVER_ADDR', default='localhost:9188')
         comfyui_thread = ComfyUIThread(server_addr, comfyui_path)
         comfyui_thread.start()
         # wait 2 seconds for comfyui start
         comfyui_thread.join(2)
         if comfyui_thread.is_alive():
-            logger.info("start comfyui success")
+            logger.info("start inner comfyui success")
             return True
         else:
-            logger.error("start comfyui timeout")
+            logger.error("start inner comfyui timeout")
             return False
     except Exception as e:
-        logger.error(f"start comfyui error, {e}")
+        logger.error(f"start inner comfyui error, {e}")
 
 
 page.page_init()
 
 with st.container():
-    auth_instance = get_auth_instance()
+    auth_instance =  MyAuthenticate("comfyflow_token", "ComfyFlowApp： Load ComfyUI workflow as webapp in seconds.")
     
     container_empty = st.empty()
     if 'current_app' in st.session_state:
@@ -138,7 +136,7 @@ with st.container():
                     logger.info(f"start app success, {app.name}")
 
                 from modules.comfyflow import Comfyflow
-                comfy_flow = Comfyflow(comfy_client=get_comfy_client(), api_data=api_data, app_data=app_data)
+                comfy_flow = Comfyflow(comfy_client=get_inner_comfy_client(), api_data=api_data, app_data=app_data)
                 comfy_flow.create_ui()
     else:
         with container_empty:

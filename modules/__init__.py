@@ -40,18 +40,19 @@ def get_comfy_client():
     comfy_client = ComfyClient(server_addr=server_addr)
     return comfy_client
 
+@st.cache_resource
+def get_inner_comfy_client():
+    logger.info("get_inner_comfy_client")
+    from modules.comfyclient import ComfyClient
+    server_addr = os.getenv('INNER_COMFYUI_SERVER_ADDR', default='localhost:9188')
+    comfy_client = ComfyClient(server_addr=server_addr, embedded=True)
+    return comfy_client
+
 
 @st.cache_data(ttl=60)
-def get_local_object_info():
+def get_comfyui_object_info():
     logger.info("get_comfy_object_info")
     comfy_client = get_comfy_client()
     comfy_object_info = comfy_client.get_node_class()
     return comfy_object_info
-
-
-def get_auth_instance():
-    logger.debug("get auth_instance")
-    from modules.authenticate import MyAuthenticate
-    auth_instance =  MyAuthenticate("comfyflow_token", "ComfyFlowApp： Load ComfyUI workflow as webapp in seconds.")
-    return auth_instance
 

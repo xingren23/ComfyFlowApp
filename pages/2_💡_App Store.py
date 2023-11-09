@@ -5,13 +5,13 @@ import requests
 import streamlit as st
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 from modules.page import page_init
-from modules import get_myapp_model, get_auth_instance
+from modules import get_myapp_model
 from streamlit_extras.row import row
 from threading import Thread
 from modules.workspace_model import AppStatus
 import queue
 from modules.page import stylable_button_container
-
+from modules.authenticate import MyAuthenticate
 
 def bytes_to_human_readable(size_in_bytes, decimal_places=2):
     for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
@@ -217,7 +217,7 @@ def create_app_info_ui(app):
 page_init()
 
 with st.container():
-    auth_instance = get_auth_instance()
+    auth_instance =  MyAuthenticate("comfyflow_token", "ComfyFlowApp： Load ComfyUI workflow as webapp in seconds.")
 
     with stylable_button_container():
         header_row = row([0.85, 0.15], vertical_align="bottom")

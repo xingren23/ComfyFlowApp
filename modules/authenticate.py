@@ -11,7 +11,8 @@ class MyAuthenticate(Authenticate):
         super().__init__({"usernames": {}}, cookie_name, key, cookie_expiry_days, [])
         self._check_cookie()
         self.comfyflow_url = os.getenv('COMFYFLOW_API_URL', default='https://api.comfyflow.app')
-
+        logger.info(f"authentication_status {st.session_state['authentication_status']}, username {st.session_state['username']}")
+        
     def get_token(self) -> str:
         """
         Gets the token from the cookie.

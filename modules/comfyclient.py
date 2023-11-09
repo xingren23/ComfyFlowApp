@@ -12,7 +12,7 @@ class ComfyClient:
     def __init__(self, server_addr) -> None:
         self.client_id = str(uuid.uuid4())
         self.server_addr = server_addr
-        self.timeout = 3
+        self.timeout = 5
         logger.info(f"Comfy client id: {self.client_id}")
 
     def get_node_class(self):
@@ -32,7 +32,7 @@ class ComfyClient:
         """
         url = f"http://{self.server_addr}/prompt"
         logger.info(f"Got remaining from {url}")
-        resp = requests.get(url)
+        resp = requests.get(url, timeout=self.timeout)
         if resp.status_code != 200:
             raise Exception(f"Failed to get queue from {url}")
         return resp.json()['exec_info']['queue_remaining']
@@ -41,7 +41,7 @@ class ComfyClient:
         p = {"prompt": prompt, "client_id": self.client_id}
         data = json.dumps(p).encode('utf-8')
         logger.info(f"Sending prompt to server, {self.client_id}")
-        resp = requests.post(f"http://{self.server_addr}/prompt", data=data)
+        resp = requests.post(f"http://{self.server_addr}/prompt", data=data, timeout=self.timeout)
         if resp.status_code != 200:
             raise Exception(f"Failed to send prompt to server, {resp.status_code}")
         return resp.json()

@@ -6,7 +6,7 @@ import streamlit as st
 import modules.page as page
 from streamlit_extras.row import row
 from streamlit_extras.switch_page_button import switch_page
-from modules import get_local_object_info, get_workspace_model
+from modules import get_comfyui_object_info, get_workspace_model
 
 NODE_SEP = '||'
 
@@ -64,7 +64,7 @@ def parse_prompt(prompt_info):
                 params_inputs.update({option_key: option_value})
                 node_inputs.append(param_value)
 
-            is_output = get_local_object_info()[class_type]['output_node']
+            is_output = get_comfyui_object_info()[class_type]['output_node']
             if is_output:
                 # TODO: support multi output
                 if class_type == 'SaveImage':
@@ -113,7 +113,7 @@ def get_node_input_config(input_param, app_input_name, app_input_description):
     option_params_value = params_inputs[input_param]
     logger.debug(f"get_node_input_config, {input_param} {option_params_value}")
     node_id, class_type, param, param_value = option_params_value.split(NODE_SEP)
-    comfyui_object_info = get_local_object_info()
+    comfyui_object_info = get_comfyui_object_info()
     class_meta = comfyui_object_info[class_type]
     class_input = class_meta['input']['required']
     if 'optional' in class_meta['input'].keys():

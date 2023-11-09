@@ -65,8 +65,10 @@ def get_model_meta(model_url):
     """
     if model_url.startswith("https://huggingface.co"):
         hf_meta = get_huggingface_model_meta(model_url)
-        hf_meta['model_url'] = model_url
-        return hf_meta
+        meta = {}
+        meta['model_url'] = model_url
+        meta['size'] = hf_meta.size
+        return meta
     elif model_url.startswith("https://civitai.com"):
         civitai_meta = get_civitai_model_meta(model_url)
         civitai_meta['model_url'] = model_url
