@@ -36,6 +36,13 @@ def page_init(layout="wide"):
     st.set_page_config(page_title="ComfyFlowApp: Load a comfyui workflow as webapp in seconds.", 
     page_icon=":artist:", layout=layout)
 
+    if 'main_script_path' not in st.session_state:
+        st.session_state['main_script_path'] = os.path.abspath('../Home.py')
+    if 'mode' not in st.session_state:
+        logger.info("init mode to Studio")
+        st.session_state['mode'] = "Studio"
+        change_mode_pages()
+
     app_logo.add_logo("public/images/logo.png", height=70)
 
     # reduce top padding
@@ -58,18 +65,13 @@ def page_init(layout="wide"):
             """
     st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
 
-
     with st.sidebar:   
         
-        if 'mode' not in st.session_state:
-            st.session_state['mode'] = "normal"
-        if 'main_script_path' not in st.session_state:
-            st.session_state['main_script_path'] = os.path.abspath('../Home.py')
-
-        st.markdown(f"Current Mode: {st.session_state['mode']} :smile:")
 
         with exchange_button_container():
             new_mode = "Creator" if st.session_state['mode'] == "Studio" else "Studio"   
+            
+            st.markdown(f"Current Mode: {st.session_state['mode']} :smile:")
             exchange_button = st.button(f"Exchange To {new_mode}", key="exchange_button")
             if exchange_button:
                 st.session_state['mode'] = new_mode

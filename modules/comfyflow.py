@@ -28,7 +28,7 @@ class Comfyflow:
                     param_value = node_inputs[param_name]
                     if isinstance(param_value, int):
                         if (param_name == "seed" or param_name == "noise_seed"):
-                            random_value = random.randint(0, 0xffffffffffffffff)
+                            random_value = random.randint(0, 0x7fffffffffffffff)
                             prompt[node_id]['inputs'][param_name] = random_value
                             logger.info(f"update prompt with random, {node_id} {param_name} {param_value} to {random_value}")
 
@@ -50,13 +50,7 @@ class Comfyflow:
                         param_name = node_inputs[param_item]['name']
                         param_key = f"{node_id}_{param_name}"
                         param_value = st.session_state[param_key]
-                        logger.info(f"update param {param_key} {param_name} {param_value}")
-                        if (param_name == "seed" or param_name == "noise_seed") and param_value == -1:
-                            param_max = node_inputs[param_item]['max']
-                            param_value = random.randint(0, param_max)
-                            logger.info(f"update random param {param_name} {param_value}")
-                            st.session_state[param_key] = param_value
-                        
+                        logger.info(f"update param {param_key} {param_name} {param_value}")                        
                         prompt[node_id]["inputs"][param_item] = param_value
 
                     elif param_type == "SELECT":
@@ -111,7 +105,7 @@ class Comfyflow:
 
     def create_ui_input(self, node_id, node_inputs):
         def random_seed(param_key):
-            random_value = random.randint(0, 0xffffffffffffffff)
+            random_value = random.randint(0, 0x7fffffffffffffff)
             st.session_state[param_key] = random_value
             logger.info(f"update {param_key} with random {random_value}")
             
