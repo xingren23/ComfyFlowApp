@@ -39,8 +39,8 @@ def page_init(layout="wide"):
     if 'main_script_path' not in st.session_state:
         st.session_state['main_script_path'] = os.path.abspath('../Home.py')
     if 'mode' not in st.session_state:
-        logger.info("init mode to Studio")
-        st.session_state['mode'] = "Studio"
+        logger.info("init mode to Creator")
+        st.session_state['mode'] = "Creator"
         change_mode_pages()
 
     app_logo.add_logo("public/images/logo.png", height=70)

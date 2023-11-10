@@ -10,6 +10,7 @@ from threading import Thread
 from modules.launch import prepare_comfyui_path
 from modules import AppStatus
 from modules.authenticate import MyAuthenticate
+from modules.preview_app import enter_app_ui
 
 
 def uninstall_app(app):
@@ -19,7 +20,7 @@ def uninstall_app(app):
 
 def enter_app(app):
     logger.info(f"enter app {app.name}")
-    st.session_state["current_app"] = app
+    st.session_state["enter_app"] = app
 
 
 def create_app_info_ui(app):
@@ -120,24 +121,14 @@ with st.container():
     auth_instance =  MyAuthenticate("comfyflow_token", "ComfyFlowApp： Load ComfyUI workflow as webapp in seconds.")
     
     container_empty = st.empty()
-    if 'current_app' in st.session_state:
-        with container_empty:
-            with st.container():
-                app = st.session_state.get('current_app')
-                logger.info(f"enter app {app.name}")
-                app_data = app.app_conf
-                api_data = app.api_conf
-
-                # start comfyui
-                if not start_comfyui():
-                    st.error(f"start app error, {app.name}")
-                    st.stop()
-                else:
-                    logger.info(f"start app success, {app.name}")
-
-                from modules.comfyflow import Comfyflow
-                comfy_flow = Comfyflow(comfy_client=get_inner_comfy_client(), api_data=api_data, app_data=app_data)
-                comfy_flow.create_ui()
+    if 'enter_app' in st.session_state:
+        app = st.session_state['enter_app']
+        # start comfyui
+        if not start_comfyui():
+            st.error(f"Start app failed, {app.name}")
+        else:
+            logger.info(f"Start app ..., {app.name}")
+            enter_app_ui(app)
     else:
         with container_empty:
             with st.container():

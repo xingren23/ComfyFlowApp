@@ -269,7 +269,8 @@ def check_app_name():
         st.session_state['create_exist_app_name'] = False
 
 def on_new_workspace():
-    st.session_state['new_app'] = False
+    st.session_state.pop('new_app', None)
+    logger.info("back to workspace")
 
 def new_app_ui():
     logger.info("Loading create page")

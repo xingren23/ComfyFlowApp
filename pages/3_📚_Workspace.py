@@ -44,18 +44,31 @@ def create_app_info_ui(app):
                     #### Status
                     {app_status}
                     """)
+
+def click_new_app():
+    logger.info("new app...")
+    st.session_state['new_app'] = True    
+    st.session_state.pop('preview_app', None)
+    st.session_state.pop('publish_app', None)
+
+def click_preview_app(app):
+    if not check_comfyui_alive():
+        logger.error("ComfyUI server is not alive, please check it")
+        st.session_state['app_preview_ret'] = AppStatus.ERROR.value
+        return
     
+    logger.info(f"preview app: {app.name}")
+    st.session_state['preview_app'] = app
+    st.session_state.pop('new_app', None)
+    st.session_state.pop('publish_app', None)
 
-def click_preview_app(name):
-    logger.info(f"preview app: {name}")
-    st.session_state['preview_select_app'] = name
-    st.session_state['preview_app'] = True
 
-
-def click_publish_app(name, status):
-    logger.info(f"publish app: {name} status: {status}")
-    st.session_state['publish_select_app'] = name
-    st.session_state['publish_app'] = True
+def click_publish_app(app):
+    
+    logger.info(f"publish app: {app.name} status: {app.status}")
+    st.session_state['publish_app'] = app
+    st.session_state.pop('new_app', None)
+    st.session_state.pop('preview_app', None)
     
 
 def click_delete_app(name):
@@ -132,20 +145,23 @@ def create_operation_ui(app):
     status = app.status
     url = app.url
     operate_row = row([1.2, 1.0, 1.0, 4.4, 1.2, 1.2], vertical_align="bottom")
-    operate_row.button("✅ Preview", help="Preview and check the app", 
+    preview_button = operate_row.button("✅ Preview", help="Preview and check the app", 
                                         key=f"{id}-button-preview", 
-                                        on_click=click_preview_app, args=(name,))
-    if 'preview_app' in st.session_state and st.session_state['preview_app']:
-        preview_app_ui()
+                                        on_click=click_preview_app, args=(app,))
+    if preview_button:
+        app_preview_ret = st.session_state['app_preview_ret']
+        if app_preview_ret == AppStatus.ERROR.value:
+            st.error(f"Preview app {name} failed, please check it")
+
 
     start_button = operate_row.button("▶️ Start", help="Start the app", key=f"{id}-button-start", 
                        on_click=click_start_app, args=(name, id, status))
     if start_button:
         if ready_start_app(status):
-            app_start_ret = st.session_state['app_start_ret']
-            if app_start_ret == AppStatus.RUNNING.value:
+            app_preview_ret = st.session_state['app_start_ret']
+            if app_preview_ret == AppStatus.RUNNING.value:
                 st.info(f"App {name} is running yet, you could share {url} to your friends")
-            elif app_start_ret == AppStatus.STARTED.value:
+            elif app_preview_ret == AppStatus.STARTED.value:
                 st.success(f"Start app {name} success, you could share {url} to your friends")
             else:
                 st.error(f"Start app {name} failed")
@@ -176,21 +192,14 @@ def create_operation_ui(app):
                                         on_click=click_publish_app, args=(name, status,))
     if status == AppStatus.CREATED.value:
         st.error("Please preview and check this app first")
-    else:
-        if 'publish_app' in st.session_state and st.session_state['publish_app']:
-            cookies = {auth_instance.cookie_name: auth_instance.get_token()} 
-            publish_app_ui(cookies=cookies)
 
-
-def new_app():
-    st.session_state['new_app'] = True
 
 def is_load_workspace_page():
-    if 'new_app' in st.session_state and st.session_state['new_app']:
+    if 'new_app' in st.session_state:
         return False
-    if 'preview_app' in st.session_state and st.session_state['preview_app']:
+    if 'preview_app' in st.session_state:
         return False
-    if 'publish_app' in st.session_state and st.session_state['publish_app']:
+    if 'publish_app' in st.session_state:
         return False
     return True
         
@@ -204,16 +213,22 @@ with st.container():
         st.session_state['auth_instance'] = auth_instance
     else:
         auth_instance = st.session_state['auth_instance']
-        
-    if is_load_workspace_page():
+
+    if 'new_app' in st.session_state:
+        new_app_ui()
+    elif 'preview_app' in st.session_state:
+        preview_app_ui(st.session_state['preview_app'])
+    elif 'publish_app' in st.session_state:
+        cookies = {auth_instance.cookie_name: auth_instance.get_token()} 
+        publish_app_ui(cookies=cookies)
+    elif is_load_workspace_page():
         with page.stylable_button_container():
             header_row = row([0.88, 0.12], vertical_align="top")
             header_row.markdown("""
                 ### My Workspace
             """)
-            new_app_button = header_row.button("New App", help="Create a new app from comfyui workflow.", on_click=new_app)
-            if 'new_app' in st.session_state and st.session_state['new_app']:
-                new_app_ui()
+            new_app_button = header_row.button("New App", help="Create a new app from comfyui workflow.", on_click=click_new_app)
+           
 
         with st.container():
             if not st.session_state['authentication_status']:
