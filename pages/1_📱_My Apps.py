@@ -5,6 +5,7 @@ from modules import get_myapp_model, get_inner_comfy_client
 import modules.page as page
 from streamlit_extras.row import row
 from streamlit_extras.switch_page_button import switch_page
+from streamlit.runtime.scriptrunner import add_script_run_ctx
 import subprocess
 from threading import Thread
 from modules.launch import prepare_comfyui_path
@@ -101,6 +102,7 @@ def start_comfyui():
         comfyui_path = prepare_comfyui_path()
         server_addr = os.getenv('INNER_COMFYUI_SERVER_ADDR', default='localhost:9188')
         comfyui_thread = ComfyUIThread(server_addr, comfyui_path)
+        add_script_run_ctx(comfyui_thread)
         comfyui_thread.start()
         # wait 2 seconds for comfyui start
         comfyui_thread.join(2)

@@ -5,6 +5,7 @@ import subprocess
 import psutil
 import shutil
 from modules.workspace_model import AppStatus
+from streamlit.runtime.scriptrunner import add_script_run_ctx
 
 class CommandThread(threading.Thread):
     def __init__(self, path, command):
@@ -94,6 +95,7 @@ def start_app(app_name, app_id, url):
             logger.error(f"App {app_name} dir generated failed, path: {app_path}")
             return "failed"
         app_thread = CommandThread(app_path, command)
+        add_script_run_ctx(app_thread)
         app_thread.start()
         logger.info(f"App {app_name} started, url: {url}")
         return AppStatus.STARTED.value
