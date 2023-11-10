@@ -56,3 +56,8 @@ def get_comfyui_object_info():
     comfy_object_info = comfy_client.get_node_class()
     return comfy_object_info
 
+def get_comfyflow_token():
+    import extra_streamlit_components as stx
+    cookie_manager = stx.CookieManager("token")
+    token = cookie_manager.get('comfyflow_token')
+    return token

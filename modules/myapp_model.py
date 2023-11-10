@@ -42,26 +42,44 @@ class MyAppModel:
             logger.info(f"init app table {self.app_talbe_name} and index")
 
     def sync_apps(self, apps):
+        
+        with self.session as s:
+            # delete local published apps
+            sql = text(f'SELECT id, status FROM {self.app_talbe_name} where status=:status order by id;')
+            local_apps = s.execute(sql, dict(status=AppStatus.PUBLISHED.value)).fetchall()
+            delete_apps = []
+            for app in local_apps:
+                delete_apps.append(app.id)
+                self.delete_app_by_id(app.id)
+            logger.info(f"delete local published apps, {delete_apps}")
+
         # sync apps from comfyflow.app
         with self.session as s:
-            logger.info(f"sync apps {apps}")
-            sql = text(f'SELECT id FROM {self.app_talbe_name} order by id;')
+            sql = text(f'SELECT id, status FROM {self.app_talbe_name} order by id;')
             local_apps = s.execute(sql).fetchall()
-            local_app_ids = [app.id for app in local_apps]
-            logger.debug(f"local_app_ids: {local_app_ids}")
+            local_app_ids = {app.id: app for app in local_apps}
             sync_apps = []
             for app in apps:
-                if app['id'] in local_app_ids:
-                    logger.info(f"app {app['id']} already installed")
-                    continue
                 # convert base64 image to bytes
                 base64_data = app['image'].split(',')[-1]
                 image_bytes = base64.b64decode(base64_data)
-                sql = text(f'INSERT INTO {self.app_talbe_name} (id, name, description, image, app_conf, api_conf, template, status, created_at, updated_at) VALUES (:id, :name, :description, :image, :app_conf, :api_conf, :template, :status, datetime("now"), datetime("now") );')
-                s.execute(sql, dict(id=app['id'], name=app['name'], description=app['description'], image=image_bytes, app_conf=app['app_conf'], api_conf=app['api_conf'], template=app['template'], status=AppStatus.PUBLISHED.value))
-                s.commit()
-                sync_apps.append(app['name'])
-                logger.info(f"insert app {app['name']} to db")
+
+                if app['id'] in local_app_ids:
+                    if local_app_ids[app['id']].status == AppStatus.PUBLISHED.value:
+                        # update app
+                        sql = text(f'UPDATE {self.app_talbe_name} SET name=:name, description=:description, image=:image, template=:template, status=:status, updated_at=datetime("now") WHERE id=:id;')
+                        s.execute(sql, dict(id=app['id'], name=app['name'], description=app['description'], image=image_bytes, template=app['template'], status=AppStatus.PUBLISHED.value))
+                        s.commit()
+                        sync_apps.append(app['name'])
+                        logger.info(f"update app {app['name']} to my apps")
+                else:
+                    # insert app
+                    sql = text(f'INSERT INTO {self.app_talbe_name} (id, name, description, image, template, status, created_at, updated_at) VALUES (:id, :name, :description, :image, :template, :status, datetime("now"), datetime("now") );')
+                    s.execute(sql, dict(id=app['id'], name=app['name'], description=app['description'], image=image_bytes, template=app['template'], status=AppStatus.PUBLISHED.value))
+                    s.commit()
+                    sync_apps.append(app['name'])
+                    logger.info(f"insert app {app['name']} my apps")
+            logger.info(f"sync apps from comfyflow.app, {sync_apps}")
             return sync_apps
 
     def get_all_apps(self):
@@ -100,6 +118,13 @@ class MyAppModel:
             s.execute(sql, dict(name=name))
             s.commit()
 
+    def delete_app_by_id(self, id):
+        with self.session as s:
+            logger.info(f"delete app: {id}")
+            sql = text(f'DELETE FROM {self.app_talbe_name} WHERE id=:id;')
+            s.execute(sql, dict(id=id))
+            s.commit()
+
     def update_app_status(self, id, status):
         with self.session as s:
             logger.info(f"update app status: {id}, {status}")
@@ -112,6 +137,13 @@ class MyAppModel:
             logger.info(f"update app api_conf: {id}, {api_conf}")
             sql = text(f'UPDATE {self.app_talbe_name} SET api_conf=:api_conf WHERE id=:id;')
             s.execute(sql, dict(id=id, api_conf=api_conf))
+            s.commit()
+
+    def update_app_conf(self, id, app_conf):
+        with self.session as s:
+            logger.info(f"update app app_conf: {id}, {app_conf}")
+            sql = text(f'UPDATE {self.app_talbe_name} SET app_conf=:app_conf WHERE id=:id;')
+            s.execute(sql, dict(id=id, app_conf=app_conf))
             s.commit()
 
        

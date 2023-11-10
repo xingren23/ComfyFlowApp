@@ -10,8 +10,9 @@ class MyAuthenticate(Authenticate):
     def __init__(self, cookie_name: str, key:str, cookie_expiry_days: float=30.0):
         super().__init__({"usernames": {}}, cookie_name, key, cookie_expiry_days, [])
         self._check_cookie()
+        st.session_state['comfyflow_token'] = self.get_token()
         self.comfyflow_url = os.getenv('COMFYFLOW_API_URL', default='https://api.comfyflow.app')
-        logger.info(f"authentication_status {st.session_state['authentication_status']}, username {st.session_state['username']}")
+        logger.info(f"username {st.session_state['username']}")
         
     def get_token(self) -> str:
         """

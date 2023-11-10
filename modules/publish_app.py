@@ -35,7 +35,7 @@ def get_huggingface_model_meta(model_url):
             logger.debug(f"hf_meta, {hf_meta}")
             return hf_meta
         
-@st.cache_data(ttl=24*60*60)        
+@st.cache_data(ttl=60*60)        
 def get_civitai_model_meta(model_version_url):
     """
     model_url: https://civitai.com/models/113362?modelVersionId=159291
@@ -59,6 +59,7 @@ def get_civitai_model_meta(model_version_url):
     model_meta['files'] = ret_json["files"]
     return model_meta
 
+@st.cache_data(ttl=60*60)
 def get_model_meta(model_url):
     """
     return model meta, eg: {'download_url': 'xxx', 'size': 123}
@@ -74,35 +75,9 @@ def get_model_meta(model_url):
         civitai_meta['model_url'] = model_url
         civitai_meta['size'] = civitai_meta['files'][0]['sizeKB'] * 1024
         return civitai_meta
-        
-
-def get_comfyflow_object_info(cookies=None):
-    comfyflow_api = os.getenv('COMFYFLOW_API_URL', default='https://api.comfyflow.app')
-
-    # request comfyflow object info
-    object_info = requests.get(f"{comfyflow_api}/api/comfyflow/object_info", cookies=cookies)
-    if object_info.status_code != 200:
-        logger.error(f"Get comfyflow object info failed, {object_info.text}")
-        st.session_state['get_comfyflow_object_info_error'] = f"Get comfyflow object info failed, {object_info.text}"
-        return None
-    logger.info(f"get_comfyflow_object_info, {object_info}")
-    return object_info.json()
-
-
-def get_comfyflow_model_info(cookies=None):
-    comfyflow_api = os.getenv(
-        'COMFYFLOW_API_URL', default='https://api.comfyflow.app')
-    # request comfyflow object info
-    model_info = requests.get(f"{comfyflow_api}/api/comfyflow/model_info", cookies=cookies)
-    if model_info.status_code != 200:
-        logger.error(f"Get comfyflow model info failed, {model_info.text}")
-        st.session_state['get_comfyflow_model_info_error'] = f"Get comfyflow model info failed, {model_info.text}"
-        return None
-    logger.info(f"get_comfyflow_model_info, {model_info}")
-    return model_info.json()        
+       
 
 def publish_app(name, description, image, app_conf, api_conf, template, status, cookies=None):
-    
     comfyflow_api = os.getenv(
         'COMFYFLOW_API_URL', default='https://api.comfyflow.app')
     # post app to comfyflow.app
@@ -144,8 +119,8 @@ def publish_app_ui(app, cookies):
 
         # config app nodes
         with st.expander("Parse comfyui node info", expanded=True):
-            object_info = get_comfyflow_object_info(cookies)
-            if object_info:
+            if 'object_info' in st.session_state:
+                object_info = st.session_state['object_info']
                 for node_id in api_data_json:
                     inputs = api_data_json[node_id]['inputs']
                     class_type = api_data_json[node_id]['class_type']
@@ -160,8 +135,8 @@ def publish_app_ui(app, cookies):
 
         # config app models
         with st.expander("Config app models", expanded=True):
-            object_model = get_comfyflow_model_info(cookies)
-            if object_model:
+            if 'object_model' in st.session_state:
+                object_model = st.session_state['object_model']
                 for node_id in api_data_json:
                     inputs = api_data_json[node_id]['inputs']
                     class_type = api_data_json[node_id]['class_type']

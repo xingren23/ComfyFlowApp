@@ -1,9 +1,10 @@
 import os
+import requests
 from io import BytesIO
 from loguru import logger
 import streamlit as st
 import modules.page as page
-from modules import get_workspace_model, get_comfy_client
+from modules import get_workspace_model, get_comfy_client, get_comfyflow_token
 from streamlit_extras.row import row
 from manager.app_manager import start_app, stop_app
 from modules.workspace_model import AppStatus
@@ -11,7 +12,6 @@ from streamlit import config
 from modules.new_app import new_app_ui
 from modules.preview_app import preview_app_ui
 from modules.publish_app import publish_app_ui
-from modules.authenticate import MyAuthenticate
 
 
 def create_app_info_ui(app):
@@ -45,6 +45,31 @@ def create_app_info_ui(app):
                     {app_status}
                     """)
 
+@st.cache_data(ttl=60*60)
+def get_comfyflow_object_info(cookies):
+    comfyflow_api = os.getenv('COMFYFLOW_API_URL', default='https://api.comfyflow.app')
+    # request comfyflow object info
+    object_info = requests.get(f"{comfyflow_api}/api/comfyflow/object_info", cookies=cookies)
+    if object_info.status_code != 200:
+        logger.error(f"Get comfyflow object info failed, {object_info.text} {cookies}")
+        st.session_state['get_comfyflow_object_info_error'] = f"Get comfyflow object info failed, {object_info.text}"
+        return None
+    logger.info(f"get_comfyflow_object_info, {object_info}")
+    return object_info.json()
+
+@st.cache_data(ttl=60*60)
+def get_comfyflow_model_info(cookies):
+    comfyflow_api = os.getenv('COMFYFLOW_API_URL', default='https://api.comfyflow.app')
+    # request comfyflow object info
+    model_info = requests.get(f"{comfyflow_api}/api/comfyflow/model_info", cookies=cookies)
+    if model_info.status_code != 200:
+        logger.error(f"Get comfyflow model info failed, {model_info.text}")
+        st.session_state['get_comfyflow_model_info_error'] = f"Get comfyflow model info failed, {model_info.text}"
+        return None
+    logger.info(f"get_comfyflow_model_info, {model_info}")
+    return model_info.json()     
+
+
 def click_new_app():
     logger.info("new app...")
     st.session_state['new_app'] = True    
@@ -53,7 +78,7 @@ def click_new_app():
 
 def click_preview_app(app):
     if not check_comfyui_alive():
-        logger.error("ComfyUI server is not alive, please check it")
+        logger.warning("ComfyUI server is not alive, please check it")
         st.session_state['app_preview_ret'] = AppStatus.ERROR.value
         return
     
@@ -64,7 +89,25 @@ def click_preview_app(app):
 
 
 def click_publish_app(app):
+    if app.status == AppStatus.CREATED.value:
+        logger.warning("Please preview and check this app first")
+        return
     
+    if 'token_cookie' in st.session_state:
+        object_info = get_comfyflow_object_info(cookies)
+        if object_info is None:
+            return
+        else:
+            st.session_state['object_info'] = object_info
+            
+        object_model = get_comfyflow_model_info(cookies)
+        if object_model is None:
+            return
+        else:
+            st.session_state['object_model'] = object_model
+    else:
+        return 
+
     logger.info(f"publish app: {app.name} status: {app.status}")
     st.session_state['publish_app'] = app
     st.session_state.pop('new_app', None)
@@ -137,7 +180,7 @@ def click_stop_app(name, status, url):
             else:
                 logger.error(f"Stop app {name} failed, please check the log")
     else:
-        logger.warning("Please preview this app first")
+        logger.warning(f"Please preview this app {name} first")
 
 def create_operation_ui(app):
     id = app.id
@@ -166,7 +209,7 @@ def create_operation_ui(app):
             else:
                 st.error(f"Start app {name} failed")
         else:
-            st.warning("Please preview this app first")
+            st.warning(f"Please preview this app {name} first")
         
     stop_button = operate_row.button("⏹️ Stop", help="Stop the app", key=f"{id}-button-stop",
                        on_click=click_stop_app, args=(name, status, url))
@@ -180,18 +223,22 @@ def create_operation_ui(app):
             else:
                 st.error(f"Stop app {name} failed, please check the log")
         else:
-            st.warning("Please preview this app first")        
+            st.warning(f"Please preview this app {name} first")        
 
     operate_row.markdown("")
 
     operate_row.button("🚮 Delete", help="Delete the app", key=f"{id}-button-delete", 
                        on_click=click_delete_app, args=(name,))
     
-    operate_row.button("✈️ Publish", help="Publish the app with template", 
+    publish_button = operate_row.button("✈️ Publish", help="Publish the app with template", 
                                         key=f"{id}-button-publish",
-                                        on_click=click_publish_app, args=(name, status,))
-    if status == AppStatus.CREATED.value:
-        st.error("Please preview and check this app first")
+                                        on_click=click_publish_app, args=(app,))
+    if publish_button:
+        if status == AppStatus.CREATED.value:
+            st.warning("Please preview and check this app first")
+        else:   
+            if 'token_cookie' not in st.session_state:
+                st.warning("Please go to homepage for your login :point_left:")
 
 
 def is_load_workspace_page():
@@ -208,32 +255,30 @@ logger.info("Loading workspace page")
 page.page_init()                
 
 with st.container():
-    if 'auth_instance' not in st.session_state:
-        auth_instance =  MyAuthenticate("comfyflow_token", "ComfyFlowApp： Load ComfyUI workflow as webapp in seconds.")
-        st.session_state['auth_instance'] = auth_instance
+    if 'token_cookie' not in st.session_state:
+        comfyflow_token = get_comfyflow_token()
+        if comfyflow_token is not None:
+            cookies = {'comfyflow_token': comfyflow_token}
+            st.session_state['token_cookie'] = cookies
     else:
-        auth_instance = st.session_state['auth_instance']
+        cookies = st.session_state['token_cookie']
 
     if 'new_app' in st.session_state:
         new_app_ui()
     elif 'preview_app' in st.session_state:
         preview_app_ui(st.session_state['preview_app'])
-    elif 'publish_app' in st.session_state:
-        cookies = {auth_instance.cookie_name: auth_instance.get_token()} 
-        publish_app_ui(cookies=cookies)
+    elif 'publish_app' in st.session_state:    
+        publish_app_ui(app=st.session_state['publish_app'], cookies=cookies)
+    
     elif is_load_workspace_page():
         with page.stylable_button_container():
-            header_row = row([0.88, 0.12], vertical_align="top")
+            header_row = row([0.85, 0.15], vertical_align="top")
             header_row.markdown("""
                 ### My Workspace
             """)
             new_app_button = header_row.button("New App", help="Create a new app from comfyui workflow.", on_click=click_new_app)
            
-
         with st.container():
-            if not st.session_state['authentication_status']:
-                st.info("Please go to homepage for your login ::point_left::")
-            
             apps = get_workspace_model().get_all_apps()
             if len(apps) == 0:
                 st.divider()

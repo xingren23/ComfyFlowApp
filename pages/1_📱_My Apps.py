@@ -9,7 +9,6 @@ import subprocess
 from threading import Thread
 from modules.launch import prepare_comfyui_path
 from modules import AppStatus
-from modules.authenticate import MyAuthenticate
 from modules.preview_app import enter_app_ui
 
 
@@ -51,7 +50,7 @@ def create_app_info_ui(app):
                                       key=f"uninstall_{app.id}", on_click=uninstall_app, args=(app,))
     if uninstall_button:
         logger.info(f"uninstall app {app.name}")
-        st.rerun()
+    
     enter_button = app_row.button("Enter", type='primary', help="Enter app to use", key=f"enter_{app.id}",
                                   on_click=enter_app, args=(app,))
     if enter_button:
@@ -118,7 +117,6 @@ def start_comfyui():
 page.page_init()
 
 with st.container():
-    auth_instance =  MyAuthenticate("comfyflow_token", "ComfyFlowApp： Load ComfyUI workflow as webapp in seconds.")
     
     container_empty = st.empty()
     if 'enter_app' in st.session_state:
@@ -144,9 +142,6 @@ with st.container():
                         switch_page("App Store")
 
                 with st.container():
-                    if not st.session_state['authentication_status']:
-                        st.info("Please go to homepage for your login :point_left:")
-
                     apps = get_myapp_model().get_my_installed_apps()
                     if len(apps) == 0:
                         st.divider()

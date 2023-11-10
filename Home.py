@@ -15,7 +15,6 @@ with st.container():
     logout_button = header_row.empty()   
 
     auth_instance =  MyAuthenticate("comfyflow_token", "ComfyFlowApp： Load ComfyUI workflow as webapp in seconds.")
-
     if not st.session_state['authentication_status']:
         login_tab, reg_tab = st.tabs(["Login", "Register"])
         with login_tab:
