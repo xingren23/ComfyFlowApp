@@ -48,35 +48,36 @@ Professional creators or teams can use ComfyUI tools to develop valuable applica
 # download project
 git clone https://github.com/xingren23/ComfyFlowApp
 
-# Creator for developer
-cd ComfyFlowApp/creator
-# install requirements
-pip install -r requirements.txt
-# configure environment variables, defaulut ComfyUI server address is 127.0.0.1:8188
-export COMFYUI_SERVER_ADDR=127.0.0.1:8188
-# start Creator
-sh bin/start.sh
-
-# Studio for user
-cd ComfyFlowApp/studio
+# 
+cd ComfyFlowApp
 # update submodule ComfyUI
 git submodule update --init --recursive
 # install requirements
 pip install -r requirements.txt
-# start Studio
+# start 
 sh bin/start.sh
 ```
 
 - Windows
 You can download the integrated package, extract it, and run it directly without the need to install dependencies.
 ```base
-# Creator for developer
-click creator-run.bat to start
-
-# Studio for user
-click studio-run.bat to start
+click run.bat to start
 ```
 
+env var, you could modify some env var as needed
+```bash
+:: log level default: INFO
+set LOGURU_LEVEL=INFO
+
+:: ComfyflowApp address，default: https://api.comfyflow.app
+set COMFYFLOW_API_URL=https://api.comfyflow.app
+
+:: comfyui env for developping，you could use other machine in the same LAN, default: localhost:8188
+set COMFYUI_SERVER_ADDR=localhost:8188
+
+:: inner comfyui env for running my apps, default: localhost:9188, you could modify port, but localhost
+set INNER_COMFYUI_SERVER_ADDR=localhost:9188
+```
        
 ### 📌 Related Projects
 - [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
