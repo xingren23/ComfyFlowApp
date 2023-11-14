@@ -95,7 +95,7 @@ def home(header_button):
     if not st.session_state['authentication_status']:
         with header_button:
             login_url = discord_oauth.gen_authorization_url()
-            st.link_button("Register", url=login_url, help="Register with Github")
+            st.link_button("Register", url=login_url, help="Register with Discord")
 
         with st.container():
             try:
