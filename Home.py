@@ -47,7 +47,7 @@ def back_home_login():
     logger.info("back home login")
 
 
-def github_callback(user_data, header_button):
+def discord_callback(user_data, header_button):
     with header_button:
         st.button("Login", key="home_button", on_click=back_home_login)
 
@@ -158,6 +158,6 @@ with st.container():
     
     if 'user_data' in st.session_state:
         user_data = st.session_state['user_data']
-        github_callback(user_data=user_data, header_button=header_button)
+        discord_callback(user_data=user_data, header_button=header_button)
     else:
         home(header_button) 

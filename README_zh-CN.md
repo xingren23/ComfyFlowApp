@@ -71,10 +71,13 @@ sh bin/start.sh
 ```
 :: 日志级别，默认：INFO
 set LOGURU_LEVEL=INFO
+
 :: ComfyflowApp 地址，默认：https://api.comfyflow.app
 set COMFYFLOW_API_URL=https://api.comfyflow.app
+
 :: 开发联调外部ComfyUI地址，可以连接局域网内其他服务器地址，默认：localhost:8188
 set COMFYUI_SERVER_ADDR=localhost:8188
+
 :: ComfyFlowApp内置ComfyUI地址，只能使用本机地址，默认：localhost:9188
 set INNER_COMFYUI_SERVER_ADDR=localhost:9188
 ```
