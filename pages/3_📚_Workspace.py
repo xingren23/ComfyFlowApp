@@ -47,7 +47,7 @@ def create_app_info_ui(app):
 
 @st.cache_data(ttl=60*60)
 def get_comfyflow_object_info(cookies):
-    comfyflow_api = os.getenv('COMFYFLOW_API_URL', default='https://api.comfyflow.app')
+    comfyflow_api = os.getenv('COMFYFLOW_API_URL')
     # request comfyflow object info
     object_info = requests.get(f"{comfyflow_api}/api/comfyflow/object_info", cookies=cookies)
     if object_info.status_code != 200:
@@ -59,7 +59,7 @@ def get_comfyflow_object_info(cookies):
 
 @st.cache_data(ttl=60*60)
 def get_comfyflow_model_info(cookies):
-    comfyflow_api = os.getenv('COMFYFLOW_API_URL', default='https://api.comfyflow.app')
+    comfyflow_api = os.getenv('COMFYFLOW_API_URL')
     # request comfyflow object info
     model_info = requests.get(f"{comfyflow_api}/api/comfyflow/model_info", cookies=cookies)
     if model_info.status_code != 200:
@@ -141,7 +141,7 @@ def click_start_app(name, id, status):
             st.session_state['app_start_ret'] = AppStatus.ERROR.value
             return
                      
-        server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')
+        server_addr = os.getenv('COMFYUI_SERVER_ADDR')
         # comfyflowapp address
         app_server = config.get_option('server.address')
         if app_server is None or app_server == "":

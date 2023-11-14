@@ -100,7 +100,7 @@ def start_comfyui():
         logger.info("start inner comfyui ...")
 
         comfyui_path = prepare_comfyui_path()
-        server_addr = os.getenv('INNER_COMFYUI_SERVER_ADDR', default='localhost:9188')
+        server_addr = os.getenv('INNER_COMFYUI_SERVER_ADDR')
         comfyui_thread = ComfyUIThread(server_addr, comfyui_path)
         add_script_run_ctx(comfyui_thread)
         comfyui_thread.start()

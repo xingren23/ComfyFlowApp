@@ -1,17 +1,57 @@
 from loguru import logger
 import os
+import re
+import jwt
 import requests
 import streamlit as st
-from streamlit_authenticator import Authenticate
 from streamlit_authenticator.exceptions import RegisterError
 from datetime import datetime, timedelta
+import extra_streamlit_components as stx
 
-class MyAuthenticate(Authenticate):
+class Validator:
+    """
+    This class will check the validity of the entered username, name, and email for a 
+    newly registered user.
+    """
+    def validate_username(self, username: str) -> bool:
+        """
+        Checks the validity of the entered username.
+        """
+        pattern = r"^[a-zA-Z0-9_-]{1,20}$"
+        return bool(re.match(pattern, username))
+
+    def validate_name(self, name: str) -> bool:
+        """
+        Checks the validity of the entered name.
+        """
+        return 1 < len(name) < 100
+
+    def validate_email(self, email: str) -> bool:
+        """
+        Checks the validity of the entered email.
+        """
+        return "@" in email and 2 < len(email) < 320
+    
+class MyAuthenticate():
     def __init__(self, cookie_name: str, key:str, cookie_expiry_days: float=30.0):
-        super().__init__({"usernames": {}}, cookie_name, key, cookie_expiry_days, [])
-        self._check_cookie()
-        st.session_state['comfyflow_token'] = self.get_token()
-        self.comfyflow_url = os.getenv('COMFYFLOW_API_URL', default='https://api.comfyflow.app')
+        self.cookie_name = cookie_name
+        self.key = key
+        self.cookie_expiry_days = cookie_expiry_days
+        self.cookie_manager = stx.CookieManager()
+        self.validator = Validator()
+
+        if 'name' not in st.session_state:
+            st.session_state['name'] = None
+        if 'authentication_status' not in st.session_state:
+            st.session_state['authentication_status'] = None
+        if 'username' not in st.session_state:
+            st.session_state['username'] = None
+        if 'logout' not in st.session_state:
+            st.session_state['logout'] = None
+
+        # self._check_cookie()
+        # st.session_state['comfyflow_token'] = self.get_token()
+        self.comfyflow_url = os.getenv('COMFYFLOW_API_URL')
         logger.info(f"username {st.session_state['username']}")
         
     def get_token(self) -> str:
@@ -24,7 +64,46 @@ class MyAuthenticate(Authenticate):
             The token.
         """
         return self.cookie_manager.get(self.cookie_name)
+    
+    def _token_encode(self) -> str:
+        """
+        Encodes the contents of the reauthentication cookie.
 
+        Returns
+        -------
+        str
+            The JWT cookie for passwordless reauthentication.
+        """
+        return jwt.encode({'name':st.session_state['name'],
+            'username':st.session_state['username'],
+            'exp_date':self.exp_date}, self.key, algorithm='HS256')
+
+   
+    def _token_decode(self) -> str:
+        """
+        Decodes the contents of the reauthentication cookie.
+
+        Returns
+        -------
+        str
+            The decoded JWT cookie for passwordless reauthentication.
+        """
+        try:
+            return jwt.decode(self.token, self.key, algorithms=['HS256'])
+        except:
+            return False
+
+    def _set_exp_date(self) -> str:
+        """
+        Creates the reauthentication cookie's expiry date.
+
+        Returns
+        -------
+        str
+            The JWT cookie's expiry timestamp in Unix epoch.
+        """
+        return (datetime.utcnow() + timedelta(days=self.cookie_expiry_days)).timestamp()
+    
     def _check_pw(self) -> bool:
         # check username and password 
         username = self.username
@@ -65,12 +144,88 @@ class MyAuthenticate(Authenticate):
         except Exception as e:
             logger.error(f"check credentials error, {e}")
         
-    
-    def _update_password(self, username: str, password: str):
-        # update password to remote
-        pass
+    def login(self, form_name: str, location: str='main') -> tuple:
+        """
+        Creates a login widget.
 
-    def _register_credentials(self, username: str, name: str, password: str, email: str, invite_code: str, preauthorization: bool):
+        Parameters
+        ----------
+        form_name: str
+            The rendered name of the login form.
+        location: str
+            The location of the login form i.e. main or sidebar.
+        Returns
+        -------
+        str
+            Name of the authenticated user.
+        bool
+            The status of authentication, None: no credentials entered, 
+            False: incorrect credentials, True: correct credentials.
+        str
+            Username of the authenticated user.
+        """
+        if location not in ['main', 'sidebar']:
+            raise ValueError("Location must be one of 'main' or 'sidebar'")
+        if not st.session_state['authentication_status']:
+            self._check_cookie()
+            if not st.session_state['authentication_status']:
+                if location == 'main':
+                    login_form = st.form('Login')
+                elif location == 'sidebar':
+                    login_form = st.sidebar.form('Login')
+
+                login_form.subheader(form_name)
+                self.username = login_form.text_input('Username')
+                st.session_state['username'] = self.username
+                self.password = login_form.text_input('Password', type='password')
+
+                if login_form.form_submit_button('Login'):
+                    self._check_credentials()
+
+    def logout(self, button_name: str, location: str='main', key: str=None):
+        """
+        Creates a logout button.
+
+        Parameters
+        ----------
+        button_name: str
+            The rendered name of the logout button.
+        location: str
+            The location of the logout button i.e. main or sidebar.
+        """
+        if location not in ['main', 'sidebar']:
+            raise ValueError("Location must be one of 'main' or 'sidebar'")
+        if location == 'main':
+            if st.button(button_name, key):
+                self.cookie_manager.delete(self.cookie_name)
+                st.session_state['logout'] = True
+                st.session_state['name'] = None
+                st.session_state['username'] = None
+                st.session_state['authentication_status'] = None
+        elif location == 'sidebar':
+            if st.sidebar.button(button_name, key):
+                self.cookie_manager.delete(self.cookie_name)
+                st.session_state['logout'] = True
+                st.session_state['name'] = None
+                st.session_state['username'] = None
+                st.session_state['authentication_status'] = None
+
+    def _check_cookie(self):
+        """
+        Checks the validity of the reauthentication cookie.
+        """
+        self.token = self.cookie_manager.get(self.cookie_name)
+        if self.token is not None:
+            self.token = self._token_decode()
+            if self.token is not False:
+                if not st.session_state['logout']:
+                    if self.token['exp_date'] > datetime.utcnow().timestamp():
+                        if 'name' and 'username' in self.token:
+                            st.session_state['name'] = self.token['name']
+                            st.session_state['username'] = self.token['username']
+                            st.session_state['authentication_status'] = True
+
+    def _register_credentials(self, username: str, name: str, password: str, email: str, invite_code: str = ""):
         # register credentials to comfyflowapp
         if not self.validator.validate_username(username):
             raise RegisterError('Username is not valid')
@@ -96,10 +251,39 @@ class MyAuthenticate(Authenticate):
             logger.info(f"register user success, {ret.json()}")
             st.success(f"Register user success, {username}")
 
-        if preauthorization:
-            self.preauthorized['emails'].remove(email)
 
-    def register_user(self, form_name: str, location: str = 'main', preauthorization=True) -> bool:
+    def register_user_info(self, form_name: str, location: str = 'main', data: dict={}) -> bool:
+        if location not in ['main', 'sidebar']:
+            raise ValueError("Location must be one of 'main' or 'sidebar'")
+        if location == 'main':
+            register_user_form = st.form('Register user')
+        elif location == 'sidebar':
+            register_user_form = st.sidebar.form('Register user')
+
+        register_user_form.subheader(form_name)
+        new_email = register_user_form.text_input('Email', value=data['email'], help='Please enter a valid email address')
+        new_username = register_user_form.text_input('Username', value=data['username'], help='Please enter a username')
+        new_name = register_user_form.text_input('Name', value=data['username'],help='Please enter your name')
+        
+        new_password = register_user_form.text_input('Password', type='password')
+        new_password_repeat = register_user_form.text_input('Repeat password', type='password')
+
+        if register_user_form.form_submit_button('Register'):
+            if len(new_email) and len(new_username) and len(new_name) and len(new_password) > 0:
+                if new_username not in self.credentials['usernames']:
+                    if new_password == new_password_repeat:
+                        self._register_credentials(new_username, new_name, new_password, new_email)
+                        return True
+                    else:
+                        raise RegisterError('Passwords do not match')
+                else:
+                    raise RegisterError('Username already taken')
+            else:
+                raise RegisterError('Please enter an email, username, name, and password')
+
+
+
+    def register_user(self, form_name: str, location: str = 'main') -> bool:
         """
         Creates a register new user widget, add field: invite_code
 
@@ -117,9 +301,6 @@ class MyAuthenticate(Authenticate):
         bool
             The status of registering the new user, True: user registered successfully.
         """
-        if preauthorization:
-            if not self.preauthorized:
-                raise ValueError("preauthorization argument must not be None")
         if location not in ['main', 'sidebar']:
             raise ValueError("Location must be one of 'main' or 'sidebar'")
         if location == 'main':
@@ -139,15 +320,8 @@ class MyAuthenticate(Authenticate):
             if len(new_email) and len(new_username) and len(new_name) and len(new_password) > 0:
                 if new_username not in self.credentials['usernames']:
                     if new_password == new_password_repeat:
-                        if preauthorization:
-                            if new_email in self.preauthorized['emails']:
-                                self._register_credentials(new_username, new_name, new_password, new_email, invite_code, preauthorization)
-                                return True
-                            else:
-                                raise RegisterError('User not preauthorized to register')
-                        else:
-                            self._register_credentials(new_username, new_name, new_password, new_email, invite_code, preauthorization)
-                            return True
+                        self._register_credentials(new_username, new_name, new_password, new_email, invite_code)
+                        return True
                     else:
                         raise RegisterError('Passwords do not match')
                 else:
@@ -155,16 +329,5 @@ class MyAuthenticate(Authenticate):
             else:
                 raise RegisterError('Please enter an email, username, name, and password')
 
-    def _set_random_password(self, username: str) -> str:
-        # set random password to remote
-        return "random_password"
-    
-    def _get_username(self, key: str, value: str) -> str:
-        # get username from remote
-        return "username"
-    
-    def _update_entry(self, username: str, key: str, value: str):
-        # update entry to remote
-        pass
 
     

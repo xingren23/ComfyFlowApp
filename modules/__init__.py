@@ -36,7 +36,7 @@ def get_myapp_model():
 def get_comfy_client():
     logger.info("get_comfy_client")
     from modules.comfyclient import ComfyClient
-    server_addr = os.getenv('COMFYUI_SERVER_ADDR', default='localhost:8188')
+    server_addr = os.getenv('COMFYUI_SERVER_ADDR')
     comfy_client = ComfyClient(server_addr=server_addr)
     return comfy_client
 
@@ -44,7 +44,7 @@ def get_comfy_client():
 def get_inner_comfy_client():
     logger.info("get_inner_comfy_client")
     from modules.comfyclient import ComfyClient
-    server_addr = os.getenv('INNER_COMFYUI_SERVER_ADDR', default='localhost:9188')
+    server_addr = os.getenv('INNER_COMFYUI_SERVER_ADDR')
     comfy_client = ComfyClient(server_addr=server_addr)
     return comfy_client
 
@@ -55,6 +55,7 @@ def get_comfyui_object_info():
     comfy_client = get_comfy_client()
     comfy_object_info = comfy_client.get_node_class()
     return comfy_object_info
+
 
 def get_comfyflow_token():
     import extra_streamlit_components as stx

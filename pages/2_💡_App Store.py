@@ -231,7 +231,7 @@ def create_app_info_ui(app):
 @st.cache_data(ttl=60*60)
 def fetch_app_info():
     # get apps from comfyflow.app
-    comfyflow_api = os.getenv('COMFYFLOW_API_URL', default='https://api.comfyflow.app')
+    comfyflow_api = os.getenv('COMFYFLOW_API_URL')
     logger.debug(f"get all app from {comfyflow_api}")
     ret = requests.get(f"{comfyflow_api}/api/app/all", cookies=cookies)
     if ret.status_code != 200:
@@ -242,7 +242,7 @@ def fetch_app_info():
 
 @st.cache_data(ttl=60*60)    
 def get_app_details(app_id):
-    comfyflow_api = os.getenv('COMFYFLOW_API_URL', default='https://api.comfyflow.app')
+    comfyflow_api = os.getenv('COMFYFLOW_API_URL')
     logger.debug(f"get app {app_id} details from {comfyflow_api}")
     ret = requests.get(f"{comfyflow_api}/api/app/{app_id}", cookies=cookies)
     if ret.status_code != 200:
