@@ -1,3 +1,6 @@
-[submodule "stduio/repositories/ComfyUI"]
-	path = studio/repositories/ComfyUI
-	url = https://github.com/xingren23/ComfyUI
+[submodule "repositories/ComfyUI"]
+	path = repositories/ComfyUI
+	url = https://github.com/xingren23/ComfyUI.git
+[submodule "ComfyUI"]
+	path = ComfyUI
+	url = https://github.com/xingren23/ComfyUI.git
