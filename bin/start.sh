@@ -8,12 +8,11 @@ cd $PROJECT_PATH
 
 # set LOGURU_LEVEL to ERROR
 export LOGURU_LEVEL=INFO
-export DISCORD_CLIENT_ID=1163088920305737728
-export DISCORD_CLIENT_SECRET=hdqis8gZ9YVvvM-qxAbYApd6ai40nBlk
-export REDIRECT_URI=http://localhost:8501
-
+# set COMFYFLOW_API_URL to comfyflow api url
 export COMFYFLOW_API_URL=https://api.comfyflow.com
+# set COMFYUI_SERVER_ADDR to comfyui server addr
 export COMFYUI_SERVER_ADDR=localhost:8188
+# set INNER_COMFYUI_SERVER_ADDR to inner comfyui server addr
 export INNER_COMFYUI_SERVER_ADDR=localhost:9188
 
 # app name

@@ -49,37 +49,38 @@ ComfyFlowApp 帮助应用开发者将这些复杂度对用户透明，用户只�
 # 下载项目
 git clone https://github.com/xingren23/ComfyFlowApp
 
-# 创作者工具：Creator
-cd ComfyFlowApp/creator
-# 安装依赖
-pip install -r requirements.txt
-# 配置环境变量，设置你的ComfyUI服务地址，ComfyUI服务地址默认为 127.0.0.1:8188
-export COMFYUI_SERVER_ADDR=127.0.0.1:8188
-# 启动 ComfyFlowApp
-sh bin/start.sh
-
-# 应用运行工具：Studio
-cd ComfyFlowApp/studio
+cd ComfyFlowApp
 # 更新子模块ComfyUI
 git submodule update --init --recursive
 # 安装依赖
 pip install -r requirements.txt
-# 启动 Studio
+# 启动
 sh bin/start.sh
 ```
 
 - Windows
 可以下载整合包，解压后直接运行即可，无需安装依赖。
 ```base
-# 创作者工具：Creator
-点击 creator-run.bat 启动
-
-# 应用运行工具：Studio
-点击 studio-run.bat 启动
+点击 run.bat 启动
 ```
 
 [下载地址 v1.0.0](https://github.com/xingren23/ComfyFlowApp/releases/tag/v1.0.0)
 
+
+环境变量, 在启动脚本中可以修改相关变量
+```
+:: 日志级别，默认：INFO
+set LOGURU_LEVEL=INFO
+
+:: ComfyflowApp 地址，默认：https://api.comfyflow.app
+set COMFYFLOW_API_URL=https://api.comfyflow.app
+
+:: 开发联调外部ComfyUI地址，可以连接局域网内其他服务器地址，默认：localhost:8188
+set COMFYUI_SERVER_ADDR=localhost:8188
+
+:: ComfyFlowApp内置ComfyUI地址，只能使用本机地址，默认：localhost:9188
+set INNER_COMFYUI_SERVER_ADDR=localhost:9188
+```
 
 ## 相关项目
 - [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
