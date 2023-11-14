@@ -44,14 +44,14 @@ class MyAppModel:
     def sync_apps(self, apps):
         
         with self.session as s:
-            # delete local published apps
-            sql = text(f'SELECT id, status FROM {self.app_talbe_name} where status=:status order by id;')
-            local_apps = s.execute(sql, dict(status=AppStatus.PUBLISHED.value)).fetchall()
+            # reset local apps
+            sql = text(f'SELECT id, status FROM {self.app_talbe_name} where status!=:status order by id;')
+            local_apps = s.execute(sql, dict(status=AppStatus.INSTALLED.value)).fetchall()
             delete_apps = []
             for app in local_apps:
                 delete_apps.append(app.id)
                 self.delete_app_by_id(app.id)
-            logger.info(f"delete local published apps, {delete_apps}")
+            logger.info(f"reset local apps, {delete_apps}")
 
         # sync apps from comfyflow.app
         with self.session as s:

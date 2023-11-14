@@ -49,8 +49,8 @@ class MyAuthenticate():
         if 'logout' not in st.session_state:
             st.session_state['logout'] = None
 
-        # self._check_cookie()
-        # st.session_state['comfyflow_token'] = self.get_token()
+        self._check_cookie()
+        st.session_state['comfyflow_token'] = self.get_token()
         self.comfyflow_url = os.getenv('COMFYFLOW_API_URL')
         logger.info(f"username {st.session_state['username']}")
         

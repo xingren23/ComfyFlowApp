@@ -225,6 +225,17 @@ def gen_app_config():
                 app_config['inputs'][node_id] = {"inputs": {}}
             app_config['inputs'][node_id]['inputs'][param] = input_param2_inputs
 
+        # parse input_param3
+        input_param3 = st.session_state['input_param3']
+        input_param3_name = st.session_state['input_param3_name']
+        input_param3_desc = st.session_state['input_param3_desc']
+        if input_param3:
+            node_id, param, input_param3_inputs = get_node_input_config(
+                input_param3, input_param3_name, input_param3_desc)
+            if node_id not in app_config['inputs'].keys():
+                app_config['inputs'][node_id] = {"inputs": {}}
+            app_config['inputs'][node_id]['inputs'][param] = input_param3_inputs
+
         # parse output_param1
         node_id, output_param1_inputs = get_node_output_config(output_param1)
         app_config['outputs'][node_id] = output_param1_inputs
@@ -329,6 +340,13 @@ def new_app_ui():
                 "App Input Name", value="", placeholder="Param Name", key="input_param2_name", help="Input param name")
             param_input2_row.text_input("App Input Description", value="", placeholder="Param Description",
                                         key="input_param2_desc", help="Input param description")
+            
+            param_input3_row = row([0.4, 0.2, 0.4], vertical_align="bottom")
+            param_input3_row.selectbox("Select input of workflow", options=params_inputs_options, key="input_param3", index=None, format_func=format_input_node_info, help="Select a param from workflow")
+            param_input3_row.text_input(
+                "App Input Name", value="", placeholder="Param Name", key="input_param3_name", help="Input param name")
+            param_input3_row.text_input("App Input Description", value="", placeholder="Param Description",
+                                        key="input_param3_desc", help="Input param description")
 
         with st.container():
             st.markdown("Output Params:")
