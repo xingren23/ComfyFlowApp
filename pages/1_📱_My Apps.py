@@ -71,7 +71,7 @@ class ComfyUIThread(Thread):
             # start local comfyui
             if address == "localhost" or address == "127.0.0.1":
                 command = f"{sys.executable} main.py --port {port} --disable-auto-launch"
-                logger.info(f"start inner comfyui, {command} path {self.path}")
+                logger.info(f"start inner comfyui, {command} path {self.path}, sys.path {sys.path}")
                 comfyui_log = open('comfyui.log', 'w')
                 subprocess.run(command, cwd=self.path, shell=True,
                                stdout=comfyui_log, stderr=comfyui_log, text=True)
@@ -106,7 +106,7 @@ def start_comfyui():
         add_script_run_ctx(comfyui_thread)
         comfyui_thread.start()
         # wait 2 seconds for comfyui start
-        comfyui_thread.join(2)
+        comfyui_thread.join(5)
         if comfyui_thread.is_alive():
             logger.info("start inner comfyui success")
             return True

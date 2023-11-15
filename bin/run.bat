@@ -16,6 +16,6 @@ set COMFYUI_SERVER_ADDR=localhost:8188
 set INNER_COMFYUI_SERVER_ADDR=localhost:9188
 
 :: start server
-streamlit run Home.py
+python -m streamlit run Home.py
 
 endlocal
