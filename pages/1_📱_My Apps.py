@@ -70,11 +70,10 @@ class ComfyUIThread(Thread):
             address, port = self.server_addr.split(":")
             # start local comfyui
             if address == "localhost" or address == "127.0.0.1":
-                env = {"PYTHONPATH": f"{self.path}"}
-                command = f"{sys.executable} -s main.py --port {port} --disable-auto-launch"
+                command = f"{sys.executable} main.py --port {port} --disable-auto-launch"
                 logger.info(f"start inner comfyui, {command} path {self.path}, sys.path {sys.path}")
                 comfyui_log = open('comfyui.log', 'w')
-                subprocess.run(command, cwd=self.path, shell=True, env=env,
+                subprocess.run(command, cwd=self.path, shell=True,
                                stdout=comfyui_log, stderr=comfyui_log, text=True)
                 comfyui_log.close()
                 return True
