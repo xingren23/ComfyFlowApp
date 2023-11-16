@@ -43,25 +43,31 @@ Professional creators or teams can use ComfyUI tools to develop valuable applica
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/comfyflow)
 
 ### 📌 Quick Start
-- Linux
 ```bash
 # download project
 git clone https://github.com/xingren23/ComfyFlowApp
 
-# 
-cd ComfyFlowApp
 # update submodule ComfyUI
+cd ComfyFlowApp
 git submodule update --init --recursive
+
+# create and activate python env 
+# Note: pytorch does not support python 3.12 yet so make sure your python version is 3.11 or earlier.
+conda create -n comfyflowapp python=3.11
+conda activate comfyflowapp
+
+# install comfyui, Nvidia users should install pytorch using this command:
+pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu121
+pip install -r .\repositories\ComfyUI\requirements.txt
+
 # install requirements
 pip install -r requirements.txt
-# start 
-sh bin/start.sh
-```
 
-- Windows
-You can download the integrated package, extract it, and run it directly without the need to install dependencies.
-```base
-click run.bat to start
+# start or run
+# linux 
+sh bin/start.sh
+# windows
+./bin/run.bat
 ```
 
 env var, you could modify some env var as needed
