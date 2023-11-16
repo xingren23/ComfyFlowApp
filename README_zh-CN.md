@@ -1,5 +1,5 @@
 # ComfyFlowApp
-快速从ComfyUI工作流构成出Web应用，分享给其他用户使用。
+快速将你的ComfyUI工作流开发成一个Web应用，并分享给其他用户使用。
 
 ## ComfyFlowApp 是什么？
 ComfyFlowApp 是一个ComfyUI的扩展工具， 可以轻松从ComfyUI的工作流开发出一个简单易用的应用，降低ComfyUI的使用门槛。
