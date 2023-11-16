@@ -44,28 +44,32 @@ ComfyFlowApp 帮助应用开发者将这些复杂度对用户透明，用户只�
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/comfyflow)
 
 ### 快速开始
-- Linux
 ```bash
 # 下载项目
 git clone https://github.com/xingren23/ComfyFlowApp
 
+# 更新comfyui依赖
 cd ComfyFlowApp
-# 更新子模块ComfyUI
 git submodule update --init --recursive
-# 安装依赖
+
+# 使用Conda创建并管理python环境
+# Note: pytorch does not support python 3.12 yet so make sure your python version is 3.11 or earlier.
+conda create -n comfyflowapp python=3.11
+conda activate comfyflowapp
+
+# 安装comfyui依赖, Nvidia users should install pytorch using this command:
+pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu121
+pip install -r .\repositories\ComfyUI\requirements.txt
+
+# 安装ComfyFlowApp依赖
 pip install -r requirements.txt
+
 # 启动
+# linux 
 sh bin/start.sh
+# windows
+./bin/run.bat
 ```
-
-- Windows
-可以下载整合包，解压后直接运行即可，无需安装依赖。
-```base
-点击 run.bat 启动
-```
-
-[下载地址 v1.0.0](https://github.com/xingren23/ComfyFlowApp/releases/tag/v1.0.0)
-
 
 环境变量, 在启动脚本中可以修改相关变量
 ```
