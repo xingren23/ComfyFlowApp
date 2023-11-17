@@ -21,6 +21,13 @@ ComfyFlowApp 帮助应用开发者将这些复杂度对用户透明，用户只�
 
 **总结，如果你需要将ComfyUI开发的工作流分享给其他用户使用，选择ComfyFlowApp就对了。**
 
+### ComfyFlowApp 如何工作？
+ComfyFlowApp 支持两种模式Creator 和 Studio，用户可以灵活切换使用模式。
+Creator模式，用户将ComfyUI工作流转换为一个Web应用，本地运行应用，或者发布到comfyflow.app，分享给其他用户使用。
+Studio模式，用户在本地运行ComfyFlowApp，从comfyflow.app安装应用并在本地运行。
+如下图所示：
+![How-it-works](./docs/images/how-it-works.png)
+
 ### 典型使用场景
 
 **1）工作室或企业内部的分工协作**

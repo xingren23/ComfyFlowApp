@@ -28,6 +28,14 @@ ComfyFlowApp helps application developers make these complexities transparent to
 
 **In summary, if you want to share workflows developed in ComfyUI with other users, choosing ComfyFlowApp is the right choice.**
 
+### How Does ComfyFlowApp Work?
+ComfyFlowApp supports two modes: Creator and Studio, and users can flexibly switch between the two modes.
+- Creator mode: Users convert a ComfyUI workflow into a web application, run the application locally, or publish it to comfyflow.app and share it with other users.
+- Studio mode: Users run ComfyFlowApp locally, install applications from comfyflow.app, and run them locally.
+
+As shown in the image below:
+![How-it-works](./docs/images/how-it-works.png)
+
 ### Typical Use Cases
 1) Studio or Internal Business Collaboration
 
