@@ -3,9 +3,9 @@ from loguru import logger
 import discordoauth2
 import streamlit as st
 
-client_id = os.getenv('DISCORD_CLIENT_ID', '1163088920305737728')
-client_secret = os.getenv('DISCORD_CLIENT_SECRET', 'hdqis8gZ9YVvvM-qxAbYApd6ai40nBlk')
-redirect_uri = os.getenv('REDIRECT_URI', 'http://localhost:8501')
+client_id = os.getenv('DISCORD_CLIENT_ID')
+client_secret = os.getenv('DISCORD_CLIENT_SECRET')
+redirect_uri = os.getenv('REDIRECT_URI')
 
 client = discordoauth2.Client(client_id, secret=client_secret, redirect=redirect_uri)
 

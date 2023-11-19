@@ -88,6 +88,15 @@ def page_init(layout="wide"):
         badge(type="twitter", name="xingren23", url="https://twitter.com/xingren23")
     
 
+def init_env_default():
+    # init env default
+    if 'COMFYFLOW_API_URL' in st.secrets:
+        os.environ.setdefault('COMFYFLOW_API_URL', st.secrets['COMFYFLOW_API_URL'])
+    if 'COMFYUI_SERVER_ADDR' in st.secrets:
+        os.environ.setdefault('COMFYUI_SERVER_ADDR', st.secrets['COMFYUI_SERVER_ADDR'])
+    if 'INNER_COMFYUI_SERVER_ADDR' in st.secrets:
+        os.environ.setdefault('INNER_COMFYUI_SERVER_ADDR', st.secrets['INNER_COMFYUI_SERVER_ADDR'])
+
 def stylable_button_container():
     return stylable_container(
         key="app_button",
