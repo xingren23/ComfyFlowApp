@@ -34,13 +34,20 @@ def init_env_default():
     # init env default
     if 'MODE' in st.secrets:
         os.environ.setdefault('MODE', st.secrets['MODE'])
+        
     if 'COMFYFLOW_API_URL' in st.secrets:
         os.environ.setdefault('COMFYFLOW_API_URL', st.secrets['COMFYFLOW_API_URL'])
     if 'COMFYUI_SERVER_ADDR' in st.secrets:
         os.environ.setdefault('COMFYUI_SERVER_ADDR', st.secrets['COMFYUI_SERVER_ADDR'])
     if 'INNER_COMFYUI_SERVER_ADDR' in st.secrets:
         os.environ.setdefault('INNER_COMFYUI_SERVER_ADDR', st.secrets['INNER_COMFYUI_SERVER_ADDR'])
-
+    
+    if 'DISCORD_CLIENT_ID' in st.secrets:
+        os.environ.setdefault('DISCORD_CLIENT_ID', st.secrets['DISCORD_CLIENT_ID'])
+    if 'DISCORD_CLIENT_SECRET' in st.secrets:
+        os.environ.setdefault('DISCORD_CLIENT_SECRET', st.secrets['DISCORD_CLIENT_SECRET'])
+    if 'DISCORD_REDIRECT_URI' in st.secrets:
+        os.environ.setdefault('DISCORD_REDIRECT_URI', st.secrets['DISCORD_REDIRECT_URI'])
 
 
 def page_init(layout="wide"):

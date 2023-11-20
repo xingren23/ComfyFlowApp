@@ -5,7 +5,7 @@ import streamlit as st
 
 client_id = os.getenv('DISCORD_CLIENT_ID')
 client_secret = os.getenv('DISCORD_CLIENT_SECRET')
-redirect_uri = os.getenv('REDIRECT_URI')
+redirect_uri = os.getenv('DISCORD_REDIRECT_URI')
 
 client = discordoauth2.Client(client_id, secret=client_secret, redirect=redirect_uri)
 
