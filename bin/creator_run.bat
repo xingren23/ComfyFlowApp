@@ -14,6 +14,8 @@ set COMFYFLOW_API_URL=https://api.comfyflow.app
 set COMFYUI_SERVER_ADDR=localhost:8188
 :: set INNER_COMFYUI_SERVER_ADDR to localhost:9188
 set INNER_COMFYUI_SERVER_ADDR=localhost:9188
+:: set MODE
+set MODE=Creator
 
 :: start server
 python -m streamlit run Home.py

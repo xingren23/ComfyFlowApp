@@ -10,23 +10,37 @@ from streamlit.source_util import (
     invalidate_pages_cache,
 )
 
-def change_mode_pages():
-    if 'main_script_path' in st.session_state:
-        main_script_path = st.session_state['main_script_path']
-        mode = st.session_state['mode']
-        invalidate_pages_cache()
-        all_pages = get_pages(main_script_path)
-        if mode == "Studio":
-            pages = ['Home', 'My_Apps', "App_Store"]
-        else:
-            pages = [page['page_name'] for _, page in all_pages.items()]
-        logger.info(f"pages: {pages}, mode: {mode}")
+def change_mode_pages(mode):
+    main_script_path = os.path.abspath('../Home.py')
+    invalidate_pages_cache()
+    all_pages = get_pages(main_script_path)
+    if mode == "Studio":
+        pages = ['Home', 'My_Apps', "App_Store"]
+    elif mode == "Creator":
+        pages = ['Home', 'Workspace', "App_Store", "My_Apps"]
+    elif mode == "Explore":
+        pages = ['Home', 'App_Store']
+    else:
+        pages = [page['page_name'] for _, page in all_pages.items()]
+    logger.info(f"pages: {pages}, mode: {mode}")
 
-        current_pages = [key for key, value in all_pages.items() if value['page_name'] not in pages]
-        for key in current_pages:
-            all_pages.pop(key)
+    current_pages = [key for key, value in all_pages.items() if value['page_name'] not in pages]
+    for key in current_pages:
+        all_pages.pop(key)
             
-        _on_pages_changed.send()
+    _on_pages_changed.send()
+
+def init_env_default():
+    # init env default
+    if 'MODE' in st.secrets:
+        os.environ.setdefault('MODE', st.secrets['MODE'])
+    if 'COMFYFLOW_API_URL' in st.secrets:
+        os.environ.setdefault('COMFYFLOW_API_URL', st.secrets['COMFYFLOW_API_URL'])
+    if 'COMFYUI_SERVER_ADDR' in st.secrets:
+        os.environ.setdefault('COMFYUI_SERVER_ADDR', st.secrets['COMFYUI_SERVER_ADDR'])
+    if 'INNER_COMFYUI_SERVER_ADDR' in st.secrets:
+        os.environ.setdefault('INNER_COMFYUI_SERVER_ADDR', st.secrets['INNER_COMFYUI_SERVER_ADDR'])
+
 
 
 def page_init(layout="wide"):
@@ -36,12 +50,7 @@ def page_init(layout="wide"):
     st.set_page_config(page_title="ComfyFlowApp: Load a comfyui workflow as webapp in seconds.", 
     page_icon=":artist:", layout=layout)
 
-    if 'main_script_path' not in st.session_state:
-        st.session_state['main_script_path'] = os.path.abspath('../Home.py')
-    if 'mode' not in st.session_state:
-        logger.info("init mode to Creator")
-        st.session_state['mode'] = "Creator"
-        change_mode_pages()
+    change_mode_pages(os.environ.get('MODE'))
 
     app_logo.add_logo("public/images/logo.png", height=70)
 
@@ -66,15 +75,7 @@ def page_init(layout="wide"):
     st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
 
     with st.sidebar:   
-        with exchange_button_container():
-            new_mode = "Creator" if st.session_state['mode'] == "Studio" else "Studio"   
-            
-            st.markdown(f"Current Mode: {st.session_state['mode']} :smile:")
-            exchange_button = st.button(f"Exchange To {new_mode}", key="exchange_button")
-            if exchange_button:
-                st.session_state['mode'] = new_mode
-                change_mode_pages()
-                st.rerun()
+        st.markdown(f"Mode: {os.environ.get('MODE')} :smile:")
 
         st.sidebar.markdown("""
         <style>
@@ -87,15 +88,6 @@ def page_init(layout="wide"):
         badge(type="github", name="xingren23/ComfyFlowApp", url="https://github.com/xingren23/ComfyFlowApp")
         badge(type="twitter", name="xingren23", url="https://twitter.com/xingren23")
     
-
-def init_env_default():
-    # init env default
-    if 'COMFYFLOW_API_URL' in st.secrets:
-        os.environ.setdefault('COMFYFLOW_API_URL', st.secrets['COMFYFLOW_API_URL'])
-    if 'COMFYUI_SERVER_ADDR' in st.secrets:
-        os.environ.setdefault('COMFYUI_SERVER_ADDR', st.secrets['COMFYUI_SERVER_ADDR'])
-    if 'INNER_COMFYUI_SERVER_ADDR' in st.secrets:
-        os.environ.setdefault('INNER_COMFYUI_SERVER_ADDR', st.secrets['INNER_COMFYUI_SERVER_ADDR'])
 
 def stylable_button_container():
     return stylable_container(

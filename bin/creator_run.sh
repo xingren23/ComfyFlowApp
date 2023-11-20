@@ -14,10 +14,10 @@ export COMFYFLOW_API_URL=https://api.comfyflow.app
 export COMFYUI_SERVER_ADDR=localhost:8188
 # set INNER_COMFYUI_SERVER_ADDR to inner comfyui server addr
 export INNER_COMFYUI_SERVER_ADDR=localhost:9188
+# set MODE to Creator
+export MODE=Creator
 
 # app name
 APP_NAME="Home"
 # script params
-nohup python -m streamlit run "$APP_NAME.py" > home.log 2>&1 &
-
-echo "Starting $APP_NAME..."
+python -m streamlit run "$APP_NAME.py"

@@ -138,9 +138,8 @@ def home(header_button):
                         [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/comfyflow)
                         """)
 
-
-page.page_init(layout="centered")
 page.init_env_default()
+page.page_init(layout="centered")
 
 with st.container():
     header_row = row([0.85, 0.15], vertical_align="bottom")
