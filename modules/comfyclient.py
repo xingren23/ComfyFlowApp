@@ -6,6 +6,7 @@ from PIL import Image
 import io
 import threading
 from loguru import logger
+import urllib.parse as urlparse
 
 
 class ComfyClient:
@@ -16,7 +17,7 @@ class ComfyClient:
         logger.info(f"Comfy client id: {self.client_id}")
 
     def get_node_class(self):
-        object_info_url = f"http://{self.server_addr}/object_info"
+        object_info_url = f"{self.server_addr}/object_info"
         logger.info(f"Got object info from {object_info_url}")
         resp = requests.get(object_info_url, timeout=3)
         if resp.status_code != 200:
@@ -30,7 +31,7 @@ class ComfyClient:
             "queue_remaining": 0
         }
         """
-        url = f"http://{self.server_addr}/prompt"
+        url = f"{self.server_addr}/prompt"
         logger.info(f"Got remaining from {url}")
         resp = requests.get(url, timeout=self.timeout)
         if resp.status_code != 200:
@@ -41,13 +42,13 @@ class ComfyClient:
         p = {"prompt": prompt, "client_id": self.client_id}
         data = json.dumps(p).encode('utf-8')
         logger.info(f"Sending prompt to server, {self.client_id}")
-        resp = requests.post(f"http://{self.server_addr}/prompt", data=data, timeout=self.timeout)
+        resp = requests.post(f"{self.server_addr}/prompt", data=data, timeout=self.timeout)
         if resp.status_code != 200:
             raise Exception(f"Failed to send prompt to server, {resp.status_code}")
         return resp.json()
 
     def get_image(self, filename, subfolder, folder_type):
-        url = f"http://{self.server_addr}/view?filename={filename}&subfolder={subfolder}&type={folder_type}"
+        url = f"{self.server_addr}/view?filename={filename}&subfolder={subfolder}&type={folder_type}"
         logger.info(f"Getting image from server, {url}")
         resp = requests.get(url)
         if resp.status_code != 200:
@@ -57,14 +58,14 @@ class ComfyClient:
     def upload_image(self, imagefile, subfolder, type, overwrite):
         data = {"subfolder": subfolder, "type": type, "overwrite": overwrite}
         logger.info(f"Uploading image to server, {data}")
-        resp = requests.post(f"http://{self.server_addr}/upload/image", data=data, files=imagefile)
+        resp = requests.post(f"{self.server_addr}/upload/image", data=data, files=imagefile)
         if resp.status_code != 200:
             raise Exception(f"Failed to upload image to server, {resp.status_code}")
         return resp.json()
 
     def get_history(self, prompt_id):
         logger.info(f"Getting history from server, {prompt_id}")
-        resp = requests.get(f"http://{self.server_addr}/history/{prompt_id}")
+        resp = requests.get(f"{self.server_addr}/history/{prompt_id}")
         if resp.status_code != 200:
             raise Exception(f"Failed to get history from server, {resp.status_code}")
         return resp.json()
@@ -82,9 +83,10 @@ class ComfyClient:
         return prompt_id
 
     def _websocket_loop(self, prompt, queue):
-        logger.info(f"Connecting to websocket server, {self.server_addr}")
+        wc_connect = "ws://{}/ws?clientId={}".format(urlparse.urlparse(self.server_addr).netloc, self.client_id)
+        logger.info(f"Websocket connect url, {wc_connect}")
         ws = websocket.WebSocket()
-        ws.connect("ws://{}/ws?clientId={}".format(self.server_addr, self.client_id))
+        ws.connect(wc_connect)
 
         def dispatch_event(queue, event):            
             if queue is not None:

@@ -9,6 +9,8 @@ from modules import get_myapp_model, get_comfyflow_token
 from streamlit_extras.row import row
 from threading import Thread
 from modules.workspace_model import AppStatus
+from modules.launch import start_comfyui
+from modules.preview_app import try_enter_app_ui
 import queue
 from modules.page import stylable_button_container
 
@@ -187,6 +189,18 @@ def show_install_status(app):
     elif app.status == AppStatus.ERROR.value:
         st.error(f"App {app.name} install error")
 
+def try_enter_app(app):
+    logger.info(f"enter app {app.name}")
+    install_app(app)
+    st.session_state["try_enter_app"] = get_myapp_model().get_app_by_id(app.id)   
+
+def is_subscribed():
+    if 'authentication_status' in st.session_state and st.session_state['authentication_status']:
+        username = st.session_state['username']
+        if username == 'comfyflow': 
+            return True
+    return False
+
 def create_app_info_ui(app): 
     app_row = row([1, 6.6, 1.2, 1.2], vertical_align="bottom")
     try:
@@ -212,20 +226,34 @@ def create_app_info_ui(app):
                     {app_author}
                     """)
     
-    status_queue = queue.Queue()
-    app_status = app.status    
-    if app_status == AppStatus.INSTALLING.value or app_status == AppStatus.INSTALLED.value:
-        reinstall_button = app_row.button("📲 ReInstall", help="Install app from app store", 
-                                          key=f"install_{app.id}",
-                                          on_click=install_app, args=(app,))
-        if reinstall_button:
-            update_install_progress(app, status_queue)
+    mode = os.getenv('MODE')
+    if mode == "Explore":
+        # Enter app for vip member
+        subscribed = is_subscribed()
+        if subscribed:
+            try_enter_button = app_row.button("Enter", type='primary', help="Enter to use app", key=f"try_enter_{app.id}",
+                                      on_click=try_enter_app, args=(app,))
+            if try_enter_button:
+                logger.info(f"try enter app {app.name}")
+        else:
+            vip_button = app_row.button("Join Plan", help="Subscription to use this app online", key=f"vip_{app.id}")
+            if vip_button:
+                st.info("Subscription to use this app online, please contact us :point_left:")
     else:
-        install_button = app_row.button("📲 Install", help="Install app from app store",
-                                         key=f"install_{app.id}",
-                                         on_click=install_app, args=(app,))
-        if install_button:
-            update_install_progress(app, status_queue)  
+        status_queue = queue.Queue()
+        app_status = app.status    
+        if app_status == AppStatus.INSTALLING.value or app_status == AppStatus.INSTALLED.value:
+            reinstall_button = app_row.button("📲 ReInstall", help="Install app from app store", 
+                                            key=f"install_{app.id}",
+                                            on_click=install_app, args=(app,))
+            if reinstall_button:
+                update_install_progress(app, status_queue)
+        else:
+            install_button = app_row.button("📲 Install", help="Install app from app store",
+                                            key=f"install_{app.id}",
+                                            on_click=install_app, args=(app,))
+            if install_button:
+                update_install_progress(app, status_queue)  
 
 
 @st.cache_data(ttl=60*60)
@@ -263,31 +291,40 @@ with st.container():
     else:
         cookies = st.session_state['token_cookie']
 
-    with stylable_button_container():
-        header_row = row([0.85, 0.15], vertical_align="bottom")
-        header_row.markdown("""
-            ### App Store
-            This is a simple app store, you could explore and install apps from here.
-        """)
-        sync_button = header_row.button("Refresh", help="Sync apps from comfyflow.app", key="sync_apps", on_click=fetch_app_info)
-        if sync_button:
-           if 'comfyflow_apps' in st.session_state:
-                comfyflow_apps = st.session_state['comfyflow_apps']
-                sync_apps = get_myapp_model().sync_apps(comfyflow_apps)
-                if len(sync_apps) == 0:
-                    st.info("All apps have refreshed")
-                else:
-                    st.success(f"Refresh apps {sync_apps} success")
+    if 'try_enter_app' in st.session_state:
+        app = st.session_state['try_enter_app']
+        # start comfyui
+        if not start_comfyui():
+            st.error(f"Start app failed, {app.name}")
+        else:
+            logger.info(f"Start app ..., {app.name}")
+            try_enter_app_ui(app)
+    else:
+        with stylable_button_container():
+            header_row = row([0.85, 0.15], vertical_align="bottom")
+            header_row.markdown("""
+                ### App Store
+                This is a simple app store, you could explore and install apps from here.
+            """)
+            sync_button = header_row.button("Refresh", help="Sync apps from comfyflow.app", key="sync_apps", on_click=fetch_app_info)
+            if sync_button:
+                if 'comfyflow_apps' in st.session_state:
+                    comfyflow_apps = st.session_state['comfyflow_apps']
+                    sync_apps = get_myapp_model().sync_apps(comfyflow_apps)
+                    if len(sync_apps) == 0:
+                        st.info("All apps have refreshed")
+                    else:
+                        st.success(f"Refresh apps {sync_apps} success")
 
-    with st.container():
-        apps = get_myapp_model().get_all_apps()
-        for app in apps:
-            st.divider()
-            logger.debug(f"load app info for {app.name}")
-            create_app_info_ui(app)
+        with st.container():
+            apps = get_myapp_model().get_all_apps()
+            for app in apps:
+                st.divider()
+                logger.debug(f"load app info for {app.name}")
+                create_app_info_ui(app)
 
-            # update app status
-            app = get_myapp_model().get_app_by_id(app.id)
-            show_install_status(app)
+                # update app status
+                app = get_myapp_model().get_app_by_id(app.id)
+                show_install_status(app)
 
     
