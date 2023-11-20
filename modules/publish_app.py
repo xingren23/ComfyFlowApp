@@ -15,25 +15,11 @@ MODEL_SEP = '##'
 
 @st.cache_data(ttl=24*60*60)
 def get_huggingface_model_meta(model_url):
-    # parse model info from download url, 
+    # get model info from download url, 
     # eg: https://huggingface.co/segmind/SSD-1B/blob/main/unet/diffusion_pytorch_model.fp16.safetensors
-
-    # only support huggingface model hub
-    parsed_url = urlparse(model_url)
-    path_parts = parsed_url.path.split('/')
-    repo_id = '/'.join(path_parts[1:3])  
-    if len(path_parts[5:-1]) > 0:
-        subfolder = os.path.sep.join(path_parts[5:-1])  
-    else:
-        subfolder = None
-    filename = path_parts[-1]  # 最后一个元素是filename
-    logger.debug(f"repo_id: {repo_id}, subfolder: {subfolder}, filename: {filename}")
-    if repo_id and filename:
-        hf_url = hf_hub_url(repo_id, filename, subfolder=subfolder)
-        if hf_url:
-            hf_meta = get_hf_file_metadata(url=hf_url)
-            logger.debug(f"hf_meta, {hf_meta}")
-            return hf_meta
+    hf_meta = get_hf_file_metadata(url=model_url)
+    logger.debug(f"hf_meta, {hf_meta}")
+    return hf_meta
         
 @st.cache_data(ttl=60*60)        
 def get_civitai_model_meta(model_version_url):

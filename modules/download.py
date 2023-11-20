@@ -4,7 +4,7 @@ import requests
 import streamlit as st
 from urllib.parse import urlparse, parse_qs
 from huggingface_hub import hf_hub_download
-from repositories.ComfyUI.folder_paths import folder_names_and_paths
+from repositories.ComfyUI.folder_paths import folder_names_and_paths, models_dir
         
 @st.cache_data(ttl=24*60*60)        
 def get_civitai_model_meta(model_version_url):
@@ -40,7 +40,7 @@ def get_local_model_file(model_url):
             path_parts = parsed_url.path.split('/')
             subfolder = path_parts[5:-1]
             if len(subfolder) > 0:
-                subfolder = os.path.sep.join(subfolder)
+                subfolder = "/".join(subfolder)
                 local_model_file = os.path.join(path_parts[1], path_parts[2], subfolder, path_parts[-1])
             else:
                 local_model_file = os.path.join(path_parts[1], path_parts[2], path_parts[-1])
@@ -69,18 +69,25 @@ def download_model(model_url, model_path):
         try:
             # download model from huggingface model hub
             parsed_url = urlparse(model_url)
-            path_sep = '/'
             path_parts = parsed_url.path.split('/')
-            repo_id = path_sep.join(path_parts[1:3])  #
+            repo_id = '/'.join(path_parts[1:3])  #
             if len(path_parts[5:-1]) > 0:
-                subfolder = path_sep.join(path_parts[5:-1])  # 
+                subfolder =  "/".join(path_parts[5:-1])  # 
             else:
                 subfolder = None
+            
             filename = path_parts[-1]  # 最后一个元素是filename
             file_extension = filename.split('.')[-1]
+            if 'ipadapter' == model_path:
+                # load IPAdapterPlus
+                import repositories.ComfyUI.custom_nodes.ComfyUI_IPAdapter_plus.IPAdapterPlus
             model_dir, model_extension = folder_names_and_paths[model_path]
-            local_dir = path_sep.join([model_dir[0], repo_id])
-            logger.debug(f"repo_id: {repo_id}, subfolder: {subfolder}, filename: {filename} local_dir: {local_dir}")  
+
+            local_dir =  os.path.sep.join([model_dir[0], path_parts[1], path_parts[2]])
+            logger.debug(f"url: {model_url} model_path: {model_path} repo_id: {repo_id}, subfolder: {subfolder}, filename: {filename} local_dir: {local_dir}")
+
+            if not os.path.exists(local_dir):
+                os.makedirs(local_dir)
             if f".{file_extension}" in model_extension:
                 # save to model_dir[0]
                 return hf_hub_download(repo_id=repo_id, filename=filename, subfolder=subfolder, local_dir=local_dir)
