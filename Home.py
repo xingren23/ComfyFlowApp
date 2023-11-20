@@ -1,6 +1,5 @@
 import streamlit as st
 import requests
-import os
 from loguru import logger
 from streamlit_authenticator.exceptions import RegisterError
 from streamlit_extras.row import row
@@ -30,7 +29,7 @@ def register_user(username: str, name: str, password: str, email: str, invite_co
             "email": email,
             "invite_code": invite_code
         }
-        comfyflow_url = os.getenv('COMFYFLOW_API_URL')
+        comfyflow_url = st.secrets['COMFYFLOW_API_URL']
         ret = requests.post(f"{comfyflow_url}/api/user/register", json=register_json)
         if ret.status_code != 200:
             raise RegisterError(f"register user error, {ret.text}")
@@ -139,7 +138,7 @@ def home(header_button):
                         [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/comfyflow)
                         """)
 
-
+page.init_env_default()
 page.page_init(layout="centered")
 
 with st.container():

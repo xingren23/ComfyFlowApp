@@ -64,8 +64,7 @@ def get_model_meta(model_url):
        
 
 def publish_app(name, description, image, app_conf, api_conf, template, status, cookies=None):
-    comfyflow_api = os.getenv(
-        'COMFYFLOW_API_URL', default='https://api.comfyflow.app')
+    comfyflow_api = os.getenv('COMFYFLOW_API_URL')
     # post app to comfyflow.app
     app = {
         "name": name,

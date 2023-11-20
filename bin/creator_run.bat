@@ -11,9 +11,11 @@ set LOGURU_LEVEL=INFO
 :: set COMFYFLOW_API_URL to https://api.comfyflow.app
 set COMFYFLOW_API_URL=https://api.comfyflow.app
 :: set COMFYUI_SERVER_ADDR to localhost:8188
-set COMFYUI_SERVER_ADDR=localhost:8188
+set COMFYUI_SERVER_ADDR=http://localhost:8188
 :: set INNER_COMFYUI_SERVER_ADDR to localhost:9188
-set INNER_COMFYUI_SERVER_ADDR=localhost:9188
+set INNER_COMFYUI_SERVER_ADDR=http://localhost:9188
+:: set MODE
+set MODE=Creator
 
 :: start server
 python -m streamlit run Home.py
