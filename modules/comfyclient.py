@@ -83,10 +83,10 @@ class ComfyClient:
         return prompt_id
 
     def _websocket_loop(self, prompt, queue):
-        logger.info(f"Connecting to websocket server, {self.server_addr}")
-        netloc = urlparse.urlparse(self.server_addr).netloc
+        wc_connect = "ws://{}/ws?clientId={}".format(urlparse.urlparse(self.server_addr).netloc, self.client_id)
+        logger.info(f"Websocket connect url, {wc_connect}")
         ws = websocket.WebSocket()
-        ws.connect("ws://{}/ws?clientId={}".format(netloc, self.client_id))
+        ws.connect(wc_connect)
 
         def dispatch_event(queue, event):            
             if queue is not None:
