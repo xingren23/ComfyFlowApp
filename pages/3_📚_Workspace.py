@@ -12,6 +12,7 @@ from streamlit import config
 from modules.new_app import new_app_ui
 from modules.preview_app import preview_app_ui
 from modules.publish_app import publish_app_ui
+import random
 
 
 def create_app_info_ui(app):
@@ -140,13 +141,12 @@ def click_start_app(name, id, status):
             logger.error("ComfyUI server is not alive, please check it")
             st.session_state['app_start_ret'] = AppStatus.ERROR.value
             return
-                     
-        server_addr = os.getenv('COMFYUI_SERVER_ADDR')
+      
         # comfyflowapp address
         app_server = config.get_option('server.address')
         if app_server is None or app_server == "":
             app_server = "localhost"
-        app_port = int(server_addr.split(":")[1]) + int(id)
+        app_port = int(id) + random.randint(10000, 20000)
         url = f"http://{app_server}:{app_port}"
 
         ret = start_app(name, id, url)
