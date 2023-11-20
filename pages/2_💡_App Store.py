@@ -229,9 +229,9 @@ def create_app_info_ui(app):
             if try_button:
                 logger.info(f"try app {app.name}")
         else:
-            vip_button = app_row.button("VIP", help="Become a VIP member to use this app", key=f"vip_{app.id}")
+            vip_button = app_row.button("Join Plan", help="Subscription to use this app online", key=f"vip_{app.id}")
             if vip_button:
-                st.info("Become a VIP member to use this app, please contact us :point_left:")
+                st.info("Subscription to use this app online, please contact us :point_left:")
     else:
         status_queue = queue.Queue()
         app_status = app.status    
