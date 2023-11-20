@@ -1,5 +1,6 @@
 import os
 import sys
+import urllib.parse as urlparse
 from loguru import logger
 import streamlit as st
 import subprocess
@@ -24,7 +25,8 @@ class ComfyUIThread(Thread):
     def run(self):
         try:
             import sys
-            address, port = self.server_addr.split(":")
+            server_port = urlparse.urlparse(self.server_addr).netloc
+            address, port = server_port.split(":")
             # start local comfyui
             if address == "localhost" or address == "127.0.0.1":
                 command = f"{sys.executable} main.py --port {port} --disable-auto-launch"
