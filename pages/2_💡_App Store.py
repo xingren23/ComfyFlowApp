@@ -10,7 +10,7 @@ from streamlit_extras.row import row
 from threading import Thread
 from modules.workspace_model import AppStatus
 from modules.launch import start_comfyui
-from modules.preview_app import enter_app_ui
+from modules.preview_app import try_enter_app_ui
 import queue
 from modules.page import stylable_button_container
 
@@ -189,10 +189,17 @@ def show_install_status(app):
     elif app.status == AppStatus.ERROR.value:
         st.error(f"App {app.name} install error")
 
-def try_app(app):
-    logger.info(f"try app {app.name}")
-    st.session_state["try_app"] = app
+def try_enter_app(app):
+    logger.info(f"enter app {app.name}")
+    install_app(app)
+    st.session_state["try_enter_app"] = get_myapp_model().get_app_by_id(app.id)   
 
+def is_subscribed():
+    if 'authentication_status' in st.session_state and st.session_state['authentication_status']:
+        username = st.session_state['username']
+        if username == 'comfyflow': 
+            return True
+    return False
 
 def create_app_info_ui(app): 
     app_row = row([1, 6.6, 1.2, 1.2], vertical_align="bottom")
@@ -222,12 +229,12 @@ def create_app_info_ui(app):
     mode = os.getenv('MODE')
     if mode == "Explore":
         # Enter app for vip member
-        is_vip = False
-        if is_vip:
-            try_button = app_row.button("Try", type='primary', help="Try to use app", key=f"enter_{app.id}",
-                                      on_click=try_app, args=(app,))
-            if try_button:
-                logger.info(f"try app {app.name}")
+        subscribed = is_subscribed()
+        if subscribed:
+            try_enter_button = app_row.button("Enter", type='primary', help="Enter to use app", key=f"try_enter_{app.id}",
+                                      on_click=try_enter_app, args=(app,))
+            if try_enter_button:
+                logger.info(f"try enter app {app.name}")
         else:
             vip_button = app_row.button("Join Plan", help="Subscription to use this app online", key=f"vip_{app.id}")
             if vip_button:
@@ -284,14 +291,14 @@ with st.container():
     else:
         cookies = st.session_state['token_cookie']
 
-    if 'try_app' in st.session_state:
-        app = st.session_state['try_app']
+    if 'try_enter_app' in st.session_state:
+        app = st.session_state['try_enter_app']
         # start comfyui
         if not start_comfyui():
             st.error(f"Start app failed, {app.name}")
         else:
             logger.info(f"Start app ..., {app.name}")
-            enter_app_ui(app)
+            try_enter_app_ui(app)
     else:
         with stylable_button_container():
             header_row = row([0.85, 0.15], vertical_align="bottom")
