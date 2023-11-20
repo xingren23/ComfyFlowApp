@@ -80,7 +80,11 @@ def download_model(model_url, model_path):
             file_extension = filename.split('.')[-1]
             if 'ipadapter' == model_path:
                 # load IPAdapterPlus
-                import repositories.ComfyUI.custom_nodes.ComfyUI_IPAdapter_plus.IPAdapterPlus
+                MODELS_DIR = os.path.join(models_dir, 'ipadapter')
+                if not os.path.exists(MODELS_DIR):
+                    os.makedirs(MODELS_DIR)
+                folder_names_and_paths['ipadapter'] = ([MODELS_DIR], ['.bin', '.safetensors'])
+
             model_dir, model_extension = folder_names_and_paths[model_path]
 
             local_dir =  os.path.sep.join([model_dir[0], path_parts[1], path_parts[2]])
