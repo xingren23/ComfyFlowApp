@@ -20,5 +20,5 @@ set MODE=Explore
 
 :: start server
 python -m streamlit run Home.py
-
+pause
 endlocal
