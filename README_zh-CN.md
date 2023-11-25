@@ -73,24 +73,25 @@ pip install -r requirements.txt
 
 # 启动
 # linux 
-sh bin/start.sh
+sh bin/creator_run.sh 
+sh bin/studio_run.sh
+sh bin/explore_run.sh
 # windows
-./bin/run.bat
+.\bin\creator_run.bat
+.\bin\studio_run.bat
+.\bin\explore_run.bat
 ```
 
 环境变量, 在启动脚本中可以修改相关变量
 ```
-:: 日志级别，默认：INFO
-set LOGURU_LEVEL=INFO
-
 :: ComfyflowApp 地址，默认：https://api.comfyflow.app
 set COMFYFLOW_API_URL=https://api.comfyflow.app
 
-:: 开发联调外部ComfyUI地址，可以连接局域网内其他服务器地址，默认：localhost:8188
-set COMFYUI_SERVER_ADDR=localhost:8188
+:: 开发联调外部ComfyUI地址，可以连接局域网内其他服务器地址，默认：http://localhost:8188
+set COMFYUI_SERVER_ADDR=http://localhost:8188
 
-:: ComfyFlowApp内置ComfyUI地址，只能使用本机地址，默认：localhost:9188
-set INNER_COMFYUI_SERVER_ADDR=localhost:9188
+:: ComfyFlowApp内置ComfyUI地址，只能使用本机地址，默认：http://localhost:9188
+set INNER_COMFYUI_SERVER_ADDR=http://localhost:9188
 ```
 
 ## 相关项目

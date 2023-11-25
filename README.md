@@ -54,7 +54,6 @@ Professional creators or teams can use ComfyUI tools to develop valuable applica
 ```bash
 # download project
 git clone https://github.com/xingren23/ComfyFlowApp
-
 # update submodule ComfyUI
 cd ComfyFlowApp
 git submodule update --init --recursive
@@ -64,18 +63,21 @@ git submodule update --init --recursive
 conda create -n comfyflowapp python=3.11
 conda activate comfyflowapp
 
+# install requirements
 # install comfyui, Nvidia users should install pytorch using this command:
 pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu121
 pip install -r .\repositories\ComfyUI\requirements.txt
-
-# install requirements
 pip install -r requirements.txt
 
 # start or run
 # linux 
-sh bin/start.sh
+sh bin/creator_run.sh 
+sh bin/studio_run.sh
+sh bin/explore_run.sh
 # windows
-./bin/run.bat
+.\bin\creator_run.bat
+.\bin\studio_run.bat
+.\bin\explore_run.bat
 ```
 
 env var, you could modify some env var as needed
@@ -86,11 +88,11 @@ set LOGURU_LEVEL=INFO
 :: ComfyflowApp address，default: https://api.comfyflow.app
 set COMFYFLOW_API_URL=https://api.comfyflow.app
 
-:: comfyui env for developping，you could use other machine in the same LAN, default: localhost:8188
-set COMFYUI_SERVER_ADDR=localhost:8188
+:: comfyui env for developping，you could use other machine in the same LAN, default: http://localhost:8188
+set COMFYUI_SERVER_ADDR=http://localhost:8188
 
-:: inner comfyui env for running my apps, default: localhost:9188, you could modify port, but localhost
-set INNER_COMFYUI_SERVER_ADDR=localhost:9188
+:: inner comfyui env for running my apps, default: http://localhost:9188, you could modify port, but localhost
+set INNER_COMFYUI_SERVER_ADDR=http://localhost:9188
 ```
        
 ### 📌 Related Projects

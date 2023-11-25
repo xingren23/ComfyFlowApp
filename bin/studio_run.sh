@@ -8,6 +8,7 @@ cd $PROJECT_PATH
 
 # set LOGURU_LEVEL to ERROR
 export LOGURU_LEVEL=INFO
+export STREAMLIT_SERVER_PORT=8502
 # set COMFYFLOW_API_URL to comfyflow api url
 export COMFYFLOW_API_URL=https://api.comfyflow.app
 # set COMFYUI_SERVER_ADDR to comfyui server addr
