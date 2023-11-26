@@ -139,7 +139,10 @@ class Comfyflow:
                     st.number_input(param_name, value =param_default, key=param_key, help=param_help, min_value=param_min, max_value=param_max, step=param_step)
             elif param_type == "SELECT":
                 param_name = param_node['name']
-                param_default = param_node['default']
+                if 'default' in param_node:
+                    param_default = param_node['default']
+                else:
+                    param_default = param_node['options'][0]
                 param_help = param_node['help']
                 param_options = param_node['options']
 
