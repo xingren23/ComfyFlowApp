@@ -44,7 +44,7 @@ class WorkspaceModel:
     def get_all_apps(self):
         with self.session as s:
             logger.info("get apps from db")
-            sql = text(f'SELECT id, name, description, image, app_conf, api_conf, template, url, status FROM {self.app_talbe_name} order by id;')
+            sql = text(f'SELECT id, name, description, image, app_conf, api_conf, template, url, status FROM {self.app_talbe_name} order by id desc;')
             apps = s.execute(sql).fetchall()
             return apps
 
