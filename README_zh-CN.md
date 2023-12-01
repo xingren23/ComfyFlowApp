@@ -98,7 +98,7 @@ set STREAMLIT_SERVER_ADDRESS=192.168.1.100
 ```
 
 ### 相关视频
-- [ComfyFlowApp Creator模式](https://www.bilibili.com/video/BV1QK4y1C7ZU/)
+- [ComfyFlowApp 入门: 安装并开发第一个应用](https://www.youtube.com/watch?v=glRO1q4IAI0&t=6s&ab_channel=ZhiguoWang)
 
 ## 相关项目
 - [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
