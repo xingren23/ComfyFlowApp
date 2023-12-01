@@ -92,7 +92,13 @@ set COMFYUI_SERVER_ADDR=http://localhost:8188
 
 :: ComfyFlowApp内置ComfyUI地址，只能使用本机地址，默认：http://localhost:9188
 set INNER_COMFYUI_SERVER_ADDR=http://localhost:9188
+
+:: 设置web应用启动地址，让局域网内其他用户可以访问你的应用，默认：localhost
+set STREAMLIT_SERVER_ADDRESS=192.168.1.100
 ```
+
+### 相关视频
+- [ComfyFlowApp Creator模式](https://www.bilibili.com/video/BV1QK4y1C7ZU/)
 
 ## 相关项目
 - [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
