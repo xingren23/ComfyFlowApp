@@ -15,6 +15,8 @@ export COMFYFLOW_API_URL=https://api.comfyflow.app
 export COMFYUI_SERVER_ADDR=http://localhost:8188
 # set INNER_COMFYUI_SERVER_ADDR to inner comfyui server addr
 export INNER_COMFYUI_SERVER_ADDR=http://localhost:9188
+# set discord callback url
+export DISCORD_REDIRECT_URI=http://localhost:8503
 # set MODE to Studio
 export MODE=Explore
 
