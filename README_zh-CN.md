@@ -23,10 +23,10 @@ ComfyFlowApp 是一个 ComfyUI 的扩展工具， 可以轻松从 ComfyUI 的工
 
 **总结，ComfyFlowApp 帮助工作流开发者简化工作流的使用难度，用户只需要像普通应用一样使用即可。**
 
+
 ### ComfyFlowApp 的运行方式
 
 ComfyFlowApp ：用户（也是创作者）可以将 ComfyUI 工作流转换为一个 Web 应用，并分享给其他用户使用。
-- **Studio 模式**：用户需要从 [comfyflow.app](https://comfyflow.app/) 下载并安装 ComfyUI Web 应用，最后在本地运行 ComfyFlowApp。
 
 ::: tip
 
