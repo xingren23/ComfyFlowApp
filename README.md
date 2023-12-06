@@ -26,8 +26,7 @@ If you need to share workflows developed in ComfyUI with other users, ComfyFlowA
 - Users don't need to understand Python installation requirements.
 
 
-
-**In summary, ComfyFlowApp helps application developers make these complexities transparent to users, who can use it like any other regular application.**
+**In summary, ComfyFlowApp make comfyui workflow easy to use.**
 
 ### How Does ComfyFlowApp Work?
 
