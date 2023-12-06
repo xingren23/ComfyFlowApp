@@ -19,7 +19,5 @@ export DISCORD_REDIRECT_URI=http://localhost:8501
 # set MODE to Creator
 export MODE=Creator
 
-# app name
-APP_NAME="Home"
 # script params
-nohup python -m streamlit run "$APP_NAME.py" > creator.log 2>&1 &
+python -m streamlit run Home.py

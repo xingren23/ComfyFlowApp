@@ -18,7 +18,5 @@ export DISCORD_REDIRECT_URI=http://localhost:8503
 # set MODE to Studio
 export MODE=Explore
 
-# app name
-APP_NAME="Home"
 # script params
-nohup python -m streamlit run "$APP_NAME.py" > explore.log 2>&1 &
+python -m streamlit run Home.py

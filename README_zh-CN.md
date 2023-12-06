@@ -2,7 +2,7 @@
 快速将你的ComfyUI工作流开发成一个Web应用，并分享给其他用户使用。
 
 ## ComfyFlowApp 是什么？
-ComfyFlowApp 是一个ComfyUI的扩展工具， 可以轻松从ComfyUI的工作流开发出一个简单易用的应用，降低ComfyUI的使用门槛。
+ComfyFlowApp 是一个ComfyUI的扩展工具， 轻松从ComfyUI的工作流开发出一个简单易用的应用，并分享给他人使用。
 如下图所示，将一个人像修复的工作流开发成一个ComfyFlowApp应用。
 ![图1](docs/images/demo-workflow.png)
 ![图2](docs/images/demo-webapp.png)
@@ -22,9 +22,7 @@ ComfyFlowApp 帮助应用开发者将这些复杂度对用户透明，用户只�
 **总结，如果你需要将ComfyUI开发的工作流分享给其他用户使用，选择ComfyFlowApp就对了。**
 
 ### ComfyFlowApp 如何工作？
-ComfyFlowApp 支持两种模式Creator 和 Studio，用户可以灵活切换使用模式。
-Creator模式，用户将ComfyUI工作流转换为一个Web应用，本地运行应用，或者发布到comfyflow.app，分享给其他用户使用。
-Studio模式，用户在本地运行ComfyFlowApp，从comfyflow.app安装应用并在本地运行。
+ComfyFlowApp: 创作者将ComfyUI工作流转换为一个Web应用，分享给同事使用。
 如下图所示：
 ![How-it-works](./docs/images/how-it-works.png)
 
@@ -55,18 +53,9 @@ Studio模式，用户在本地运行ComfyFlowApp，从comfyflow.app安装应用�
 # 下载项目
 git clone https://github.com/xingren23/ComfyFlowApp
 
-# 更新comfyui依赖
-cd ComfyFlowApp
-git submodule update --init --recursive
-
 # 使用Conda创建并管理python环境
-# Note: pytorch does not support python 3.12 yet so make sure your python version is 3.11 or earlier.
 conda create -n comfyflowapp python=3.11
 conda activate comfyflowapp
-
-# 安装comfyui依赖, Nvidia users should install pytorch using this command:
-pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu121
-pip install -r .\repositories\ComfyUI\requirements.txt
 
 # 安装ComfyFlowApp依赖
 pip install -r requirements.txt
@@ -74,12 +63,9 @@ pip install -r requirements.txt
 # 启动
 # linux 
 sh bin/creator_run.sh 
-sh bin/studio_run.sh
-sh bin/explore_run.sh
+
 # windows
 .\bin\creator_run.bat
-.\bin\studio_run.bat
-.\bin\explore_run.bat
 ```
 
 环境变量, 在启动脚本中可以修改相关变量
@@ -89,9 +75,6 @@ set COMFYFLOW_API_URL=https://api.comfyflow.app
 
 :: 开发联调外部ComfyUI地址，可以连接局域网内其他服务器地址，默认：http://localhost:8188
 set COMFYUI_SERVER_ADDR=http://localhost:8188
-
-:: ComfyFlowApp内置ComfyUI地址，只能使用本机地址，默认：http://localhost:9188
-set INNER_COMFYUI_SERVER_ADDR=http://localhost:9188
 
 :: 设置web应用启动地址，让局域网内其他用户可以访问你的应用，默认：localhost
 set STREAMLIT_SERVER_ADDRESS=192.168.1.100

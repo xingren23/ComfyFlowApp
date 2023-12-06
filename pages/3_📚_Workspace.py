@@ -203,7 +203,7 @@ def create_operation_ui(app):
     name = app.name
     status = app.status
     url = app.url
-    operate_row = row([1.2, 1.0, 1.0, 1.0, 1.0, 3.4, 1.2, 1.2], vertical_align="bottom")
+    operate_row = row([1.2, 1.0, 1.1, 1.0, 1.0, 2.3, 1.2, 1.2], vertical_align="bottom")
     preview_button = operate_row.button("✅ Preview", help="Preview and check the app", 
                                         key=f"{id}-button-preview", 
                                         on_click=click_preview_app, args=(app,))
