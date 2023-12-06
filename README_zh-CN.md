@@ -1,5 +1,6 @@
 # ComfyFlowApp
-只要几秒中就可以将你的ComfyUI工作流开发成一个Web应用，并分享给其他用户使用。
+
+只要几秒就可以将你的ComfyUI工作流开发成一个Web应用，并分享给其他用户使用。
 
 ## ComfyFlowApp 是什么？
 
@@ -20,9 +21,7 @@ ComfyFlowApp 是一个 ComfyUI 的扩展工具， 可以轻松从 ComfyUI 的工
 - 用户不需要懂如何搭建 ComfyUI 工作流；
 - 用户不需要懂 Python 安装环境；
 
-ComfyFlowApp 帮助应用开发者将这些复杂度对用户透明，用户只需要像普通应用一样使用即可。
-
-**总结，如果你需要将 ComfyUI 开发的工作流分享给其他用户使用，选择 ComfyFlowApp 就对了。**
+**总结，ComfyFlowApp 帮助工作流开发者简化工作流的使用难度，用户只需要像普通应用一样使用即可。**
 
 ### ComfyFlowApp 的运行方式
 
@@ -78,12 +77,9 @@ pip install -r requirements.txt
 # 启动
 # linux
 sh bin/creator_run.sh
-sh bin/studio_run.sh
-sh bin/explore_run.sh
 # windows
 .\bin\creator_run.bat
-.\bin\studio_run.bat
-.\bin\explore_run.bat
+
 ```
 
 环境变量, 在启动脚本中可以修改相关变量
