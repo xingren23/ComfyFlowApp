@@ -30,7 +30,8 @@ ComfyFlowApp helps application developers make these complexities transparent to
 **In summary, if you want to share workflows developed in ComfyUI with other users, choosing ComfyFlowApp is the right choice.**
 
 ### How Does ComfyFlowApp Work?
-ComfyFlowApp： Users could develop a webapp from ComfyUI workflow in seconds, and share it with other users.
+
+ComfyFlowApp: Users (also creators) can develop a web application from the ComfyUI workflow in seconds, and share it with other users.
 
 ::: tip
 
@@ -61,7 +62,7 @@ The workflow is shown below:
 # download project
 git clone https://github.com/xingren23/ComfyFlowApp
 
-# create and activate python env 
+# create and activate python env
 # Note: pytorch does not support python 3.12 yet so make sure your python version is 3.11 or earlier.
 conda create -n comfyflowapp python=3.11
 conda activate comfyflowapp

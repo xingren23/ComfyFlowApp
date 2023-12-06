@@ -2,8 +2,9 @@
 只要几秒中就可以将你的ComfyUI工作流开发成一个Web应用，并分享给其他用户使用。
 
 ## ComfyFlowApp 是什么？
-ComfyFlowApp 是一个ComfyUI的扩展工具， 轻松从ComfyUI的工作流开发出一个简单易用的应用，并分享给他人使用。
-如下图所示，将一个人像修复的工作流开发成一个ComfyFlowApp应用。
+
+ComfyFlowApp 是一个 ComfyUI 的扩展工具， 可以轻松从 ComfyUI 的工作流开发出一个简单易用的应用，降低 ComfyUI 的使用门槛。
+如下图所示，将一个人像修复的工作流开发成一个 ComfyFlowApp 应用。
 ![图1](docs/images/demo-workflow.png)
 ![图2](docs/images/demo-webapp.png)
 
@@ -23,9 +24,18 @@ ComfyFlowApp 帮助应用开发者将这些复杂度对用户透明，用户只�
 
 **总结，如果你需要将 ComfyUI 开发的工作流分享给其他用户使用，选择 ComfyFlowApp 就对了。**
 
-### ComfyFlowApp 如何工作？
-ComfyFlowApp: 创作者将ComfyUI工作流转换为一个Web应用，分享给同事使用。
-如下图所示：
+### ComfyFlowApp 的运行方式
+
+ComfyFlowApp ：用户（也是创作者）可以将 ComfyUI 工作流转换为一个 Web 应用，并分享给其他用户使用。
+- **Studio 模式**：用户需要从 [comfyflow.app](https://comfyflow.app/) 下载并安装 ComfyUI Web 应用，最后在本地运行 ComfyFlowApp。
+
+::: tip
+
+[comfyflow.app](https://comfyflow.app/) 是一个上传分发 ComfyUI Web 应用的平台。
+
+:::
+
+工作流如下图所示：
 ![How-it-works](./docs/images/how-it-works.png)
 
 ### 典型使用场景
@@ -66,11 +76,14 @@ conda activate comfyflowapp
 pip install -r requirements.txt
 
 # 启动
-# linux 
-sh bin/creator_run.sh 
-
+# linux
+sh bin/creator_run.sh
+sh bin/studio_run.sh
+sh bin/explore_run.sh
 # windows
 .\bin\creator_run.bat
+.\bin\studio_run.bat
+.\bin\explore_run.bat
 ```
 
 环境变量, 在启动脚本中可以修改相关变量
