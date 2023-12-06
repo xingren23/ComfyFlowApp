@@ -48,6 +48,21 @@ def get_inner_comfy_client():
     comfy_client = ComfyClient(server_addr=server_addr)
     return comfy_client
 
+def check_inner_comfyui_alive():
+    try:
+        get_inner_comfy_client().queue_remaining()
+        return True
+    except Exception as e:
+        logger.warning(f"check comfyui alive error, {e}")
+        return False
+
+def check_comfyui_alive():
+    try:
+        get_comfy_client().queue_remaining()
+        return True
+    except Exception as e:
+        logger.warning(f"check comfyui alive error, {e}")
+        return False    
 
 @st.cache_data(ttl=60)
 def get_comfyui_object_info():

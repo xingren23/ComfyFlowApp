@@ -1,16 +1,16 @@
 from loguru import logger
 import streamlit as st
-from modules import get_myapp_model
+import os
+from modules import get_workspace_model
 import modules.page as page
 from streamlit_extras.row import row
 from streamlit_extras.switch_page_button import switch_page
-from modules import AppStatus
+from modules import AppStatus, check_comfyui_alive
 from modules.preview_app import enter_app_ui
-from modules.launch import start_comfyui
 
 def uninstall_app(app):
     logger.info(f"uninstall app {app.name}")
-    get_myapp_model().update_app_status(app.id, AppStatus.UNINSTALLED.value)
+    get_workspace_model().update_app_uninstall(app.name)
 
 
 def enter_app(app):
@@ -37,7 +37,7 @@ def create_app_info_ui(app):
                     {description}
                     """)
 
-    app_author = "ComfyFlow"
+    app_author = app.username
     app_row.markdown(f"""
                     #### Author
                     {app_author}
@@ -61,12 +61,11 @@ with st.container():
     container_empty = st.empty()
     if 'enter_app' in st.session_state:
         app = st.session_state['enter_app']
-        # start comfyui
-        if not start_comfyui():
-            st.error(f"Start app failed, {app.name}")
-        else:
+        if check_comfyui_alive():
             logger.info(f"Start app ..., {app.name}")
             enter_app_ui(app)
+        else:
+            st.warning("ComfyUI server is not alive, please check your comfyui server.")
     else:
         with container_empty:
             with st.container():
@@ -77,18 +76,18 @@ with st.container():
                             ### My Apps
                         """)
                     explore_button = header_row.button(
-                        "Explore More", help="Explore more apps from app store.")
+                        "Install", help="Install more apps from your workspace.")
                     if explore_button:
-                        switch_page("App Store")
+                        switch_page("Workspace")
 
                 with st.container():
-                    apps = get_myapp_model().get_my_installed_apps()
+                    apps = get_workspace_model().get_installed_apps()
                     if len(apps) == 0:
                         st.divider()
                         st.info(
-                            "No apps, you could explore and install app from the app store")
+                            "No apps, you could create and install app from your workspace")
                     else:
                         for app in apps:
                             st.divider()
-                            logger.info(f"load app info for {app.name}")
+                            logger.info(f"load app info for {app.name} {app}")
                             create_app_info_ui(app)

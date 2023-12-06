@@ -5,8 +5,9 @@ from loguru import logger
 import streamlit as st
 import subprocess
 from threading import Thread
-from modules import get_inner_comfy_client
+from modules import check_inner_comfyui_alive
 from streamlit.runtime.scriptrunner import add_script_run_ctx
+
 
 def prepare_comfyui_path():
     comfyui_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'repositories', 'ComfyUI'))
@@ -14,7 +15,6 @@ def prepare_comfyui_path():
         logger.info(f"add comfyui path {comfyui_path}")
         sys.path.insert(0, comfyui_path)
     return comfyui_path
-
 
 class ComfyUIThread(Thread):
     def __init__(self, server_addr, path):
@@ -43,13 +43,6 @@ class ComfyUIThread(Thread):
         except Exception as e:
             logger.error(f"running comfyui error, {e}")
 
-def check_inner_comfyui_alive():
-    try:
-        get_inner_comfy_client().queue_remaining()
-        return True
-    except Exception as e:
-        logger.warning(f"check comfyui alive error, {e}")
-        return False
 
 def start_comfyui():
     try:

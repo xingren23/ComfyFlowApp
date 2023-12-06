@@ -35,18 +35,34 @@ class WorkspaceModel:
             sql = text(f'CREATE TABLE IF NOT EXISTS {self.app_talbe_name} (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT, image TEXT, app_conf TEXT, api_conf TEXT, template TEXT, url TEXT, status TEXT, created_at TEXT, updated_at TEXT);')
             s.execute(sql)
 
+            # alert table: add username column
+            try:
+                s.execute(f'ALTER TABLE {self.app_talbe_name} ADD COLUMN username TEXT;' )
+            except:
+                columns = s.execute("PRAGMA table_info(asin)").fetchall()
+                logger.info(f"{self.app_talbe_name} columns: {columns}")
+
             # create index on name
             sql = text(f'CREATE INDEX IF NOT EXISTS {self.app_talbe_name}_name_index ON {self.app_talbe_name} (name);')
             s.execute(sql)
+
             s.commit()
             logger.info(f"init app table {self.app_talbe_name} and index")
 
     def get_all_apps(self):
         with self.session as s:
             logger.info("get apps from db")
-            sql = text(f'SELECT id, name, description, image, app_conf, api_conf, template, url, status FROM {self.app_talbe_name} order by id desc;')
+            sql = text(f'SELECT id, name, description, image, app_conf, api_conf, template, url, status, username FROM {self.app_talbe_name} order by id desc;')
             apps = s.execute(sql).fetchall()
             return apps
+        
+    def get_installed_apps(self):
+        with self.session as s:
+            logger.info("get installed apps from db")
+            sql = text(f'SELECT id, name, description, image, app_conf, api_conf, template, url, status, username FROM {self.app_talbe_name} WHERE status=:status order by id desc;')
+            apps = s.execute(sql, {'status': AppStatus.INSTALLED.value}).fetchall()
+            return apps
+        
 
     def get_app(self, name):
         with self.session as s:
@@ -66,7 +82,9 @@ class WorkspaceModel:
         with self.session as s:
             app['status'] = AppStatus.CREATED.value
             logger.info(f"insert app: {app['name']} {app['description']}")
-            sql = text(f'INSERT INTO {self.app_talbe_name} (name, description, image, template, app_conf, api_conf, status, created_at) VALUES (:name, :description, :image, :template, :app_conf, :api_conf, :status, datetime("now"));')
+            username = st.session_state.get('username', 'anonymous')
+            app['username'] = username
+            sql = text(f'INSERT INTO {self.app_talbe_name} (username, name, description, image, template, app_conf, api_conf, status, created_at) VALUES (:username, :name, :description, :image, :template, :app_conf, :api_conf, :status, datetime("now"));')
             s.execute(sql, app)
             s.commit()
 
@@ -74,8 +92,9 @@ class WorkspaceModel:
         # update name, description, app_conf, could not update image, api_conf
         with self.session as s:
             logger.info(f"update app conf: {id} {name} {description} {app_conf}")
-            sql = text(f'UPDATE {self.app_talbe_name} SET name=:name, description=:description, app_conf=:app_conf, updated_at=datetime("now") WHERE id=:id;')
-            s.execute(sql, dict(id=id, name=name, description=description, app_conf=app_conf))
+            username = st.session_state.get('username', 'anonymous')
+            sql = text(f'UPDATE {self.app_talbe_name} SET username=:username, name=:name, description=:description, app_conf=:app_conf, updated_at=datetime("now") WHERE id=:id;')
+            s.execute(sql, dict(id=id, username=username, name=name, description=description, app_conf=app_conf))
             s.commit()
 
     def update_app_preview(self, name):
@@ -92,6 +111,22 @@ class WorkspaceModel:
             logger.info(f"update app publish: {name} {app_conf}")
             sql = text(f'UPDATE {self.app_talbe_name} SET app_conf=:app_conf, status=:status, updated_at=datetime("now") WHERE name=:name;')
             s.execute(sql, dict(app_conf=app_conf, status=AppStatus.PUBLISHED.value, name=name))
+            s.commit()
+
+    def update_app_install(self, name):
+        # update install
+        with self.session as s:
+            logger.info(f"update app install: {name}")
+            sql = text(f'UPDATE {self.app_talbe_name} SET status=:status, updated_at=datetime("now") WHERE name=:name;')
+            s.execute(sql, dict(status=AppStatus.INSTALLED.value, name=name))
+            s.commit()
+
+    def update_app_uninstall(self, name):
+        # update uninstall
+        with self.session as s:
+            logger.info(f"update app uninstall: {name}")
+            sql = text(f'UPDATE {self.app_talbe_name} SET status=:status, updated_at=datetime("now") WHERE name=:name;')
+            s.execute(sql, dict(status=AppStatus.UNINSTALLED.value, name=name))
             s.commit()
 
     def delete_app(self, name):
