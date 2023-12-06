@@ -14,10 +14,8 @@ def change_mode_pages(mode):
     main_script_path = os.path.abspath('../Home.py')
     invalidate_pages_cache()
     all_pages = get_pages(main_script_path)
-    if mode == "Studio":
-        pages = ['Home', 'My_Apps', "App_Store"]
-    elif mode == "Creator":
-        pages = ['Home', 'Workspace', "App_Store", "My_Apps"]
+    if mode == "Creator":
+        pages = ['Home', 'Workspace', "My_Apps"]
     elif mode == "Explore":
         pages = ['Home', 'App_Store']
     else:

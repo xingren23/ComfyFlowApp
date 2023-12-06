@@ -55,7 +55,7 @@ def enter_app_ui(app):
         st.markdown(f"{description}")
         api_data = app.api_conf
         app_data = app.app_conf
-        comfy_client = get_inner_comfy_client()
+        comfy_client = get_comfy_client()
         comfyflow = Comfyflow(comfy_client=comfy_client, api_data=api_data, app_data=app_data)
         comfyflow.create_ui(show_header=False)                            
 

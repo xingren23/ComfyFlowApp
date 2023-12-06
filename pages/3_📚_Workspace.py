@@ -4,19 +4,19 @@ from io import BytesIO
 from loguru import logger
 import streamlit as st
 import modules.page as page
-from modules import get_workspace_model, get_comfy_client, get_comfyflow_token
+from modules import get_workspace_model, check_comfyui_alive, get_comfyflow_token
 from streamlit_extras.row import row
 from manager.app_manager import start_app, stop_app
 from modules.workspace_model import AppStatus
 from streamlit import config
-from modules.new_app import new_app_ui
+from modules.new_app import new_app_ui, edit_app_ui
 from modules.preview_app import preview_app_ui
 from modules.publish_app import publish_app_ui
 import random
 
 
 def create_app_info_ui(app):
-    app_row = row([1, 5.8, 2, 1.2], vertical_align="bottom")
+    app_row = row([1, 4.6, 1.2, 2, 1.2], vertical_align="bottom")
     try:
         if app.image is not None:
             
@@ -33,6 +33,12 @@ def create_app_info_ui(app):
     app_row.markdown(f"""
                     #### {app.name}
                     {description}
+                    """)
+    
+    app_author = app.username
+    app_row.markdown(f"""
+                    #### Author
+                    {app_author}
                     """)
 
     app_row.markdown(f"""
@@ -74,6 +80,14 @@ def get_comfyflow_model_info(cookies):
 def click_new_app():
     logger.info("new app...")
     st.session_state['new_app'] = True    
+    st.session_state.pop('edit_app', None)
+    st.session_state.pop('preview_app', None)
+    st.session_state.pop('publish_app', None)
+
+def click_edit_app(app):
+    logger.info(f"edit app: {app.name}")
+    st.session_state['edit_app'] = app
+    st.session_state.pop('new_app', None)
     st.session_state.pop('preview_app', None)
     st.session_state.pop('publish_app', None)
 
@@ -86,6 +100,7 @@ def click_preview_app(app):
     logger.info(f"preview app: {app.name}")
     st.session_state['preview_app'] = app
     st.session_state.pop('new_app', None)
+    st.session_state.pop('edit_app', None)
     st.session_state.pop('publish_app', None)
 
 
@@ -119,21 +134,22 @@ def click_delete_app(name):
     logger.info(f"delete app: {name}")
     get_workspace_model().delete_app(name)
 
+def click_install_app(app):
+    if app.status == AppStatus.CREATED.value:
+        logger.warning("Please preview and check this app first")
+        return
+    
+    get_workspace_model().update_app_install(app.name)
+    logger.info(f"install App {app.name} success")
+    st.session_state['app_install_ret'] = AppStatus.INSTALLED.value
 
 def ready_start_app(status):
-    if status == AppStatus.PREVIEWED.value or status == AppStatus.PUBLISHED.value:
+    if status == AppStatus.PREVIEWED.value or status == AppStatus.PUBLISHED.value or status == AppStatus.INSTALLED.value:
         return True
     else:
         return False
 
-def check_comfyui_alive():
-    try:
-        get_comfy_client().queue_remaining()
-        return True
-    except Exception as e:
-        logger.warning(f"check comfyui alive error, {e}")
-        return False        
-
+    
 def click_start_app(name, id, status):
     logger.info(f"start app: {name} status: {status}")
     if ready_start_app(status):
@@ -187,14 +203,33 @@ def create_operation_ui(app):
     name = app.name
     status = app.status
     url = app.url
-    operate_row = row([1.2, 1.0, 1.0, 4.4, 1.2, 1.2], vertical_align="bottom")
+    operate_row = row([1.2, 1.0, 1.1, 1.0, 1.0, 2.3, 1.2, 1.2], vertical_align="bottom")
     preview_button = operate_row.button("✅ Preview", help="Preview and check the app", 
                                         key=f"{id}-button-preview", 
                                         on_click=click_preview_app, args=(app,))
     if preview_button:
         app_preview_ret = st.session_state['app_preview_ret']
         if app_preview_ret == AppStatus.ERROR.value:
-            st.error(f"Preview app {name} failed, please check it")
+            st.error(f"Preview app {name} failed, please check the log")
+
+    edit_button = operate_row.button("✏️ Edit", help="Edit the app", key=f"{id}-button-edit",
+                                     on_click=click_edit_app, args=(app,))
+    if edit_button:
+        app_preview_ret = st.session_state['app_edit_ret']
+        if app_preview_ret == AppStatus.ERROR.value:
+            st.error(f"Edit app {name} failed, please check the log")
+
+    install_button = operate_row.button("📲 Install", help="Install the app", key=f"{id}-button-install",
+                                         on_click=click_install_app, args=(app,))
+    if install_button:
+        if status == AppStatus.CREATED.value:
+            st.warning("Please preview and check this app first")
+        else:
+            app_install_ret = st.session_state['app_install_ret']
+            if app_install_ret == AppStatus.INSTALLED.value:
+                st.success(f"App {name} has installed yet, you could use it from My Apps page now")
+            else:
+                st.error(f"Install app {name} failed, please check the log")
 
 
     start_button = operate_row.button("▶️ Start", help="Start the app", key=f"{id}-button-start", 
@@ -248,6 +283,8 @@ def is_load_workspace_page():
         return False
     if 'publish_app' in st.session_state:
         return False
+    if 'edit_app' in st.session_state:
+        return False
     return True
         
 
@@ -265,6 +302,8 @@ with st.container():
 
     if 'new_app' in st.session_state:
         new_app_ui()
+    elif 'edit_app' in st.session_state:
+        edit_app_ui(app=st.session_state['edit_app'])
     elif 'preview_app' in st.session_state:
         preview_app_ui(st.session_state['preview_app'])
     elif 'publish_app' in st.session_state:    

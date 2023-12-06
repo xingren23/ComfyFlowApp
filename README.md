@@ -31,10 +31,7 @@ ComfyFlowApp helps application developers make these complexities transparent to
 
 ### How Does ComfyFlowApp Work?
 
-ComfyFlowApp currently supports two modes: **Creator mode** and **Studio mode**. Users can flexibly switch between usage modes.
-
-- **Creator mode**: Users (also creators) can convert the ComfyUI workflow into a web application, run the application locally, or publish it to [comfyflow.app](https://comfyflow.app/) to share it with other users.
-- **Studio mode**: Users need to download and install the ComfyUI web application from [comfyflow.app](https://comfyflow.app/), and finally run ComfyFlowApp locally.
+ComfyFlowApp: Users (also creators) can develop a web application from the ComfyUI workflow in seconds, and share it with other users.
 
 ::: tip
 
@@ -64,9 +61,6 @@ The workflow is shown below:
 ```bash
 # download project
 git clone https://github.com/xingren23/ComfyFlowApp
-# update submodule ComfyUI
-cd ComfyFlowApp
-git submodule update --init --recursive
 
 # create and activate python env
 # Note: pytorch does not support python 3.12 yet so make sure your python version is 3.11 or earlier.
@@ -74,20 +68,13 @@ conda create -n comfyflowapp python=3.11
 conda activate comfyflowapp
 
 # install requirements
-# install comfyui, Nvidia users should install pytorch using this command:
-pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu121
-pip install -r .\repositories\ComfyUI\requirements.txt
 pip install -r requirements.txt
 
 # start or run
-# linux
-sh bin/creator_run.sh
-sh bin/studio_run.sh
-sh bin/explore_run.sh
+# linux 
+sh bin/creator_run.sh 
 # windows
 .\bin\creator_run.bat
-.\bin\studio_run.bat
-.\bin\explore_run.bat
 ```
 
 env var, you could modify some env var as needed
@@ -101,9 +88,6 @@ set COMFYFLOW_API_URL=https://api.comfyflow.app
 
 :: comfyui env for developping，you could use other machine in the same LAN, default: http://localhost:8188
 set COMFYUI_SERVER_ADDR=http://localhost:8188
-
-:: inner comfyui env for running my apps, default: http://localhost:9188, you could modify port, but localhost
-set INNER_COMFYUI_SERVER_ADDR=http://localhost:9188
 
 :: webapp server address, others in the same LAN could visit your webapp, default: localhost
 set STREAMLIT_SERVER_ADDRESS=192.168.1.100

@@ -1,6 +1,6 @@
 # ComfyFlowApp
 
-快速将你的 ComfyUI 工作流开发成一个 Web 应用，并分享给其他用户使用。
+只要几秒就可以将你的ComfyUI工作流开发成一个Web应用，并分享给其他用户使用。
 
 ## ComfyFlowApp 是什么？
 
@@ -21,16 +21,12 @@ ComfyFlowApp 是一个 ComfyUI 的扩展工具， 可以轻松从 ComfyUI 的工
 - 用户不需要懂如何搭建 ComfyUI 工作流；
 - 用户不需要懂 Python 安装环境；
 
-ComfyFlowApp 帮助应用开发者将这些复杂度对用户透明，用户只需要像普通应用一样使用即可。
+**总结，ComfyFlowApp 帮助工作流开发者简化工作流的使用难度，用户只需要像普通应用一样使用即可。**
 
-**总结，如果你需要将 ComfyUI 开发的工作流分享给其他用户使用，选择 ComfyFlowApp 就对了。**
 
 ### ComfyFlowApp 的运行方式
 
-ComfyFlowApp 目前支持两种模式：**Creator 模式** 和 **Studio 模式**，用户可以灵活切换使用模式。
-
-- **Creator 模式**：用户（也是创作者）可以将 ComfyUI 工作流转换为一个 Web 应用，可以在本地运行应用，也可以发布到 [comfyflow.app](https://comfyflow.app/)，分享给其他用户使用。
-- **Studio 模式**：用户需要从 [comfyflow.app](https://comfyflow.app/) 下载并安装 ComfyUI Web 应用，最后在本地运行 ComfyFlowApp。
+ComfyFlowApp ：用户（也是创作者）可以将 ComfyUI 工作流转换为一个 Web 应用，并分享给其他用户使用。
 
 ::: tip
 
@@ -71,18 +67,9 @@ ComfyFlowApp 目前支持两种模式：**Creator 模式** 和 **Studio 模式**
 # 下载项目
 git clone https://github.com/xingren23/ComfyFlowApp
 
-# 更新comfyui依赖
-cd ComfyFlowApp
-git submodule update --init --recursive
-
 # 使用Conda创建并管理python环境
-# Note: pytorch does not support python 3.12 yet so make sure your python version is 3.11 or earlier.
 conda create -n comfyflowapp python=3.11
 conda activate comfyflowapp
-
-# 安装comfyui依赖, Nvidia users should install pytorch using this command:
-pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu121
-pip install -r .\repositories\ComfyUI\requirements.txt
 
 # 安装ComfyFlowApp依赖
 pip install -r requirements.txt
@@ -90,12 +77,9 @@ pip install -r requirements.txt
 # 启动
 # linux
 sh bin/creator_run.sh
-sh bin/studio_run.sh
-sh bin/explore_run.sh
 # windows
 .\bin\creator_run.bat
-.\bin\studio_run.bat
-.\bin\explore_run.bat
+
 ```
 
 环境变量, 在启动脚本中可以修改相关变量
@@ -106,9 +90,6 @@ set COMFYFLOW_API_URL=https://api.comfyflow.app
 
 :: 开发联调外部ComfyUI地址，可以连接局域网内其他服务器地址，默认：http://localhost:8188
 set COMFYUI_SERVER_ADDR=http://localhost:8188
-
-:: ComfyFlowApp内置ComfyUI地址，只能使用本机地址，默认：http://localhost:9188
-set INNER_COMFYUI_SERVER_ADDR=http://localhost:9188
 
 :: 设置web应用启动地址，让局域网内其他用户可以访问你的应用，默认：localhost
 set STREAMLIT_SERVER_ADDRESS=192.168.1.100

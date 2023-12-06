@@ -99,13 +99,30 @@ def process_image_change():
 
                 st.success("parse workflow from image successfully")
             else:
-                st.error("parse workflow from image error, please check up comfyui is alive and can run this workflow.")
+                st.error("parse workflow from image error, please check up comfyui is alive and can run the workflow.")
         else:
             st.error("the image don't contain workflow info")
     else:
         st.session_state['create_prompt'] = None
         st.session_state['create_prompt_inputs'] = {}
         st.session_state['create_prompt_outputs'] = {}
+
+def process_image_edit(api_prompt):
+    if api_prompt:
+        st.session_state['create_prompt'] =api_prompt
+        inputs, outputs = parse_prompt(api_prompt)
+        if inputs and outputs:
+            logger.info(f"edit_prompt_inputs, {inputs}")
+            st.session_state['edit_prompt_inputs'] = inputs
+
+            logger.info(f"edit_prompt_outputs, {outputs}")
+            st.session_state['edit_prompt_outputs'] = outputs 
+
+            st.success("parse workflow from image successfully")
+        else:
+            st.error("parse workflow from image error, please check up comfyui is alive and can run the workflow.")
+    else:
+        st.error("the image don't contain workflow info")
         
 
 def get_node_input_config(input_param, app_input_name, app_input_description):
@@ -271,6 +288,18 @@ def submit_app():
         logger.info(f"submit app error, {app_config['name']}")
         st.session_state['create_submit_info'] = "error"
 
+def save_app(app):
+    app_config = gen_app_config()
+    if app_config:
+        get_workspace_model().edit_app(app.id, app_config['name'], app_config['description'], 
+                                       json.dumps(app_config))
+
+        logger.info(f"save app successfully, {app_config['name']}")
+        st.session_state['save_submit_info'] = "success"
+    else:
+        logger.info(f"save app error, {app_config['name']}")
+        st.session_state['save_submit_info'] = "error"
+
 def check_app_name():
     app_name_text = st.session_state['create_app_name']
     app = get_workspace_model().get_app(app_name_text)
@@ -279,9 +308,168 @@ def check_app_name():
     else:
         st.session_state['create_exist_app_name'] = False
 
+def on_edit_workspace():
+    st.session_state.pop('edit_app', None)
+    logger.info("back to workspace")
+
+def edit_app_ui(app):
+    with page.stylable_button_container():
+        header_row = row([0.85, 0.15], vertical_align="top")
+        header_row.title("🌱 Edit app from comfyui workflow")
+        header_row.button("Back Workspace", help="Back to your workspace", key="edit_back_workspace", on_click=on_edit_workspace)
+        
+
+    # upload workflow image and config params
+    with st.expander("### :one: Upload image of comfyui workflow", expanded=True):
+        image_col1, image_col2 = st.columns([0.5, 0.5])
+
+        process_image_edit(app.api_conf)
+       
+        with image_col2:
+            image_icon = BytesIO(app.image)
+            input_params = st.session_state.get('edit_prompt_inputs')
+            output_params = st.session_state.get('edit_prompt_outputs')
+            if image_icon and input_params and output_params:
+                logger.debug(f"input_params: {input_params}, output_params: {output_params}")
+                _, image_col, _ = st.columns([0.2, 0.6, 0.2])
+                with image_col:
+                    st.image(image_icon, use_column_width=True, caption='ComfyUI Image with workflow info')
+            else:
+                st.warning("Can't load comfyui workflow image")
+                
+             
+    with st.expander("### :two: Config params of app", expanded=True):
+        app_conf = json.loads(app.app_conf)
+
+        with st.container():
+            name_col1, desc_col2 = st.columns([0.2, 0.8])
+            with name_col1:
+                st.text_input("App Name *", value=app.name, placeholder="input app name",
+                              key="create_app_name", help="Input app name")    
+
+            with desc_col2:
+                st.text_input("App Description *", value=app.description, placeholder="input app description",
+                              key="create_app_description", help="Input app description")
+
+        with st.container():
+            
+            st.markdown("Input Params:")
+            params_inputs = st.session_state.get('create_prompt_inputs', {})
+            params_inputs_options = list(params_inputs.keys())
+            
+            input_params = []
+            for node_id in app_conf['inputs']:
+                node_inputs = app_conf['inputs'][node_id]['inputs']
+                for param in node_inputs:
+                    param_name = node_inputs[param]['name']
+                    param_help = node_inputs[param]['help']
+
+                    param = {
+                        'index': f"{node_id}{NODE_SEP}{param}",
+                        'name': param_name,
+                        'help': param_help,
+                    }
+                    input_params.append(param)
+            
+            if len(input_params) > 0:
+                input_param = input_params[0]
+                add_input_config_param(params_inputs_options, 1, input_param)
+            else:
+                add_input_config_param(params_inputs_options, 1)
+
+            if len(input_params) > 1:
+                input_param_2 = input_params[1]
+                add_input_config_param(params_inputs_options, 2, input_param_2)
+            else:
+                add_input_config_param(params_inputs_options, 2)
+            
+            if len(input_params) > 2:
+                input_param_3 = input_params[2]
+                add_input_config_param(params_inputs_options, 3, input_param_3)
+            else:
+                add_input_config_param(params_inputs_options, 3)
+
+        with st.container():
+            
+            st.markdown("Output Params:")
+            params_outputs = st.session_state.get('edit_prompt_outputs', {})
+            params_outputs_options = list(params_outputs.keys())
+
+            output_params = []
+            for node_id in app_conf['outputs']:
+                node_inputs = app_conf['outputs'][node_id]['outputs']
+                for param in node_inputs:
+                    param_name = node_inputs[param]['name']
+                    param_help = node_inputs[param]['help']
+
+                    param = {
+                        'index': f"{node_id}{NODE_SEP}{param}",
+                        'name': param_name,
+                        'help': param_help,
+                    }
+                    input_params.append(param)
+
+            if len(output_params) > 0:
+                output_param_1 = output_params[0]
+                add_output_config_param(params_outputs_options, 1, output_param_1)
+            else:
+                add_output_config_param(params_outputs_options, 1)
+
+    with st.container():
+        operation_row = row([0.15, 0.7, 0.15])
+        submit_button = operation_row.button("Save", key='edit_submit_app', type="primary",
+                                            use_container_width=True, 
+                                            help="Save app params",on_click=save_app, args=(app,))     
+        if submit_button:
+            submit_info = st.session_state.get('save_submit_info')
+            if submit_info == 'success':
+                st.success("Save app successfully, back your workspace")
+                st.stop()
+            else:
+                st.error("Save app error, please check up app params")
+
+        operation_row.empty()
+        next_placeholder = operation_row.empty()
+
 def on_new_workspace():
     st.session_state.pop('new_app', None)
     logger.info("back to workspace")
+
+def add_input_config_param(params_inputs_options, index, input_param=None):
+    if not input_param:
+        input_param = {
+            'name': None,
+            'help': None,
+        }
+        option_index = None
+    else:
+        option_index = params_inputs_options.index(input_param['index'])
+
+    param_input_row = row([0.4, 0.2, 0.4], vertical_align="bottom")
+    param_input_row.selectbox("Select input of workflow *", options=params_inputs_options, key=f"input_param{index}", 
+                            index=option_index,format_func=format_input_node_info, help="Select a param from workflow")
+    param_input_row.text_input("App Input Name *", placeholder="Param Name", key=f"input_param{index}_name", 
+                               value=input_param['name'], help="Input param name")
+    param_input_row.text_input("App Input Description", value=input_param['help'], placeholder="Param Description",
+                                key=f"input_param{index}_desc", help="Input param description")
+    
+def add_output_config_param(params_outputs_options, index, output_param=None):
+    if not output_param:
+        output_param = {
+            'name': None,
+            'help': None,
+        }
+        option_index = None
+    else:
+        option_index = params_outputs_options.index(output_param['index'])
+    
+    param_output_row = row([0.4, 0.2, 0.4], vertical_align="bottom")
+    param_output_row.selectbox("Select output of workflow *", options=params_outputs_options,
+                            key=f"output_param{index}", index=option_index, format_func=format_output_node_info, help="Select a param from workflow")
+    param_output_row.text_input("Apn Output Name *", placeholder="Param Name", key=f"output_param{index}_name", 
+                                value=output_param['name'],help="Input param name")
+    param_output_row.text_input("App Output Description", value=output_param['help'], placeholder="Param Description",
+                                key=f"output_param{index}_desc", help="Input param description")
 
 def new_app_ui():
     logger.info("Loading create page")
@@ -295,7 +483,7 @@ def new_app_ui():
     with st.expander("### :one: Upload image of comfyui workflow", expanded=True):
         image_col1, image_col2 = st.columns([0.5, 0.5])
         with image_col1:
-            image_uploader = st.file_uploader("Upload image *", type=["png", "jpg", "jpeg"], 
+            st.file_uploader("Upload image *", type=["png", "jpg", "jpeg"], 
                                             key="create_upload_image", 
                                             help="upload image of comfyui workflow")
             process_image_change()  
@@ -315,7 +503,7 @@ def new_app_ui():
         with st.container():
             name_col1, desc_col2 = st.columns([0.2, 0.8])
             with name_col1:
-                app_name_text = st.text_input("App Name *", value="", placeholder="input app name",
+                st.text_input("App Name *", value="", placeholder="input app name",
                               key="create_app_name", help="Input app name")    
 
             with desc_col2:
@@ -327,39 +515,15 @@ def new_app_ui():
             params_inputs = st.session_state.get('create_prompt_inputs', {})
             params_inputs_options = list(params_inputs.keys())
 
-            param_input1_row = row([0.4, 0.2, 0.4], vertical_align="bottom")
-            param_input1_row.selectbox("Select input of workflow *", options=params_inputs_options, key="input_param1", format_func=format_input_node_info, index=None, help="Select a param from workflow")
-            param_input1_row.text_input(
-                "App Input Name *", value="", placeholder="Param Name", key="input_param1_name", help="Input param name")
-            param_input1_row.text_input("App Input Description", value="", placeholder="Param Description",
-                                        key="input_param1_desc", help="Input param description")
-
-            param_input2_row = row([0.4, 0.2, 0.4], vertical_align="bottom")
-            param_input2_row.selectbox("Select input of workflow", options=params_inputs_options, key="input_param2", index=None, format_func=format_input_node_info, help="Select a param from workflow")
-            param_input2_row.text_input(
-                "App Input Name", value="", placeholder="Param Name", key="input_param2_name", help="Input param name")
-            param_input2_row.text_input("App Input Description", value="", placeholder="Param Description",
-                                        key="input_param2_desc", help="Input param description")
-            
-            param_input3_row = row([0.4, 0.2, 0.4], vertical_align="bottom")
-            param_input3_row.selectbox("Select input of workflow", options=params_inputs_options, key="input_param3", index=None, format_func=format_input_node_info, help="Select a param from workflow")
-            param_input3_row.text_input(
-                "App Input Name", value="", placeholder="Param Name", key="input_param3_name", help="Input param name")
-            param_input3_row.text_input("App Input Description", value="", placeholder="Param Description",
-                                        key="input_param3_desc", help="Input param description")
-
+            add_input_config_param(params_inputs_options, 1)
+            add_input_config_param(params_inputs_options, 2)
+            add_input_config_param(params_inputs_options, 3)
         with st.container():
             st.markdown("Output Params:")
             params_outputs = st.session_state.get('create_prompt_outputs', {})
             params_outputs_options = list(params_outputs.keys())
-            param_output1_row = row([0.4, 0.2, 0.4], vertical_align="bottom")
-            param_output1_row.selectbox("Select output of workflow *", options=params_outputs_options,
-                                        key="output_param1", format_func=format_output_node_info, help="Select a param from workflow")
-            param_output1_row.text_input(
-                "Apn Output Name *", value="", placeholder="Param Name", key="output_param1_name",
-                help="Input param name")
-            param_output1_row.text_input("App Output Description", value="", placeholder="Param Description",
-                                         key="output_param1_desc", help="Input param description")
+
+            add_output_config_param(params_outputs_options, 1)
             
     
     with st.container():

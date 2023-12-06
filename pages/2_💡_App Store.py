@@ -33,7 +33,7 @@ class ProgressEventState():
     def __str__(self) -> str:
         return f"ProgressEventState: app_id: {self.app_id}, info: {self.info}, state: {self.state}"
 
-class InstallThread(Thread):
+class InstallThread(Thread): 
     def __init__(self, app, queue):
         super(InstallThread, self).__init__()
         self.app_id = app.id
@@ -181,14 +181,6 @@ def update_install_progress(app, status_queue):
     st.session_state.pop('install_app', None)
 
 
-def show_install_status(app):
-    if app.status == AppStatus.INSTALLING.value:
-        st.info(f"App {app.name} is installing ...")
-    elif app.status == AppStatus.INSTALLED.value:
-        st.success(f"App {app.name} is installed")
-    elif app.status == AppStatus.ERROR.value:
-        st.error(f"App {app.name} install error")
-
 def try_enter_app(app):
     logger.info(f"enter app {app.name}")
     install_app(app)
@@ -226,34 +218,18 @@ def create_app_info_ui(app):
                     {app_author}
                     """)
     
-    mode = os.getenv('MODE')
-    if mode == "Explore":
-        # Enter app for vip member
-        subscribed = is_subscribed()
-        if subscribed:
-            try_enter_button = app_row.button("Enter", type='primary', help="Enter to use app", key=f"try_enter_{app.id}",
+    # Enter app for vip member
+    subscribed = is_subscribed()
+    if subscribed:
+        try_enter_button = app_row.button("Enter", type='primary', help="Enter to use app", key=f"try_enter_{app.id}",
                                       on_click=try_enter_app, args=(app,))
-            if try_enter_button:
-                logger.info(f"try enter app {app.name}")
-        else:
-            vip_button = app_row.button("Join Plan", help="Subscription to use this app online", key=f"vip_{app.id}")
-            if vip_button:
-                st.info("Subscription to use this app online, please contact us :point_left:")
+        if try_enter_button:
+            logger.info(f"try enter app {app.name}")
     else:
-        status_queue = queue.Queue()
-        app_status = app.status    
-        if app_status == AppStatus.INSTALLING.value or app_status == AppStatus.INSTALLED.value:
-            reinstall_button = app_row.button("📲 ReInstall", help="Install app from app store", 
-                                            key=f"install_{app.id}",
-                                            on_click=install_app, args=(app,))
-            if reinstall_button:
-                update_install_progress(app, status_queue)
-        else:
-            install_button = app_row.button("📲 Install", help="Install app from app store",
-                                            key=f"install_{app.id}",
-                                            on_click=install_app, args=(app,))
-            if install_button:
-                update_install_progress(app, status_queue)  
+        vip_button = app_row.button("Join Plan", help="Subscription to use this app online", key=f"vip_{app.id}")
+        if vip_button:
+            st.info("Subscription to use this app online, please contact us :point_left:")
+        
 
 
 @st.cache_data(ttl=60*60)
@@ -322,9 +298,5 @@ with st.container():
                 st.divider()
                 logger.debug(f"load app info for {app.name}")
                 create_app_info_ui(app)
-
-                # update app status
-                app = get_myapp_model().get_app_by_id(app.id)
-                show_install_status(app)
 
     
