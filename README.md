@@ -76,6 +76,10 @@ sh bin/creator_run.sh
 .\bin\creator_run.bat
 ```
 
+or you could download integrated package fow windows
+[comfyflowapp-python-3.11-amd64.7z](https://github.com/xingren23/ComfyFlowApp/releases/tag/v1.2.0)
+
+
 env var, you could modify some env var as needed
 
 ```bash

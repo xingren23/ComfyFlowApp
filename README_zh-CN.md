@@ -81,6 +81,8 @@ sh bin/creator_run.sh
 .\bin\creator_run.bat
 
 ```
+Windows用户可以直接下载一键包：[comfyflowapp-python-3.11-amd64.7z](https://github.com/xingren23/ComfyFlowApp/releases/tag/v1.2.0)
+
 
 环境变量, 在启动脚本中可以修改相关变量
 
