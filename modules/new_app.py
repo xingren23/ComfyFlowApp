@@ -87,8 +87,9 @@ def process_image_change():
     upload_image = st.session_state['create_upload_image']
     if upload_image:
         metas = process_workflow_meta(upload_image)
-        if metas and 'prompt' in metas.keys():
+        if metas and 'prompt' in metas.keys() and 'workflow' in metas.keys():
             st.session_state['create_prompt'] = metas.get('prompt')
+            st.session_state['create_workflow'] = metas.get('workflow')
             inputs, outputs = parse_prompt(metas.get('prompt'))
             if inputs and outputs:
                 logger.info(f"create_prompt_inputs, {inputs}")
@@ -104,6 +105,7 @@ def process_image_change():
             st.error("the image don't contain workflow info")
     else:
         st.session_state['create_prompt'] = None
+        st.session_state['create_workflow'] = None
         st.session_state['create_prompt_inputs'] = {}
         st.session_state['create_prompt_outputs'] = {}
 
@@ -277,6 +279,7 @@ def submit_app():
             app['description'] = app_config['description']
             app['app_conf'] = json.dumps(app_config)
             app['api_conf'] = st.session_state['create_prompt']
+            app['workflow_conf'] = st.session_state['create_workflow']
             app['status'] = 'created'
             app['template'] = 'default'
             app['image'] = img_bytesio.getvalue()

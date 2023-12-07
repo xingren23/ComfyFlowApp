@@ -196,31 +196,40 @@ def click_stop_app(name, status, url):
             else:
                 logger.error(f"Stop app {name} failed, please check the log")
     else:
-        logger.warning(f"Please preview this app {name} first")
+        logger.warning(f"Please preview this app {name} first")    
+
 
 def create_operation_ui(app):
     id = app.id
     name = app.name
     status = app.status
     url = app.url
-    operate_row = row([1.2, 1.0, 1.1, 1.0, 1.0, 2.3, 1.2, 1.2], vertical_align="bottom")
+    disabled = True
+    if st.session_state.get('username', 'anonymous') == app.username:
+        disabled = False
+
+    operate_row = row([1.2, 1.0, 1.1, 1.2, 1.0, 1.0, 1.1, 1.2, 1.2], vertical_align="bottom")
     preview_button = operate_row.button("✅ Preview", help="Preview and check the app", 
                                         key=f"{id}-button-preview", 
-                                        on_click=click_preview_app, args=(app,))
+                                        on_click=click_preview_app, args=(app,), disabled=disabled)
     if preview_button:
         app_preview_ret = st.session_state['app_preview_ret']
         if app_preview_ret == AppStatus.ERROR.value:
             st.error(f"Preview app {name} failed, please check the log")
 
     edit_button = operate_row.button("✏️ Edit", help="Edit the app", key=f"{id}-button-edit",
-                                     on_click=click_edit_app, args=(app,))
+                                     on_click=click_edit_app, args=(app,), disabled=disabled)
     if edit_button:
         app_preview_ret = st.session_state['app_edit_ret']
         if app_preview_ret == AppStatus.ERROR.value:
             st.error(f"Edit app {name} failed, please check the log")
 
+    
+    operate_row.download_button("💾 Export", data=app.workflow_conf, file_name=f"{app.name}_workflow.json", help="Export workflow to json", key=f"{id}-button-export",
+                    disabled=disabled)
+
     install_button = operate_row.button("📲 Install", help="Install the app", key=f"{id}-button-install",
-                                         on_click=click_install_app, args=(app,))
+                                         on_click=click_install_app, args=(app,), disabled=disabled)
     if install_button:
         if status == AppStatus.CREATED.value:
             st.warning("Please preview and check this app first")
@@ -233,7 +242,7 @@ def create_operation_ui(app):
 
 
     start_button = operate_row.button("▶️ Start", help="Start the app", key=f"{id}-button-start", 
-                       on_click=click_start_app, args=(name, id, status))
+                       on_click=click_start_app, args=(name, id, status), disabled=disabled)
     if start_button:
         if ready_start_app(status):
             app_preview_ret = st.session_state['app_start_ret']
@@ -247,7 +256,7 @@ def create_operation_ui(app):
             st.warning(f"Please preview this app {name} first")
         
     stop_button = operate_row.button("⏹️ Stop", help="Stop the app", key=f"{id}-button-stop",
-                       on_click=click_stop_app, args=(name, status, url))
+                       on_click=click_stop_app, args=(name, status, url), disabled=disabled)
     if stop_button:
         if ready_start_app(status):
             app_stop_ret = st.session_state['app_stop_ret']
@@ -263,11 +272,11 @@ def create_operation_ui(app):
     operate_row.markdown("")
 
     operate_row.button("🚮 Delete", help="Delete the app", key=f"{id}-button-delete", 
-                       on_click=click_delete_app, args=(name,))
+                       on_click=click_delete_app, args=(name,), disabled=disabled)
     
     publish_button = operate_row.button("✈️ Publish", help="Publish the app with template", 
                                         key=f"{id}-button-publish",
-                                        on_click=click_publish_app, args=(app,))
+                                        on_click=click_publish_app, args=(app,), disabled=disabled)
     if publish_button:
         if status == AppStatus.CREATED.value:
             st.warning("Please preview and check this app first")
