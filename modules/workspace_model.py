@@ -41,6 +41,13 @@ class WorkspaceModel:
             except:
                 columns = s.execute("PRAGMA table_info(asin)").fetchall()
                 logger.info(f"{self.app_talbe_name} columns: {columns}")
+            # alert table: add workflow_conf column
+            try:
+                s.execute(f'ALTER TABLE {self.app_talbe_name} ADD COLUMN workflow_conf TEXT;' )
+            except:
+                columns = s.execute("PRAGMA table_info(asin)").fetchall()
+                logger.info(f"{self.app_talbe_name} columns: {columns}")
+            
 
             # create index on name
             sql = text(f'CREATE INDEX IF NOT EXISTS {self.app_talbe_name}_name_index ON {self.app_talbe_name} (name);')
@@ -52,14 +59,14 @@ class WorkspaceModel:
     def get_all_apps(self):
         with self.session as s:
             logger.info("get apps from db")
-            sql = text(f'SELECT id, name, description, image, app_conf, api_conf, template, url, status, username FROM {self.app_talbe_name} order by id desc;')
+            sql = text(f'SELECT id, name, description, image, app_conf, api_conf, workflow_conf, template, url, status, username FROM {self.app_talbe_name} order by id desc;')
             apps = s.execute(sql).fetchall()
             return apps
         
     def get_installed_apps(self):
         with self.session as s:
             logger.info("get installed apps from db")
-            sql = text(f'SELECT id, name, description, image, app_conf, api_conf, template, url, status, username FROM {self.app_talbe_name} WHERE status=:status order by id desc;')
+            sql = text(f'SELECT id, name, description, image, app_conf, api_conf, workflow_conf, template, url, status, username FROM {self.app_talbe_name} WHERE status=:status order by id desc;')
             apps = s.execute(sql, {'status': AppStatus.INSTALLED.value}).fetchall()
             return apps
         
@@ -84,7 +91,7 @@ class WorkspaceModel:
             logger.info(f"insert app: {app['name']} {app['description']}")
             username = st.session_state.get('username', 'anonymous')
             app['username'] = username
-            sql = text(f'INSERT INTO {self.app_talbe_name} (username, name, description, image, template, app_conf, api_conf, status, created_at) VALUES (:username, :name, :description, :image, :template, :app_conf, :api_conf, :status, datetime("now"));')
+            sql = text(f'INSERT INTO {self.app_talbe_name} (username, name, description, image, template, app_conf, api_conf, workflow_conf, status, created_at) VALUES (:username, :name, :description, :image, :template, :app_conf, :api_conf, :workflow_conf, :status, datetime("now"));')
             s.execute(sql, app)
             s.commit()
 
