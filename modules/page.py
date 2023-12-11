@@ -17,7 +17,7 @@ def change_mode_pages(mode):
     if mode == "Creator":
         pages = ['Home', 'Workspace', "My_Apps"]
     elif mode == "Explore":
-        pages = ['Home', 'App_Store']
+        pages = ['Home', 'App_Store', 'ComfyUI_Nodes']
     else:
         pages = [page['page_name'] for _, page in all_pages.items()]
     logger.info(f"pages: {pages}, mode: {mode}")

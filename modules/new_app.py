@@ -114,11 +114,11 @@ def process_image_edit(api_prompt):
         st.session_state['create_prompt'] =api_prompt
         inputs, outputs = parse_prompt(api_prompt)
         if inputs and outputs:
-            logger.info(f"edit_prompt_inputs, {inputs}")
-            st.session_state['edit_prompt_inputs'] = inputs
+            logger.info(f"create_prompt_inputs, {inputs}")
+            st.session_state['create_prompt_inputs'] = inputs
 
-            logger.info(f"edit_prompt_outputs, {outputs}")
-            st.session_state['edit_prompt_outputs'] = outputs 
+            logger.info(f"create_prompt_outputs, {outputs}")
+            st.session_state['create_prompt_outputs'] = outputs 
 
             st.success("parse workflow from image successfully")
         else:
@@ -330,8 +330,8 @@ def edit_app_ui(app):
        
         with image_col2:
             image_icon = BytesIO(app.image)
-            input_params = st.session_state.get('edit_prompt_inputs')
-            output_params = st.session_state.get('edit_prompt_outputs')
+            input_params = st.session_state.get('create_prompt_inputs')
+            output_params = st.session_state.get('create_prompt_outputs')
             if image_icon and input_params and output_params:
                 logger.debug(f"input_params: {input_params}, output_params: {output_params}")
                 _, image_col, _ = st.columns([0.2, 0.6, 0.2])
@@ -373,6 +373,8 @@ def edit_app_ui(app):
                         'help': param_help,
                     }
                     input_params.append(param)
+
+            logger.info(f"params_inputs_options {params_inputs_options}, input_params: {input_params}")
             
             if len(input_params) > 0:
                 input_param = input_params[0]
@@ -395,7 +397,7 @@ def edit_app_ui(app):
         with st.container():
             
             st.markdown("Output Params:")
-            params_outputs = st.session_state.get('edit_prompt_outputs', {})
+            params_outputs = st.session_state.get('create_prompt_outputs', {})
             params_outputs_options = list(params_outputs.keys())
 
             output_params = []
