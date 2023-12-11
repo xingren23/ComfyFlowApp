@@ -20,7 +20,7 @@ my_apps table
 
 class MyAppModel:
     def __init__(self) -> None:
-        self.db_conn = st.connection('comfyflow_db', type='sql')
+        self.db_conn = st.experimental_connection('comfyflow_db', type='sql')
         self.app_talbe_name = 'my_apps'
         self._init_table()
         logger.debug(f"db_conn: {self.db_conn}, app_talbe_name: {self.app_talbe_name}")
