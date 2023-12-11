@@ -82,7 +82,11 @@ class ComfyClient:
         return prompt_id
 
     def _websocket_loop(self, prompt, queue):
-        wc_connect = "wss://{}/ws?clientId={}".format(urlparse.urlparse(self.server_addr).netloc, self.client_id)
+        urlresult = urlparse.urlparse(self.server_addr)
+        if urlresult.scheme == "http":
+            wc_connect = "ws://{}/ws?clientId={}".format(urlresult.netloc, self.client_id)
+        elif urlresult.scheme == "https":
+            wc_connect = "wss://{}/ws?clientId={}".format(urlresult.netloc, self.client_id)
         logger.info(f"Websocket connect url, {wc_connect}")
         ws = websocket.WebSocket()
         ws.connect(wc_connect)
