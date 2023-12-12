@@ -115,14 +115,21 @@ with st.container():
         if comfyflow_token is not None:
             cookies = {'comfyflow_token': comfyflow_token}
             st.session_state['token_cookie'] = cookies
+        else:
+            cookies = None
     else:
         cookies = st.session_state['token_cookie']
+
 
     with st.container():
         st.header("""
                     Node
                     Manage your comfyui nodes, bind or activate comfyui node to comfyflowapp.
                     """)
+
+        if cookies is None:
+            st.error("Please login first at home page :point_left:")
+            st.stop()
 
         # active node list
         with st.container():

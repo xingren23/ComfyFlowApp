@@ -77,7 +77,7 @@ sh bin/creator_run.sh
 ```
 
 or you could download integrated package fow windows
-[comfyflowapp-python-3.11-amd64.7z](https://github.com/xingren23/ComfyFlowApp/releases/tag/v1.2.0)
+[comfyflowapp-python-3.11-amd64.7z](https://github.com/xingren23/ComfyFlowApp/releases)
 
 
 env var, you could modify some env var as needed

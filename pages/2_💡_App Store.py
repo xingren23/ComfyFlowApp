@@ -180,13 +180,13 @@ def click_enter_app(app):
     app_details = get_app_details(app['id'])
     st.session_state["try_enter_app"] = app_details
 
-def is_actived(app):
+def get_actived_endpoint(app):
     if 'active_endpoints' in st.session_state:
         active_nodes = st.session_state['active_endpoints']
         endpoint = app.get('endpoint', '')
         if endpoint in active_nodes:
-            return True
-    return False
+            return endpoint
+    return None
 
 def create_app_info_ui(app): 
     app_row = row([1, 3.6, 1.2, 3, 1.2], vertical_align="bottom")
@@ -210,18 +210,23 @@ def create_app_info_ui(app):
                     #### Author
                     {app['username']}
                     """)
-    app_row.markdown(f"""
-                     #### Endpoint
-                    {app.get('endpoint', '')}
-                    """)
     # Enter app for vip member
-    subscribed = is_actived(app)
-    if subscribed:
+    endpoint = get_actived_endpoint(app)
+    if endpoint:
+        app_row.markdown(f"""
+                     #### Endpoint
+                    {endpoint}
+                    """)
+            
         try_enter_button = app_row.button("Enter", type='primary', help="Enter to use app", key=f"try_enter_{app['id']}",
                                       on_click=click_enter_app, args=(app,))
         if try_enter_button:
             logger.info(f"try enter app {app['name']}")
     else:
+        app_row.markdown(f"""
+                     #### Endpoint
+                    https://xxxxxxxx.comfyflow.app
+                    """)
         vip_button = app_row.button("Join Plan", help="Join plan to use app online", key=f"vip_{app['id']}")
         if vip_button:
             st.info("Join plan to use app online, please contact us :point_left:")
@@ -298,14 +303,6 @@ with st.container():
     else:
         cookies = st.session_state['token_cookie']
     
-    if cookies is None:
-        st.error("Please login first at home page :point_left:")
-        st.stop()
-
-    active_nodes = get_active_nodes(cookies)
-    active_endpoints = [node['endpoint'] for node in active_nodes]
-    st.session_state['active_endpoints'] = active_endpoints
-    
     if 'try_enter_app' in st.session_state:
         app = st.session_state['try_enter_app']
         # start comfyui
@@ -320,6 +317,13 @@ with st.container():
                 ### App Store
                 This is a simple app store, you could explore apps here.
                 """)
+
+        if cookies is None:
+            active_endpoints = []
+        else:
+            active_nodes = get_active_nodes(cookies)
+            active_endpoints = [node['endpoint'] for node in active_nodes]
+        st.session_state['active_endpoints'] = active_endpoints
 
         apps = fetch_app_info()
         for app in apps:
