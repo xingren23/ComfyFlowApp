@@ -223,8 +223,8 @@ def create_app_info_ui(app):
         if try_enter_button:
             logger.info(f"try enter app {app['name']}")
     else:
-        app_row.markdown(f"""
-                     #### Endpoint
+        app_row.markdown("""
+                    #### Endpoint
                     https://xxxxxxxx.comfyflow.app
                     """)
         vip_button = app_row.button("Join Plan", help="Join plan to use app online", key=f"vip_{app['id']}")
@@ -232,7 +232,7 @@ def create_app_info_ui(app):
             st.info("Join plan to use app online, please contact us :point_left:")
         
 
-@st.cache_data(ttl=60*60)
+@st.cache_data(ttl=60)
 def fetch_app_info():
     # get apps from comfyflow.app
     comfyflow_api = os.getenv('COMFYFLOW_API_URL')
@@ -255,7 +255,7 @@ def get_app_details(app_id):
         comfyflow_app = ret.json()
         return comfyflow_app
 
-@st.cache_data(ttl=60*60)
+@st.cache_data(ttl=60)
 def get_active_nodes(session_cookie):
     api_url = f'{os.environ.get("COMFYFLOW_API_URL")}/api/node/actives' 
     req = requests.get(api_url, cookies=session_cookie)
