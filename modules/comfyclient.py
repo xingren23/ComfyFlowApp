@@ -13,13 +13,12 @@ class ComfyClient:
     def __init__(self, server_addr) -> None:
         self.client_id = str(uuid.uuid4())
         self.server_addr = server_addr
-        self.timeout = 5
         logger.info(f"Comfy client id: {self.client_id}")
 
     def get_node_class(self):
         object_info_url = f"{self.server_addr}/object_info"
         logger.info(f"Got object info from {object_info_url}")
-        resp = requests.get(object_info_url, timeout=3)
+        resp = requests.get(object_info_url)
         if resp.status_code != 200:
             raise Exception(f"Failed to get object info from {object_info_url}")
         return resp.json()
@@ -33,7 +32,7 @@ class ComfyClient:
         """
         url = f"{self.server_addr}/prompt"
         logger.info(f"Got remaining from {url}")
-        resp = requests.get(url, timeout=self.timeout)
+        resp = requests.get(url)
         if resp.status_code != 200:
             raise Exception(f"Failed to get queue from {url}")
         return resp.json()['exec_info']['queue_remaining']
@@ -42,7 +41,7 @@ class ComfyClient:
         p = {"prompt": prompt, "client_id": self.client_id}
         data = json.dumps(p).encode('utf-8')
         logger.info(f"Sending prompt to server, {self.client_id}")
-        resp = requests.post(f"{self.server_addr}/prompt", data=data, timeout=self.timeout)
+        resp = requests.post(f"{self.server_addr}/prompt", data=data)
         if resp.status_code != 200:
             raise Exception(f"Failed to send prompt to server, {resp.status_code}")
         return resp.json()
@@ -83,7 +82,11 @@ class ComfyClient:
         return prompt_id
 
     def _websocket_loop(self, prompt, queue):
-        wc_connect = "ws://{}/ws?clientId={}".format(urlparse.urlparse(self.server_addr).netloc, self.client_id)
+        urlresult = urlparse.urlparse(self.server_addr)
+        if urlresult.scheme == "http":
+            wc_connect = "ws://{}/ws?clientId={}".format(urlresult.netloc, self.client_id)
+        elif urlresult.scheme == "https":
+            wc_connect = "wss://{}/ws?clientId={}".format(urlresult.netloc, self.client_id)
         logger.info(f"Websocket connect url, {wc_connect}")
         ws = websocket.WebSocket()
         ws.connect(wc_connect)

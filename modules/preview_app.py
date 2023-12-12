@@ -28,7 +28,7 @@ def preview_app_ui(app):
             if f"{name}_previewed" in st.session_state:
                 previewed = st.session_state[f"{name}_previewed"]
                 if previewed:
-                    st.success(f"Preview app {name} success, back to workspace, you could start or publish the app.")
+                    st.success(f"Preview app {name} success, you could install or publish the app at Workspace page.")
                     get_workspace_model().update_app_preview(name)
                     logger.info(f"update preview status for app: {name}")
                     st.stop()
@@ -57,27 +57,4 @@ def enter_app_ui(app):
         app_data = app.app_conf
         comfy_client = get_comfy_client()
         comfyflow = Comfyflow(comfy_client=comfy_client, api_data=api_data, app_data=app_data)
-        comfyflow.create_ui(show_header=False)                            
-
-def on_back_store():
-    st.session_state.pop('try_enter_app', None)
-    logger.info("back to app store")
-
-def try_enter_app_ui(app):
-    with st.container():
-        name = app.name
-        description = app.description
-        status = app.status
-        logger.info(f"try app {name}, status: {status}")
-
-        with page.stylable_button_container():
-            header_row = row([0.85, 0.15], vertical_align="top")
-            header_row.title(f"{name}")
-            header_row.button("App Store", help="Back to app store", key='try_back_store', on_click=on_back_store)
-
-        st.markdown(f"{description}")
-        api_data = app.api_conf
-        app_data = app.app_conf
-        comfy_client = get_inner_comfy_client()
-        comfyflow = Comfyflow(comfy_client=comfy_client, api_data=api_data, app_data=app_data)
-        comfyflow.create_ui(show_header=False)          
+        comfyflow.create_ui(show_header=False)                                    

@@ -19,7 +19,7 @@ def enter_app(app):
 
 
 def create_app_info_ui(app):
-    app_row = row([1, 5.4, 1.2, 1.2, 1], vertical_align="bottom")
+    app_row = row([1, 5.4, 1.2, 1.4, 1], vertical_align="bottom")
     try:
         if app.image is not None:
             app_row.image(app.image)
@@ -72,9 +72,7 @@ with st.container():
                 
                 with page.stylable_button_container():
                     header_row = row([0.85, 0.15], vertical_align="bottom")
-                    header_row.markdown("""
-                            ### My Apps
-                        """)
+                    header_row.title("My Apps")
                     explore_button = header_row.button(
                         "Install", help="Install more apps from your workspace.")
                     if explore_button:

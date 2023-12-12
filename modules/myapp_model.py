@@ -20,7 +20,7 @@ my_apps table
 
 class MyAppModel:
     def __init__(self) -> None:
-        self.db_conn = st.experimental_connection('comfyflow_db', type='sql')
+        self.db_conn = st.connection('comfyflow_db', type='sql')
         self.app_talbe_name = 'my_apps'
         self._init_table()
         logger.debug(f"db_conn: {self.db_conn}, app_talbe_name: {self.app_talbe_name}")
@@ -85,7 +85,7 @@ class MyAppModel:
     def get_all_apps(self):
         with self.session as s:
             logger.info("get apps from db")
-            sql = text(f'SELECT id, name, description, image, app_conf, api_conf, template, url, status FROM {self.app_talbe_name} order by id desc;')
+            sql = text(f'SELECT id, name, description, image, app_conf, api_conf, endpoint, template, url, status, username FROM {self.app_talbe_name} order by id desc;')
             apps = s.execute(sql).fetchall()
             return apps
         
@@ -93,7 +93,7 @@ class MyAppModel:
         # get installed apps
         with self.session as s:
             logger.debug("get my apps from db")
-            sql = text(f'SELECT id, name, description, image, app_conf, api_conf, template, url, status FROM {self.app_talbe_name} WHERE status=:status order by id desc;')
+            sql = text(f'SELECT id, name, description, image, app_conf, api_conf, template, url, status, username FROM {self.app_talbe_name} WHERE status=:status order by id desc;')
             apps = s.execute(sql, {'status': AppStatus.INSTALLED.value}).fetchall()
             return apps
 

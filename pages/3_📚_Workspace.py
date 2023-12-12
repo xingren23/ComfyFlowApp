@@ -34,22 +34,18 @@ def create_app_info_ui(app):
                     #### {app.name}
                     {description}
                     """)
-    
     app_author = app.username
     app_row.markdown(f"""
                     #### Author
                     {app_author}
                     """)
-
     app_row.markdown(f"""
                     #### Web Site
                     🌐 {app.url}
                     """)
-       
-    app_status = app.status
     app_row.markdown(f"""
                     #### Status
-                    {app_status}
+                    {app.status}
                     """)
 
 @st.cache_data(ttl=60*60)
@@ -106,7 +102,7 @@ def click_preview_app(app):
 
 def click_publish_app(app):
     if app.status == AppStatus.CREATED.value:
-        logger.warning("Please preview and check this app first")
+        logger.warning(f"Please preview the app {app.name} first")
         return
     
     if 'token_cookie' in st.session_state:
@@ -136,7 +132,7 @@ def click_delete_app(name):
 
 def click_install_app(app):
     if app.status == AppStatus.CREATED.value:
-        logger.warning("Please preview and check this app first")
+        logger.warning(f"Please preview the app {app.name} first")
         return
     
     get_workspace_model().update_app_install(app.name)
@@ -148,7 +144,6 @@ def ready_start_app(status):
         return True
     else:
         return False
-
     
 def click_start_app(name, id, status):
     logger.info(f"start app: {name} status: {status}")
@@ -176,7 +171,7 @@ def click_start_app(name, id, status):
         else:
             logger.info(f"Start app {name} failed")
     else: 
-        logger.warning(f"Please preview this app {name} first")
+        logger.warning(f"Please preview the app {name} first")
 
 def click_stop_app(name, status, url):
     logger.info(f"stop app: {name} status: {status} url: {url}")
@@ -196,7 +191,7 @@ def click_stop_app(name, status, url):
             else:
                 logger.error(f"Stop app {name} failed, please check the log")
     else:
-        logger.warning(f"Please preview this app {name} first")    
+        logger.warning(f"Please preview the app {name} first")    
 
 
 def create_operation_ui(app):
@@ -224,19 +219,21 @@ def create_operation_ui(app):
         if app_preview_ret == AppStatus.ERROR.value:
             st.error(f"Edit app {name} failed, please check the log")
 
-    
-    operate_row.download_button("💾 Export", data=app.workflow_conf, file_name=f"{app.name}_workflow.json", help="Export workflow to json", key=f"{id}-button-export",
-                    disabled=disabled)
+    if 'workflow_conf' in app:
+        operate_row.download_button("💾 Export", data=app.workflow_conf, file_name=f"{app.name}_workflow.json", help="Export workflow to json", key=f"{id}-button-export",
+                        disabled=disabled)
+    else:
+        operate_row.button("💾 Export", help="Export workflow to json", key=f"{id}-button-export", disabled=True)        
 
     install_button = operate_row.button("📲 Install", help="Install the app", key=f"{id}-button-install",
                                          on_click=click_install_app, args=(app,), disabled=disabled)
     if install_button:
         if status == AppStatus.CREATED.value:
-            st.warning("Please preview and check this app first")
+            st.warning(f"Please preview the app {name} first")
         else:
             app_install_ret = st.session_state['app_install_ret']
             if app_install_ret == AppStatus.INSTALLED.value:
-                st.success(f"App {name} has installed yet, you could use it from My Apps page now")
+                st.success(f"App {name} has installed yet, you could use it at My Apps page")
             else:
                 st.error(f"Install app {name} failed, please check the log")
 
@@ -253,7 +250,7 @@ def create_operation_ui(app):
             else:
                 st.error(f"Start app {name} failed")
         else:
-            st.warning(f"Please preview this app {name} first")
+            st.warning(f"Please preview the app {name} first")
         
     stop_button = operate_row.button("⏹️ Stop", help="Stop the app", key=f"{id}-button-stop",
                        on_click=click_stop_app, args=(name, status, url), disabled=disabled)
@@ -267,7 +264,7 @@ def create_operation_ui(app):
             else:
                 st.error(f"Stop app {name} failed, please check the log")
         else:
-            st.warning(f"Please preview this app {name} first")        
+            st.warning(f"Please preview the app {name} first")        
 
     operate_row.markdown("")
 
@@ -279,7 +276,7 @@ def create_operation_ui(app):
                                         on_click=click_publish_app, args=(app,), disabled=disabled)
     if publish_button:
         if status == AppStatus.CREATED.value:
-            st.warning("Please preview and check this app first")
+            st.warning(f"Please preview the app {name} first")
         else:   
             if 'token_cookie' not in st.session_state:
                 st.warning("Please go to homepage for your login :point_left:")
@@ -306,6 +303,8 @@ with st.container():
         if comfyflow_token is not None:
             cookies = {'comfyflow_token': comfyflow_token}
             st.session_state['token_cookie'] = cookies
+        else:
+            cookies = None
     else:
         cookies = st.session_state['token_cookie']
 
@@ -316,6 +315,9 @@ with st.container():
     elif 'preview_app' in st.session_state:
         preview_app_ui(st.session_state['preview_app'])
     elif 'publish_app' in st.session_state:    
+        if cookies is None:
+            st.warning("Please go to homepage for your login :point_left:")
+            st.stop()
         publish_app_ui(app=st.session_state['publish_app'], cookies=cookies)
     
     elif is_load_workspace_page():
@@ -323,6 +325,7 @@ with st.container():
             header_row = row([0.85, 0.15], vertical_align="top")
             header_row.markdown("""
                 ### My Workspace
+                create and manage your comfyflowapps.
             """)
             new_app_button = header_row.button("New App", help="Create a new app from comfyui workflow.", on_click=click_new_app)
            

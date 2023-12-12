@@ -41,16 +41,15 @@ def get_comfy_client():
     return comfy_client
 
 @st.cache_resource
-def get_inner_comfy_client():
+def get_inner_comfy_client(endpoint):
     logger.info("get_inner_comfy_client")
     from modules.comfyclient import ComfyClient
-    server_addr = os.getenv('INNER_COMFYUI_SERVER_ADDR')
-    comfy_client = ComfyClient(server_addr=server_addr)
+    comfy_client = ComfyClient(server_addr=endpoint)
     return comfy_client
 
-def check_inner_comfyui_alive():
+def check_inner_comfyui_alive(endpoint):
     try:
-        get_inner_comfy_client().queue_remaining()
+        get_inner_comfy_client(endpoint).queue_remaining()
         return True
     except Exception as e:
         logger.warning(f"check comfyui alive error, {e}")
