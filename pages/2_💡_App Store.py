@@ -181,10 +181,11 @@ def click_enter_app(app):
     st.session_state["try_enter_app"] = app_details
 
 def is_actived(app):
-    active_nodes = st.session_state['active_endpoints']
-    endpoint = app.get('endpoint', '')
-    if endpoint in active_nodes:
-        return True
+    if 'active_endpoints' in st.session_state:
+        active_nodes = st.session_state['active_endpoints']
+        endpoint = app.get('endpoint', '')
+        if endpoint in active_nodes:
+            return True
     return False
 
 def create_app_info_ui(app): 
@@ -291,13 +292,19 @@ with st.container():
         comfyflow_token = get_comfyflow_token()
         if comfyflow_token is not None:
             cookies = {'comfyflow_token': comfyflow_token}
-            active_nodes = get_active_nodes(cookies)
-            active_endpoints = [node['endpoint'] for node in active_nodes]
-            st.session_state['active_endpoints'] = active_endpoints
             st.session_state['token_cookie'] = cookies
+        else:
+            cookies = None
     else:
         cookies = st.session_state['token_cookie']
+    
+    if cookies is None:
+        st.error("Please login first at home page :point_left:")
+        st.stop()
 
+    active_nodes = get_active_nodes(cookies)
+    active_endpoints = [node['endpoint'] for node in active_nodes]
+    st.session_state['active_endpoints'] = active_endpoints
     
     if 'try_enter_app' in st.session_state:
         app = st.session_state['try_enter_app']

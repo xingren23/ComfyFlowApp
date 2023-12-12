@@ -219,9 +219,11 @@ def create_operation_ui(app):
         if app_preview_ret == AppStatus.ERROR.value:
             st.error(f"Edit app {name} failed, please check the log")
 
-    
-    operate_row.download_button("💾 Export", data=app.workflow_conf, file_name=f"{app.name}_workflow.json", help="Export workflow to json", key=f"{id}-button-export",
-                    disabled=disabled)
+    if 'workflow_conf' in app:
+        operate_row.download_button("💾 Export", data=app.workflow_conf, file_name=f"{app.name}_workflow.json", help="Export workflow to json", key=f"{id}-button-export",
+                        disabled=disabled)
+    else:
+        operate_row.button("💾 Export", help="Export workflow to json", key=f"{id}-button-export", disabled=True)        
 
     install_button = operate_row.button("📲 Install", help="Install the app", key=f"{id}-button-install",
                                          on_click=click_install_app, args=(app,), disabled=disabled)

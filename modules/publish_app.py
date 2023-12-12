@@ -68,9 +68,10 @@ def get_model_meta(model_url):
 def get_endpoint_object_info(endpoint):
     ret = requests.get(f"{endpoint}/object_info")
     if ret.status_code != 200:
-        raise Exception(f"Failed to get comfyflow object info, {ret.content}")
-    ret_json = ret.json()
-    return ret_json     
+        logger.error(f"Failed to get comfyflow object info, {ret.content}")
+        return None
+    else:
+        return ret.json()
 
 
 def get_node_endpoint(session_cookie):
@@ -82,7 +83,7 @@ def get_node_endpoint(session_cookie):
     else:
         return None
 
-def do_publish_app(name, description, image, app_conf, api_conf, endpoint, template, status, cookies=None):
+def do_publish_app(name, description, image, app_conf, api_conf, workflow_conf, endpoint, template, status, cookies=None):
     comfyflow_api = os.getenv('COMFYFLOW_API_URL')
     # post app to comfyflow.app
     app = {
@@ -91,23 +92,31 @@ def do_publish_app(name, description, image, app_conf, api_conf, endpoint, templ
         "image": image,
         "app_conf": app_conf,
         "api_conf": api_conf,
+        "workflow_conf": workflow_conf,
         "endpoint": endpoint,
         "template": template,
         "status": status
     }
-    logger.debug(f"publish app to comfyflow.app, {app}")
+    logger.info(f"publish app to comfyflow.app, {app}")
     ret = requests.post(f"{comfyflow_api}/api/app/publish", json=app, cookies=cookies)
     if ret.status_code != 200:
         logger.error(f"publish app failed, {name} {ret.content}")
-        return None
+        st.error(f"publish app failed, {name} {ret.content}")
+        return ret
     else:
         logger.info(f"publish app success, {name}")
+        st.success(f"publish app success, {name}")
         return ret
 
 def on_publish_workspace():
     st.session_state.pop('publish_app', None)
     logger.info("back to workspace")
 
+def is_comfyui_model_path(model_path):
+    for ext in comfyui_supported_pt_extensions:
+        if isinstance(model_path, str) and model_path.endswith(ext):
+            return True
+    return False
 
 def publish_app_ui(app, cookies):
     logger.info("Loading publish page")
@@ -134,7 +143,7 @@ def publish_app_ui(app, cookies):
         # get endpoint object info
         endpoint_object_info = get_endpoint_object_info(endpoint)
         if not endpoint_object_info:
-            st.error(f"Failed to get comfyflow object info, {endpoint}")
+            st.error(f"Failed to get comfyui {endpoint} object info, please check comfyui node.")
             st.stop()
         else:
             # parse app nodes
@@ -153,16 +162,20 @@ def publish_app_ui(app, cookies):
             with st.expander("Parse comfyui node info", expanded=True):
                 for node_id in api_data_json:
                     inputs = api_data_json[node_id]['inputs']
+                    class_type = api_data_json[node_id]['class_type']
                     # check model path
                     for key, value in inputs.items():
-                        if isinstance(value, str) and value.find('.') != -1:
-                            model_type = value.split('.')[-1]
-                            logger.info(f"model_type, {model_type}")
-                            if f'.{model_type}' not in comfyui_supported_pt_extensions:
-                                st.write(f":red[Invalid model path\, {value}]")
-                                st.session_state['publish_invalid_node'] = True
-                            else:
-                                st.write(f":green[Check model path\, {value}]")
+                        try:
+                            if is_comfyui_model_path(value):
+                                model_options = endpoint_object_info[class_type]['input']['required'][key][0]
+                                if value not in model_options:
+                                    st.write(f":red[Invalid model path\, {value}]")
+                                    st.session_state['publish_invalid_node'] = True
+                                else:
+                                    st.write(f":green[Check model path\, {value}]")
+                        except Exception as e:
+                            st.write(f":red[Invalid model path\, {value}]")
+                            st.session_state['publish_invalid_node'] = True
 
         # # config app models
         # with st.expander("Config app models", expanded=True):
@@ -186,7 +199,7 @@ def publish_app_ui(app, cookies):
         publish_button = st.button("Publish", key='publish_button', type='primary', 
                       help="Publish app to store and share with your friends")
         if publish_button:
-            if 'publish_invalid_node' in st.session_state:
+            if st.session_state.get('publish_invalid_node', False):
                 st.warning("Invalid node, please check node info.")
             else:
                 # # check model url
@@ -228,10 +241,6 @@ def publish_app_ui(app, cookies):
 
                 # convert image to base64
                 image_base64 = base64.b64encode(app.image).decode('utf-8')
-
+                
                 # call api to publish app
-                ret = do_publish_app(app.name, app.description, image_base64, app.app_conf, app.api_conf, endpoint, app.template, AppStatus.PUBLISHED.value, cookies)
-                if ret:
-                    st.success("Publish success, you can share this app with your friends.")
-                else:
-                    st.error("Publish app error")
+                do_publish_app(app.name, app.description, image_base64, app.app_conf, app.api_conf, app.workflow_conf, endpoint, app.template, AppStatus.PUBLISHED.value, cookies)

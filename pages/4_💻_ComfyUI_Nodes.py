@@ -55,7 +55,7 @@ def submit_del_key(session_cookie, idx, key_id):
         logger.error(f"New key created failed, {req.json()}")
 
 def submit_new_node(session_cookie):
-    logger.debug(f"click new node")
+    logger.debug("click new node")
     node_name = st.session_state["new_node_name"]
     node_description = st.session_state["new_node_description"]
     node_endpoint = st.session_state["new_node_endpoint"]
@@ -68,7 +68,7 @@ def submit_new_node(session_cookie):
         logger.error(f"New node created failed, {req.json()}")
 
 def submit_active_node(session_cookie):
-    logger.debug(f"click active node")
+    logger.debug("click active node")
     invite_key = st.session_state["invite_node_key"]
     api_url = f'{os.environ.get("COMFYFLOW_API_URL")}/api/node/key/active'
     req = requests.post(api_url, cookies=session_cookie, json={"value": invite_key})

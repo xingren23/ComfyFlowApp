@@ -123,12 +123,6 @@ enableStaticServing = false
 
 [client]
 # Default: true
-caching = true
-
-# Default: true
-displayEnabled = true
-
-# Default: true
 showErrorDetails = true
 
 # Change the visibility of items in the toolbar, options menu,
