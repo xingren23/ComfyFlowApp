@@ -114,10 +114,12 @@ def home(header_button):
             
             st.markdown("""
                         ## 📌 What is ComfyFlowApp?
-                        ComfyFlowApp is an extension tool for ComfyUI, making it easy to create a user-friendly application from a ComfyUI workflow and share it with others.
+                        ComfyFlowApp is an extension tool for ComfyUI, making it easy to develop a user-friendly web application from a ComfyUI workflow and share it with others.
                         """)
             st.markdown("""
                         ### Why You Need ComfyFlowApp? 
+                        ComfyFlowApp helps creator to develop a web app from comfyui workflow in seconds.
+
                         If you need to share workflows developed in ComfyUI with other users, ComfyFlowApp can significantly lower the barrier for others to use your workflows:
                         - Users don't need to understand the principles of AI generation models. 
                         - Users don't need to know the tuning parameters of various AI models. 
@@ -125,7 +127,6 @@ def home(header_button):
                         - Users don't need to know how to set up ComfyUI workflows. 
                         - Users don't need to understand Python installation requirements.
                         
-                        ComfyFlowApp helps application developers make these complexities transparent to users, who can use it like any other regular application.
                         """)
             st.markdown("""
                         ### Typical Use Cases
