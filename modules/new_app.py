@@ -100,7 +100,7 @@ def process_image_change():
 
                 st.success("parse workflow from image successfully")
             else:
-                st.error("parse workflow from image error, please check up comfyui is alive and can run the workflow.")
+                st.error("parse workflow from image error, inputs or outputs is None")
         else:
             st.error("the image don't contain workflow info")
     else:
@@ -122,7 +122,7 @@ def process_image_edit(api_prompt):
 
             st.success("parse workflow from image successfully")
         else:
-            st.error("parse workflow from image error, please check up comfyui is alive and can run the workflow.")
+            st.error("parse workflow from image error, inputs or outputs is None")
     else:
         st.error("the image don't contain workflow info")
         
@@ -149,7 +149,7 @@ def get_node_input_config(input_param, app_input_name, app_input_description):
                 "name": app_input_name,
                 "help": app_input_description,                 
                 "default": str(param_value),
-                "max": 300,
+                "max": 500,
             }
         elif class_input[param][0] == 'INT':
             defaults = class_input[param][1]
