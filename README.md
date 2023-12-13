@@ -96,10 +96,6 @@ set COMFYUI_SERVER_ADDR=http://localhost:8188
 set STREAMLIT_SERVER_ADDRESS=192.168.1.100
 ```
 
-### Videos
-
-- [ComfyFlowApp install and develop first app](https://www.youtube.com/watch?v=glRO1q4IAI0&t=6s&ab_channel=ZhiguoWang)
-
 ### 📌 Related Projects
 
 - [ComfyUI](https://github.com/comfyanonymous/ComfyUI)

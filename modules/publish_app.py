@@ -97,7 +97,6 @@ def do_publish_app(name, description, image, app_conf, api_conf, workflow_conf, 
         "template": template,
         "status": status
     }
-    logger.info(f"publish app to comfyflow.app, {app}")
     ret = requests.post(f"{comfyflow_api}/api/app/publish", json=app, cookies=cookies)
     if ret.status_code != 200:
         logger.error(f"publish app failed, {name} {ret.content}")
@@ -164,15 +163,23 @@ def publish_app_ui(app, cookies):
                     inputs = api_data_json[node_id]['inputs']
                     class_type = api_data_json[node_id]['class_type']
                     # check model path
+                    logger.info(f"inputs, {inputs}")    
                     for key, value in inputs.items():
                         try:
-                            if is_comfyui_model_path(value):
-                                model_options = endpoint_object_info[class_type]['input']['required'][key][0]
-                                if value not in model_options:
-                                    st.write(f":red[Invalid model path\, {value}]")
-                                    st.session_state['publish_invalid_node'] = True
-                                else:
-                                    st.write(f":green[Check model path\, {value}]")
+                            if isinstance(value, str):
+                                if is_comfyui_model_path(value):
+                                    model_options = endpoint_object_info[class_type]['input']['required'][key][0]
+                                    if value not in model_options:
+                                        st.write(f":red[Invalid model path\, {value}]")
+                                        st.session_state['publish_invalid_node'] = True
+                                    else:
+                                        st.write(f":green[Check model path\, {value}]")
+                            elif isinstance(value, dict):
+                                for k, v in value.items():
+                                    # 棕色 
+                                    if is_comfyui_model_path(v):
+                                        st.write(f":green[ignore path\, {k} {value}]")
+                                    
                         except Exception as e:
                             st.write(f":red[Invalid model path\, {value}]")
                             st.session_state['publish_invalid_node'] = True
