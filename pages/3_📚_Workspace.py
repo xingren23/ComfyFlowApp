@@ -219,7 +219,6 @@ def create_operation_ui(app):
         if app_preview_ret == AppStatus.ERROR.value:
             st.error(f"Edit app {name} failed, please check the log")
 
-    logger.info(f"app {name} workflow_conf: {app.workflow_conf}")
     if app.workflow_conf is not None:
         operate_row.download_button("💾 Export", data=app.workflow_conf, file_name=f"{app.name}_workflow.json", help="Export workflow to json", key=f"{id}-button-export",
                         disabled=disabled)
