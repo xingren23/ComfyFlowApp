@@ -87,12 +87,7 @@ def click_edit_app(app):
     st.session_state.pop('preview_app', None)
     st.session_state.pop('publish_app', None)
 
-def click_preview_app(app):
-    if not check_comfyui_alive():
-        logger.warning("ComfyUI server is not alive, please check it")
-        st.session_state['app_preview_ret'] = AppStatus.ERROR.value
-        return
-    
+def click_preview_app(app):    
     logger.info(f"preview app: {app.name}")
     st.session_state['preview_app'] = app
     st.session_state.pop('new_app', None)
@@ -208,9 +203,10 @@ def create_operation_ui(app):
                                         key=f"{id}-button-preview", 
                                         on_click=click_preview_app, args=(app,), disabled=disabled)
     if preview_button:
-        app_preview_ret = st.session_state['app_preview_ret']
-        if app_preview_ret == AppStatus.ERROR.value:
+        if not check_comfyui_alive():
+            logger.warning("ComfyUI server is not alive, please check it")
             st.error(f"Preview app {name} failed, please check the log")
+            st.stop()
 
     edit_button = operate_row.button("✏️ Edit", help="Edit the app", key=f"{id}-button-edit",
                                      on_click=click_edit_app, args=(app,), disabled=disabled)
