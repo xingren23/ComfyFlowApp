@@ -104,6 +104,5 @@ set STREAMLIT_SERVER_ADDRESS=192.168.1.100
 
 - [GitHub Issues](https://github.com/xingren23/ComfyWorkflowApp/issues)
 
-- WeChat: if wegroup is expired, you could add xingren23，comment “ComfyFlowApp”，I will invite you to the group.
+- [ComfyFlowApp Discord](https://discord.gg/rjbdD3EkYw)
 
-![alt-text-1](docs/images/WechatGroup.jpg "title-1") ![alt-text-2](docs/images/wechat-xingren23.jpg "title-2")
