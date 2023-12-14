@@ -108,6 +108,4 @@ ComfyWorkflowApp 项目还处于早期阶段，如果您有任何问题或建议
 
 - [GitHub Issues](https://github.com/xingren23/ComfyWorkflowApp/issues)
 
-- WeChat: 如果微信群二维码过期，请添加我的微信号：xingren23，备注“ComfyFlowApp”，我拉你进群。
-
-![alt-text-1](docs/images/WechatGroup.jpg "title-1") ![alt-text-2](docs/images/wechat-xingren23.jpg "title-2")
+- [ComfyFlowApp Discord](https://discord.gg/rjbdD3EkYw)

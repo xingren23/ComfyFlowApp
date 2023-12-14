@@ -3,6 +3,7 @@ import os
 import streamlit as st
 import streamlit_extras.app_logo as app_logo
 from streamlit_extras.badges import badge
+from htbuilder import a, img
 from streamlit_extras.stylable_container import stylable_container
 from streamlit.source_util import (
     get_pages,
@@ -92,6 +93,15 @@ def page_init(layout="wide"):
 
         badge(type="github", name="xingren23/ComfyFlowApp", url="https://github.com/xingren23/ComfyFlowApp")
         badge(type="twitter", name="xingren23", url="https://twitter.com/xingren23")
+        discord_badge_html = str(
+            a(href="https://discord.gg/jkrPRNKp5R")(
+                img(
+                    src="https://img.shields.io/discord/1184762864678998077?style=social&logo=discord&label=join ComfyFlowApp"
+                )
+            )
+        )
+        st.write(discord_badge_html, unsafe_allow_html=True)
+        
     
 
 def stylable_button_container():
