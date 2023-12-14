@@ -41,14 +41,14 @@ def gen_invite_code(source: str, uid: str):
     invate_code = f"oauth_{source}_{uid}"
     return invate_code
     
-def back_home_login():
+def back_home_signup():
     st.session_state.pop('user_data', None)
     logger.info("back home login")
 
 
-def discord_callback(user_data, header_button):
+def discord_callback(user_data):
     with header_button:
-        st.button("Login", key="home_button", on_click=back_home_login)
+        st.button("Login", key="home_button", on_click=back_home_signup)
 
     st.write('''
         <h3>
@@ -89,12 +89,12 @@ def discord_callback(user_data, header_button):
             )
 
 
-def home(header_button):
+def home():
     auth_instance =  MyAuthenticate("comfyflow_token", "ComfyFlowApp： Load ComfyUI workflow as webapp in seconds.")
     if not st.session_state['authentication_status']:
         with header_button:
-            login_url = discord_oauth.gen_authorization_url()
-            st.link_button("Register", url=login_url, help="Register with Discord")
+            signup_url = discord_oauth.gen_authorization_url()
+            st.link_button("Sign Up", type="primary", url=signup_url, help="Sign up with Discord")
 
         with st.container():
             try:
@@ -143,10 +143,10 @@ page.init_env_default()
 page.page_init(layout="centered")
 
 with st.container():
-    header_row = row([0.85, 0.15], vertical_align="bottom")
-    header_row.markdown("""
-        ## Welcome to ComfyFlowApp
-        Develop a webapp from comfyui workflow in seconds, and share with others.
+    header_row = row([0.80, 0.2], vertical_align="bottom")
+    header_row.title("""
+        Welcome to ComfyFlowApp
+        From comfyui workflow to web application in seconds, and share with others.
     """)
     header_button = header_row.empty()  
 
@@ -158,6 +158,6 @@ with st.container():
     
     if 'user_data' in st.session_state:
         user_data = st.session_state['user_data']
-        discord_callback(user_data=user_data, header_button=header_button)
+        discord_callback(user_data=user_data)
     else:
-        home(header_button) 
+        home() 
