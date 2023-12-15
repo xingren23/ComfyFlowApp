@@ -217,8 +217,8 @@ def get_app_waiting_list():
     if ret.status_code == 200:
         return ret.json()
     else:
-        st.error(f"Get my app waiting list failed, {ret.text}")
-        return None
+        logger.error(f"Get app waiting list failed, {ret.text}")
+        return []
 
 
 def  get_actived_endpoint(app):
