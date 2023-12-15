@@ -143,7 +143,7 @@ page.init_env_default()
 page.page_init(layout="centered")
 
 with st.container():
-    header_row = row([0.80, 0.2], vertical_align="bottom")
+    header_row = row([0.85, 0.15], vertical_align="bottom")
     header_row.title("""
         Welcome to ComfyFlowApp
         From comfyui workflow to web application in seconds, and share with others.
