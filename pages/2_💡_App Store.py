@@ -175,12 +175,53 @@ from modules import get_inner_comfy_client, check_inner_comfyui_alive
 #     logger.info(f"Install thread for {app.name} finished")
 #     st.session_state.pop('install_app', None)
 
+def is_invalid_email(email):
+    if email is None or len(email) == 0 or '@' not in email:
+        return True
+    return False
 
 def click_enter_app(app):
     app_details = get_app_details(app['id'])
     st.session_state["try_enter_app"] = app_details
 
-def get_actived_endpoint(app):
+def click_join_app(app):
+    join_key = f"join_app_{app['id']}"
+    if join_key not in st.session_state:
+        st.session_state[join_key] = app
+    else:
+        st.session_state.pop(join_key, None)
+
+def submit_join_app(app):
+    email = st.session_state[f"join_email_{app['id']}"]
+    if is_invalid_email(email):
+        logger.warning(f"Invalid email {email}")
+        st.error("Your email is invalid")
+        return None
+    if cookies is None:
+        st.error("Please go to homepage for your login :point_left:")
+        return None
+ 
+    comfyflow_api = os.getenv('COMFYFLOW_API_URL')
+    ret = requests.post(f"{comfyflow_api}/api/app/waiting/join", json={'email': email, 'app_id': app['id']}, cookies=cookies)
+    if ret.status_code == 200:
+        st.success(f"Join waiting list for app {app['name']} success")
+        return ret.json()
+    else:
+        st.error(f"Join waiting list for app {app['name']} failed, {ret.text}")
+        return None
+    
+@st.cache_data(ttl=60)
+def get_app_waiting_list():
+    comfyflow_api = os.getenv('COMFYFLOW_API_URL')
+    ret = requests.get(f"{comfyflow_api}/api/app/waiting/list", cookies=cookies)
+    if ret.status_code == 200:
+        return ret.json()
+    else:
+        st.error(f"Get my app waiting list failed, {ret.text}")
+        return None
+
+
+def  get_actived_endpoint(app):
     if 'active_endpoints' in st.session_state:
         active_nodes = st.session_state['active_endpoints']
         endpoint = app.get('endpoint', '')
@@ -227,9 +268,18 @@ def create_app_info_ui(app):
                     #### Endpoint
                     https://xxxxxxxx.comfyflow.app
                     """)
-        vip_button = app_row.button("Join Plan", help="Join plan to use app online", key=f"vip_{app['id']}")
-        if vip_button:
-            st.info("Join plan to use app online, please contact us :point_left:")
+        join_key = f"join_app_{app['id']}"
+        join_label = app['waiting'] and "Joined" or "Join"
+        join_help = app['waiting'] and "You have joined waiting list" or "Join waiting list to use app online"
+        app_row.button(join_label, type="primary", help=join_help, key=f"join_{app['id']}", on_click=click_join_app, args=(app,))
+        if join_key in st.session_state:
+            join_row = row([0.6, 0.4], vertical_align="bottom")
+            join_row.text_input("Email", key=f"join_email_{app['id']}", value=app['waiting_email'], placeholder="Please input your email")
+            join_waiting_button = join_row.button("Join waiting list", type='primary', help="Join waiting list to use app online", key=f"join_waiting_{app['id']}")
+            if join_waiting_button:
+                ret = submit_join_app(app)
+                if ret is not None:
+                    st.session_state.pop(join_key, None)
         
 
 @st.cache_data(ttl=60)
@@ -325,9 +375,18 @@ with st.container():
             active_endpoints = [node['endpoint'] for node in active_nodes]
         st.session_state['active_endpoints'] = active_endpoints
 
+        app_waiting_list = get_app_waiting_list()
+        app_waitings = {app['app_id']: app for app in app_waiting_list}
         apps = fetch_app_info()
         for app in apps:
             st.divider()
+            
+            if app['id'] in app_waitings:
+                app['waiting'] = True
+                app['waiting_email'] = app_waitings[app['id']]['email']
+            else:
+                app['waiting'] = False
+                app['waiting_email'] = None
             create_app_info_ui(app)
 
     

@@ -128,7 +128,7 @@ with st.container():
                     """)
 
         if cookies is None:
-            st.error("Please login first at home page :point_left:")
+            st.error("Please go to homepage for your login :point_left:")
             st.stop()
 
         # active node list
