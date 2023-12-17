@@ -158,7 +158,7 @@ def publish_app_ui(app, cookies):
                         st.session_state['publish_invalid_node'] = True
                     
             # parse app models
-            with st.expander("Parse comfyui node info", expanded=True):
+            with st.expander("Parse comfyui model info", expanded=True):
                 for node_id in api_data_json:
                     inputs = api_data_json[node_id]['inputs']
                     class_type = api_data_json[node_id]['class_type']
@@ -168,7 +168,13 @@ def publish_app_ui(app, cookies):
                         try:
                             if isinstance(value, str):
                                 if is_comfyui_model_path(value):
-                                    model_options = endpoint_object_info[class_type]['input']['required'][key][0]
+                                    if key in endpoint_object_info[class_type]['input']['required']:
+                                        model_options = endpoint_object_info[class_type]['input']['required'][key][0]
+                                    elif key in endpoint_object_info[class_type]['input']['optional']:
+                                        model_options = endpoint_object_info[class_type]['input']['optional'][key][0]
+                                    else:
+                                        model_options = []
+
                                     if value not in model_options:
                                         st.write(f":red[Invalid model path\, {value}]")
                                         st.session_state['publish_invalid_node'] = True
