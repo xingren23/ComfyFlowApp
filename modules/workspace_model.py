@@ -89,8 +89,7 @@ class WorkspaceModel:
         with self.session as s:
             app['status'] = AppStatus.CREATED.value
             logger.info(f"insert app: {app['name']} {app['description']}")
-            username = st.session_state.get('username', 'anonymous')
-            app['username'] = username
+            
             sql = text(f'INSERT INTO {self.app_talbe_name} (username, name, description, image, template, app_conf, api_conf, workflow_conf, status, created_at) VALUES (:username, :name, :description, :image, :template, :app_conf, :api_conf, :workflow_conf, :status, datetime("now"));')
             s.execute(sql, app)
             s.commit()
@@ -99,9 +98,9 @@ class WorkspaceModel:
         # update name, description, app_conf, could not update image, api_conf
         with self.session as s:
             logger.info(f"update app conf: {id} {name} {description} {app_conf}")
-            username = st.session_state.get('username', 'anonymous')
-            sql = text(f'UPDATE {self.app_talbe_name} SET username=:username, name=:name, description=:description, app_conf=:app_conf, updated_at=datetime("now") WHERE id=:id;')
-            s.execute(sql, dict(id=id, username=username, name=name, description=description, app_conf=app_conf))
+            
+            sql = text(f'UPDATE {self.app_talbe_name} SET name=:name, description=:description, app_conf=:app_conf, updated_at=datetime("now") WHERE id=:id;')
+            s.execute(sql, dict(id=id, name=name, description=description, app_conf=app_conf))
             s.commit()
 
     def update_app_preview(self, name):

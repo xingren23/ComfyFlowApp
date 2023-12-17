@@ -125,6 +125,11 @@ def publish_app_ui(app, cookies):
         header_row.title("✈️ Publish comfyflow app")
         header_row.button("Back Workspace", help="Back to your workspace", key='publish_back_workspace', on_click=on_publish_workspace)
 
+        # check user login
+        if not st.session_state.get('username'):
+            st.warning("Please go to homepage for your login :point_left:")
+            st.stop()
+
     with st.container():
         app_name = app.name
         api_data_json = json.loads(app.api_conf)

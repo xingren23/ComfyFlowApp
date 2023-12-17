@@ -15,6 +15,11 @@ def preview_app_ui(app):
         header_row = row([0.85, 0.15], vertical_align="top")
         header_row.title("💡 Preview and check app")
         header_row.button("Back Workspace", help="Back to your workspace", key='preview_back_workspace', on_click=on_preview_workspace)
+
+        # check user login
+        if not st.session_state.get('username'):
+            st.warning("Please go to homepage for your login :point_left:")
+            st.stop()
         
     with st.container():
         name = app.name
