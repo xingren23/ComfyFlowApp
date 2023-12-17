@@ -197,7 +197,7 @@ def submit_join_app(app):
         logger.warning(f"Invalid email {email}")
         st.error("Your email is invalid")
         return None
-    if cookies is None:
+    if not st.session_state.get('username'):
         st.error("Please go to homepage for your login :point_left:")
         return None
  
@@ -367,6 +367,9 @@ with st.container():
                 ### App Store
                 This is a simple app store, you could explore apps here.
                 """)
+        # check user login
+        if not st.session_state.get('username'):
+            st.warning("Please go to homepage for your login :point_left:")
 
         if cookies is None:
             active_endpoints = []

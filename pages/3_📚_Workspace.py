@@ -311,9 +311,6 @@ with st.container():
     elif 'preview_app' in st.session_state:
         preview_app_ui(st.session_state['preview_app'])
     elif 'publish_app' in st.session_state:    
-        if cookies is None:
-            st.warning("Please go to homepage for your login :point_left:")
-            st.stop()
         publish_app_ui(app=st.session_state['publish_app'], cookies=cookies)
     
     elif is_load_workspace_page():
@@ -324,6 +321,9 @@ with st.container():
                 create and manage your comfyflowapps.
             """)
             new_app_button = header_row.button("New App", help="Create a new app from comfyui workflow.", on_click=click_new_app)
+
+            if not st.session_state.get('username'):
+                st.warning("Please go to homepage for your login :point_left:")
            
         with st.container():
             apps = get_workspace_model().get_all_apps()

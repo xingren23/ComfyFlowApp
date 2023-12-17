@@ -104,7 +104,7 @@ def home():
         
     else: 
         with header_button:
-            auth_instance.logout("Logout")
+            auth_instance.logout(button_name="Logout", location="main", key="home_logout_button")
 
         
         with st.container():

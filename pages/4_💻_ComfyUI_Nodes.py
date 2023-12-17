@@ -127,7 +127,7 @@ with st.container():
                     Manage your comfyui nodes, bind or activate comfyui node to comfyflowapp.
                     """)
 
-        if cookies is None:
+        if not st.session_state.get('username'):
             st.error("Please go to homepage for your login :point_left:")
             st.stop()
 

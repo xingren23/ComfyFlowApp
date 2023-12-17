@@ -264,6 +264,11 @@ def gen_app_config():
 def submit_app():
     app_config = gen_app_config()
     if app_config:
+        # check user login
+        if not st.session_state.get('username'):
+            st.warning("Please go to homepage for your login :point_left:")
+            st.stop()
+
         # submit to sqlite
         if get_workspace_model().get_app(app_config['name']):
             st.session_state['create_submit_info'] = "exist"
@@ -283,6 +288,7 @@ def submit_app():
             app['status'] = 'created'
             app['template'] = 'default'
             app['image'] = img_bytesio.getvalue()
+            app['username'] = st.session_state['username']
             get_workspace_model().create_app(app)
 
             logger.info(f"submit app successfully, {app_config['name']}")
@@ -482,7 +488,11 @@ def new_app_ui():
         header_row = row([0.85, 0.15], vertical_align="top")
         header_row.title("🌱 Create app from comfyui workflow")
         header_row.button("Back Workspace", help="Back to your workspace", key="create_back_workspace", on_click=on_new_workspace)
-        
+
+        # check user login
+        if not st.session_state.get('username'):
+            st.warning("Please go to homepage for your login :point_left:")
+            st.stop()
 
     # upload workflow image and config params
     with st.expander("### :one: Upload image of comfyui workflow", expanded=True):
