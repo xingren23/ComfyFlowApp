@@ -197,7 +197,7 @@ def submit_join_app(app):
         logger.warning(f"Invalid email {email}")
         st.error("Your email is invalid")
         return None
-    if cookies is None:
+    if not st.session_state.get('username'):
         st.error("Please go to homepage for your login :point_left:")
         return None
  

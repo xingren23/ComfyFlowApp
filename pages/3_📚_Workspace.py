@@ -322,7 +322,7 @@ with st.container():
             """)
             new_app_button = header_row.button("New App", help="Create a new app from comfyui workflow.", on_click=click_new_app)
 
-            if cookies is None:
+            if not st.session_state.get('username'):
                 st.warning("Please go to homepage for your login :point_left:")
            
         with st.container():
