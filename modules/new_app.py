@@ -264,6 +264,11 @@ def gen_app_config():
 def submit_app():
     app_config = gen_app_config()
     if app_config:
+        # check user login
+        if not st.session_state.get('username'):
+            st.warning("Please go to homepage for your login :point_left:")
+            st.stop()
+
         # submit to sqlite
         if get_workspace_model().get_app(app_config['name']):
             st.session_state['create_submit_info'] = "exist"
@@ -283,6 +288,7 @@ def submit_app():
             app['status'] = 'created'
             app['template'] = 'default'
             app['image'] = img_bytesio.getvalue()
+            app['username'] = st.session_state['username']
             get_workspace_model().create_app(app)
 
             logger.info(f"submit app successfully, {app_config['name']}")
