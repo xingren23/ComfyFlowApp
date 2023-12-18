@@ -104,12 +104,15 @@ class Comfyflow:
                 return 'images', images_output
             elif 'gifs' in node_output:
                 gifs_output = []
+                format = 'gifs'
                 for gif in node_output['gifs']:
+                    if gif['format'] == 'image/gif' or gif['format'] == 'image/webp':
+                        format = 'images'
                     gif_url = self.comfy_client.get_image_url(gif['filename'], gif['subfolder'], gif['type'])
                     gifs_output.append(gif_url)
 
                 logger.info(f"Got gifs from server, {node_id}, {len(gifs_output)}")
-                return 'gifs', gifs_output
+                return format, gifs_output
         
 
     def create_ui_input(self, node_id, node_inputs):
@@ -255,7 +258,7 @@ class Comfyflow:
                                 img_placeholder.image(preview_image, use_column_width=True, caption="Preview")
                         except Exception as e:
                             logger.warning(f"get progress exception, {e}")
-                            st.warning(f"get progress exception {e}")
+                            # st.warning(f"get progress exception {e}")
                 else:
                     output_image = Image.open('./public/images/output-none.png')
                     logger.info("default output")
