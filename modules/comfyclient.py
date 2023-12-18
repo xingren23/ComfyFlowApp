@@ -53,6 +53,11 @@ class ComfyClient:
         if resp.status_code != 200:
             raise Exception(f"Failed to get image from server, {resp.status_code}")
         return resp.content
+    
+    def get_image_url(self, filename, subfolder, folder_type):
+        url = f"{self.server_addr}/view?filename={filename}&subfolder={subfolder}&type={folder_type}"
+        logger.info(f"Getting image url, {url}")
+        return url
 
     def upload_image(self, imagefile, subfolder, type, overwrite):
         data = {"subfolder": subfolder, "type": type, "overwrite": overwrite}
@@ -123,7 +128,7 @@ class ComfyClient:
                         # Dispatch executing event with msg["data"]["node"]
                         dispatch_event(queue, {"type": "executing", "data": msg["data"]["node"]})
                         if msg["data"]["node"] is None:
-                            logger.info("worflow finished, exiting websocket loop")
+                            logger.info("workflow finished, exiting websocket loop")
                             break
                     elif msg_type == "executed":
                         # Dispatch executed event with msg["data"]

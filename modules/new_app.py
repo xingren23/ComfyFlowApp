@@ -10,6 +10,7 @@ from modules import get_comfyui_object_info, get_workspace_model
 
 NODE_SEP = '||'
 FAQ_URL = "https://github.com/xingren23/ComfyFlowApp/wiki/FAQ"
+SUPPORTED_COMFYUI_CLASSTYPE_OUTPUT = ['PreviewImage', 'SaveImage', 'SaveAnimatedWEBP', 'SaveAnimatedPNG', 'VHS_VideoCombine']
 
 def format_input_node_info(param):
     # format {id}.{class_type}.{alias}.{param_name}
@@ -33,6 +34,7 @@ def process_workflow_meta(image_upload):
         logger.info(f"process_workflow_meta, {image_upload}")
         img = Image.open(image_upload)
         tran_img = ImageOps.exif_transpose(img)
+        logger.debug(f"process_workflow_meta, {tran_img.info.get('workflow')} {tran_img.info.get('prompt')}")
         return tran_img.info
     except Exception as e:
         logger.error(f"process_workflow_meta error, {e}")
@@ -68,7 +70,7 @@ def parse_prompt(prompt_info, object_info_meta):
             is_output = object_info_meta[class_type]['output_node']
             if is_output:
                 # TODO: support multi output
-                if class_type == 'SaveImage':
+                if class_type in SUPPORTED_COMFYUI_CLASSTYPE_OUTPUT:
                     option_key = f"{node_id}{NODE_SEP}{class_type}"
                     if len(node_inputs) == 0:
                         option_value = f"{node_id}{NODE_SEP}{class_type}{NODE_SEP}None"
@@ -521,7 +523,7 @@ def new_app_ui():
     with st.expander("### :one: Upload image of comfyui workflow", expanded=True):
         image_col1, image_col2 = st.columns([0.5, 0.5])
         with image_col1:
-            st.file_uploader("Upload image from comfyui outputs *", type=["png", "jpg", "jpeg"], 
+            st.file_uploader("Upload image from comfyui outputs *", type=["png", "jpg", "jpeg", "webp"], 
                                             key="create_upload_image", 
                                             help="upload image from comfyui output folder", accept_multiple_files=False)
             process_image_change()  

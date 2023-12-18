@@ -262,7 +262,7 @@ class MyAuthenticate():
 
         register_user_form.subheader(form_name)
         new_email = register_user_form.text_input('Email', value=data['email'], help='Please enter a valid email address')
-        new_username = register_user_form.text_input('Username', value=data['username'], help='Please enter a username')
+        new_username = register_user_form.text_input('Username', value=data['username'], help='Please enter a username, 0-9, a-z, A-Z, -, _, max length 20')
         new_name = register_user_form.text_input('Name', value=data['username'],help='Please enter your name')
         
         new_password = register_user_form.text_input('Password', type='password')

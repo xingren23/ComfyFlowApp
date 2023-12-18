@@ -85,7 +85,7 @@ class Comfyflow:
             prompt_id = self.comfy_client.gen_images(prompt, queue)
             st.session_state['preview_prompt_id'] = prompt_id
 
-    def get_output_images(self):
+    def get_outputs(self):
         # get output images by prompt_id
         prompt_id = st.session_state['preview_prompt_id']
         if prompt_id is None:
@@ -93,14 +93,23 @@ class Comfyflow:
         history = self.comfy_client.get_history(prompt_id)[prompt_id]
         for node_id in self.app_json['outputs']:
             node_output = history['outputs'][node_id]
+            logger.info(f"Got output from server, {node_id}, {node_output}")
             if 'images' in node_output:
                 images_output = []
                 for image in node_output['images']:
-                    image_data = self.comfy_client.get_image(image['filename'], image['subfolder'], image['type'])
-                    images_output.append(image_data)
+                    image_url = self.comfy_client.get_image_url(image['filename'], image['subfolder'], image['type'])
+                    images_output.append(image_url)
                     
                 logger.info(f"Got images from server, {node_id}, {len(images_output)}")
-                return images_output
+                return 'images', images_output
+            elif 'gifs' in node_output:
+                gifs_output = []
+                for gif in node_output['gifs']:
+                    gif_url = self.comfy_client.get_image_url(gif['filename'], gif['subfolder'], gif['type'])
+                    gifs_output.append(gif_url)
+
+                logger.info(f"Got gifs from server, {node_id}, {len(gifs_output)}")
+                return 'gifs', gifs_output
         
 
     def create_ui_input(self, node_id, node_inputs):
@@ -227,12 +236,15 @@ class Comfyflow:
                             elif event_type == 'executing':
                                 node = event['data']
                                 if node is None:
-                                    output_image = self.get_output_images()
-                                    if output_image is not None:
-                                        img_placeholder.image(output_image, use_column_width=True)
+                                    type, outputs = self.get_outputs()
+                                    if type == 'images' and outputs is not None:
+                                        img_placeholder.image(outputs, use_column_width=True)
+                                    elif type == 'gifs' and outputs is not None:
+                                        for output in outputs:
+                                            img_placeholder.markdown(f'<iframe src="{output}" width="100%" height="360px"></iframe>', unsafe_allow_html=True)
 
-                                    output_progress.progress(1.0, text="Generate image finished")
-                                    logger.info("Generating image finished")
+                                    output_progress.progress(1.0, text="Generate finished")
+                                    logger.info("Generating finished")
                                     st.session_state[f'{app_name}_previewed'] = True
                                     break
                                 else:
@@ -246,6 +258,6 @@ class Comfyflow:
                             st.warning(f"get progress exception {e}")
                 else:
                     output_image = Image.open('./public/images/output-none.png')
-                    logger.info("default output_image")
+                    logger.info("default output")
                     img_placeholder.image(output_image, use_column_width=True, caption='None Image, Generate it!')
                                 
