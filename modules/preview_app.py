@@ -3,7 +3,7 @@ from modules.comfyflow import Comfyflow
 import streamlit as st
 import modules.page as page
 from streamlit_extras.row import row
-from modules import get_comfy_client, get_inner_comfy_client, get_workspace_model
+from modules import get_comfy_client, get_workspace_model
 from modules.workspace_model import AppStatus
 
 def on_preview_workspace():
