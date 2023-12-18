@@ -9,6 +9,8 @@ from streamlit_extras.switch_page_button import switch_page
 from modules import get_comfyui_object_info, get_workspace_model
 
 NODE_SEP = '||'
+FAQ_URL = "https://github.com/xingren23/ComfyFlowApp/wiki/FAQ"
+SUPPORTED_COMFYUI_CLASSTYPE_OUTPUT = ['PreviewImage', 'SaveImage', 'SaveAnimatedWEBP', 'SaveAnimatedPNG', 'VHS_VideoCombine']
 
 def format_input_node_info(param):
     # format {id}.{class_type}.{alias}.{param_name}
@@ -32,13 +34,14 @@ def process_workflow_meta(image_upload):
         logger.info(f"process_workflow_meta, {image_upload}")
         img = Image.open(image_upload)
         tran_img = ImageOps.exif_transpose(img)
+        logger.debug(f"process_workflow_meta, {tran_img.info.get('workflow')} {tran_img.info.get('prompt')}")
         return tran_img.info
     except Exception as e:
         logger.error(f"process_workflow_meta error, {e}")
         return None
 
 
-def parse_prompt(prompt_info):
+def parse_prompt(prompt_info, object_info_meta):
     # parse prompt to inputs and outputs
     try:
         prompt = json.loads(prompt_info)
@@ -64,10 +67,10 @@ def parse_prompt(prompt_info):
                 params_inputs.update({option_key: option_value})
                 node_inputs.append(param_value)
 
-            is_output = get_comfyui_object_info()[class_type]['output_node']
+            is_output = object_info_meta[class_type]['output_node']
             if is_output:
                 # TODO: support multi output
-                if class_type == 'SaveImage':
+                if class_type in SUPPORTED_COMFYUI_CLASSTYPE_OUTPUT:
                     option_key = f"{node_id}{NODE_SEP}{class_type}"
                     if len(node_inputs) == 0:
                         option_value = f"{node_id}{NODE_SEP}{class_type}{NODE_SEP}None"
@@ -77,32 +80,37 @@ def parse_prompt(prompt_info):
                 else:
                     logger.warning(f"Only support SaveImage as output node, {class_type}")
 
-        return params_inputs, params_outputs
+        return (params_inputs, params_outputs)
     except Exception as e:
-        logger.error(f"parse_prompt error, {e}")
-        return None, None
+        st.error(f"parse_prompt error, {e} refer to {FAQ_URL}")
+        return (None, None)
 
 
 def process_image_change():
+    comfyui_object_info = st.session_state.get('comfyui_object_info')
     upload_image = st.session_state['create_upload_image']
     if upload_image:
         metas = process_workflow_meta(upload_image)
         if metas and 'prompt' in metas.keys() and 'workflow' in metas.keys():
             st.session_state['create_prompt'] = metas.get('prompt')
             st.session_state['create_workflow'] = metas.get('workflow')
-            inputs, outputs = parse_prompt(metas.get('prompt'))
-            if inputs and outputs:
+            inputs, outputs = parse_prompt(metas.get('prompt'), comfyui_object_info)
+            if inputs:
                 logger.info(f"create_prompt_inputs, {inputs}")
+                st.success(f"parse inputs from workflow image, input nodes {len(inputs)}")
                 st.session_state['create_prompt_inputs'] = inputs
-
-                logger.info(f"create_prompt_outputs, {outputs}")
-                st.session_state['create_prompt_outputs'] = outputs 
-
-                st.success("parse workflow from image successfully")
             else:
-                st.error("parse workflow from image error, inputs or outputs is None")
+                st.error(f"parse workflow from image error, inputs is None, refer to {FAQ_URL}")
+
+            if outputs:
+                logger.info(f"create_prompt_outputs, {outputs}")
+                st.success(f"parse outputs from workflow image, output nodes {len(outputs)}")
+                st.session_state['create_prompt_outputs'] = outputs
+            else:
+                st.error(f"parse workflow from image error, outputs is None, refer to {FAQ_URL}")
+            
         else:
-            st.error("the image don't contain workflow info")
+            st.error(f"the image don't contain workflow info, refer to {FAQ_URL}")
     else:
         st.session_state['create_prompt'] = None
         st.session_state['create_workflow'] = None
@@ -110,21 +118,25 @@ def process_image_change():
         st.session_state['create_prompt_outputs'] = {}
 
 def process_image_edit(api_prompt):
+    comfyui_object_info = st.session_state.get('comfyui_object_info')
     if api_prompt:
         st.session_state['create_prompt'] =api_prompt
-        inputs, outputs = parse_prompt(api_prompt)
-        if inputs and outputs:
+        inputs, outputs = parse_prompt(api_prompt, comfyui_object_info)
+        if inputs:
             logger.info(f"create_prompt_inputs, {inputs}")
+            st.success(f"parse inputs from workflow image, input nodes {len(inputs)}")
             st.session_state['create_prompt_inputs'] = inputs
-
-            logger.info(f"create_prompt_outputs, {outputs}")
-            st.session_state['create_prompt_outputs'] = outputs 
-
-            st.success("parse workflow from image successfully")
         else:
-            st.error("parse workflow from image error, inputs or outputs is None")
+            st.error(f"parse workflow from image error, inputs is None, refer to {FAQ_URL}")
+
+        if outputs:
+            logger.info(f"create_prompt_outputs, {outputs}")
+            st.success(f"parse outputs from workflow image, output nodes {len(outputs)}")
+            st.session_state['create_prompt_outputs'] = outputs
+        else:
+            st.error(f"parse workflow from image error, outputs is None, refer to {FAQ_URL}")
     else:
-        st.error("the image don't contain workflow info")
+        st.error(f"the image don't contain workflow info, refer to {FAQ_URL}")
         
 
 def get_node_input_config(input_param, app_input_name, app_input_description):
@@ -132,7 +144,7 @@ def get_node_input_config(input_param, app_input_name, app_input_description):
     option_params_value = params_inputs[input_param]
     logger.debug(f"get_node_input_config, {input_param} {option_params_value}")
     node_id, class_type, param, param_value = option_params_value.split(NODE_SEP)
-    comfyui_object_info = get_comfyui_object_info()
+    comfyui_object_info = st.session_state.get('comfyui_object_info')
     class_meta = comfyui_object_info[class_type]
     class_input = class_meta['input']['required']
     if 'optional' in class_meta['input'].keys():
@@ -327,6 +339,12 @@ def edit_app_ui(app):
         header_row.title("🌱 Edit app from comfyui workflow")
         header_row.button("Back Workspace", help="Back to your workspace", key="edit_back_workspace", on_click=on_edit_workspace)
         
+    try:
+        comfyui_object_info = get_comfyui_object_info()
+        st.session_state['comfyui_object_info'] = comfyui_object_info
+    except Exception as e:
+        st.error(f"connect to comfyui node error, {e}")
+        st.stop()
 
     # upload workflow image and config params
     with st.expander("### :one: Upload image of comfyui workflow", expanded=True):
@@ -386,19 +404,19 @@ def edit_app_ui(app):
                 input_param = input_params[0]
                 add_input_config_param(params_inputs_options, 1, input_param)
             else:
-                add_input_config_param(params_inputs_options, 1)
+                add_input_config_param(params_inputs_options, 1, None)
 
             if len(input_params) > 1:
                 input_param_2 = input_params[1]
                 add_input_config_param(params_inputs_options, 2, input_param_2)
             else:
-                add_input_config_param(params_inputs_options, 2)
+                add_input_config_param(params_inputs_options, 2, None)
             
             if len(input_params) > 2:
                 input_param_3 = input_params[2]
                 add_input_config_param(params_inputs_options, 3, input_param_3)
             else:
-                add_input_config_param(params_inputs_options, 3)
+                add_input_config_param(params_inputs_options, 3, None)
 
         with st.container():
             
@@ -424,7 +442,7 @@ def edit_app_ui(app):
                 output_param_1 = output_params[0]
                 add_output_config_param(params_outputs_options, 1, output_param_1)
             else:
-                add_output_config_param(params_outputs_options, 1)
+                add_output_config_param(params_outputs_options, 1, None)
 
     with st.container():
         operation_row = row([0.15, 0.7, 0.15])
@@ -437,7 +455,7 @@ def edit_app_ui(app):
                 st.success("Save app successfully, back your workspace")
                 st.stop()
             else:
-                st.error("Save app error, please check up app params")
+                st.error(f"Save app error, please check up app params, refer to {FAQ_URL}")
 
         operation_row.empty()
         next_placeholder = operation_row.empty()
@@ -446,7 +464,7 @@ def on_new_workspace():
     st.session_state.pop('new_app', None)
     logger.info("back to workspace")
 
-def add_input_config_param(params_inputs_options, index, input_param=None):
+def add_input_config_param(params_inputs_options, index, input_param):
     if not input_param:
         input_param = {
             'name': None,
@@ -464,7 +482,7 @@ def add_input_config_param(params_inputs_options, index, input_param=None):
     param_input_row.text_input("App Input Description", value=input_param['help'], placeholder="Param Description",
                                 key=f"input_param{index}_desc", help="Input param description")
     
-def add_output_config_param(params_outputs_options, index, output_param=None):
+def add_output_config_param(params_outputs_options, index, output_param):
     if not output_param:
         output_param = {
             'name': None,
@@ -494,13 +512,20 @@ def new_app_ui():
             st.warning("Please go to homepage for your login :point_left:")
             st.stop()
 
+    try:
+        comfyui_object_info = get_comfyui_object_info()
+        st.session_state['comfyui_object_info'] = comfyui_object_info
+    except Exception as e:
+        st.error(f"connect to comfyui node error, {e}")
+        st.stop()
+
     # upload workflow image and config params
     with st.expander("### :one: Upload image of comfyui workflow", expanded=True):
         image_col1, image_col2 = st.columns([0.5, 0.5])
         with image_col1:
-            st.file_uploader("Upload image *", type=["png", "jpg", "jpeg"], 
+            st.file_uploader("Upload image from comfyui outputs *", type=["png", "jpg", "jpeg", "webp"], 
                                             key="create_upload_image", 
-                                            help="upload image of comfyui workflow")
+                                            help="upload image from comfyui output folder", accept_multiple_files=False)
             process_image_change()  
 
         with image_col2:
@@ -530,15 +555,15 @@ def new_app_ui():
             params_inputs = st.session_state.get('create_prompt_inputs', {})
             params_inputs_options = list(params_inputs.keys())
 
-            add_input_config_param(params_inputs_options, 1)
-            add_input_config_param(params_inputs_options, 2)
-            add_input_config_param(params_inputs_options, 3)
+            add_input_config_param(params_inputs_options, 1, None)
+            add_input_config_param(params_inputs_options, 2, None)
+            add_input_config_param(params_inputs_options, 3, None)
         with st.container():
             st.markdown("Output Params:")
             params_outputs = st.session_state.get('create_prompt_outputs', {})
             params_outputs_options = list(params_outputs.keys())
 
-            add_output_config_param(params_outputs_options, 1)
+            add_output_config_param(params_outputs_options, 1, None)
             
     
     with st.container():
@@ -554,7 +579,7 @@ def new_app_ui():
             elif submit_info == 'exist':
                 st.error("Submit app error, app name has existed")
             else:
-                st.error("Submit app error, please check up app params")
+                st.error(f"Submit app error, please check up app params, refer to {FAQ_URL}")
 
         operation_row.empty()
 

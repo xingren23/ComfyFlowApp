@@ -83,7 +83,7 @@ enableXsrfProtection = true
 # Max size, in megabytes, for files uploaded with the file_uploader.
 
 # Default: 200
-maxUploadSize = 10
+maxUploadSize = 20
 
 # Max size, in megabytes, of messages that can be sent via the WebSocket
 # connection.
