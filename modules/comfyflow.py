@@ -97,8 +97,10 @@ class Comfyflow:
             if 'images' in node_output:
                 images_output = []
                 for image in node_output['images']:
-                    image_url = self.comfy_client.get_image_url(image['filename'], image['subfolder'], image['type'])
-                    images_output.append(image_url)
+                    # image_url = self.comfy_client.get_image_url(image['filename'], image['subfolder'], image['type'])
+                    # images_output.append(image_url)
+                    image_data = self.comfy_client.get_image(image['filename'], image['subfolder'], image['type'])
+                    images_output.append(image_data)
                     
                 logger.info(f"Got images from server, {node_id}, {len(images_output)}")
                 return 'images', images_output
