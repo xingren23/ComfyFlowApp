@@ -68,7 +68,7 @@ baseUrlPath = ""
 # `server.enableXsrfProtection`.
 
 # Default: true
-enableCORS = true
+enableCORS = false
 
 # Enables support for Cross-Site Request Forgery (XSRF) protection, for added
 # security.
@@ -78,7 +78,7 @@ enableCORS = true
 # `server.enableXsrfProtection`.
 
 # Default: true
-enableXsrfProtection = true
+enableXsrfProtection = false
 
 # Max size, in megabytes, for files uploaded with the file_uploader.
 
