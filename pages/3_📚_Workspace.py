@@ -198,7 +198,7 @@ def create_operation_ui(app):
     if st.session_state.get('username', 'anonymous') == app.username:
         disabled = False
 
-    operate_row = row([1.2, 1.0, 1.1, 1.2, 1.0, 1.0, 1.1, 1.2, 1.2], vertical_align="bottom")
+    operate_row = row([1.2, 1.0, 1.1, 1.2, 1.1, 1.2, 1.2], vertical_align="bottom")
     preview_button = operate_row.button("✅ Preview", help="Preview and check the app", 
                                         key=f"{id}-button-preview", 
                                         on_click=click_preview_app, args=(app,), disabled=disabled)
@@ -234,33 +234,33 @@ def create_operation_ui(app):
                 st.error(f"Install app {name} failed, please check the log")
 
 
-    start_button = operate_row.button("▶️ Start", help="Start the app", key=f"{id}-button-start", 
-                       on_click=click_start_app, args=(name, id, status), disabled=disabled)
-    if start_button:
-        if ready_start_app(status):
-            app_preview_ret = st.session_state['app_start_ret']
-            if app_preview_ret == AppStatus.RUNNING.value:
-                st.info(f"App {name} is running yet, you could share {url} to your friends")
-            elif app_preview_ret == AppStatus.STARTED.value:
-                st.success(f"Start app {name} success, you could share {url} to your friends")
-            else:
-                st.error(f"Start app {name} failed")
-        else:
-            st.warning(f"Please preview the app {name} first")
+    # start_button = operate_row.button("▶️ Start", help="Start the app", key=f"{id}-button-start", 
+    #                    on_click=click_start_app, args=(name, id, status), disabled=disabled)
+    # if start_button:
+    #     if ready_start_app(status):
+    #         app_preview_ret = st.session_state['app_start_ret']
+    #         if app_preview_ret == AppStatus.RUNNING.value:
+    #             st.info(f"App {name} is running yet, you could share {url} to your friends")
+    #         elif app_preview_ret == AppStatus.STARTED.value:
+    #             st.success(f"Start app {name} success, you could share {url} to your friends")
+    #         else:
+    #             st.error(f"Start app {name} failed")
+    #     else:
+    #         st.warning(f"Please preview the app {name} first")
         
-    stop_button = operate_row.button("⏹️ Stop", help="Stop the app", key=f"{id}-button-stop",
-                       on_click=click_stop_app, args=(name, status, url), disabled=disabled)
-    if stop_button:
-        if ready_start_app(status):
-            app_stop_ret = st.session_state['app_stop_ret']
-            if app_stop_ret == AppStatus.STOPPING.value:
-                st.success(f"Stop app {name} success, {url}")
-            elif app_stop_ret == AppStatus.STOPPED.value:
-                st.success(f"App {name} has stopped, {url}")
-            else:
-                st.error(f"Stop app {name} failed, please check the log")
-        else:
-            st.warning(f"Please preview the app {name} first")        
+    # stop_button = operate_row.button("⏹️ Stop", help="Stop the app", key=f"{id}-button-stop",
+    #                    on_click=click_stop_app, args=(name, status, url), disabled=disabled)
+    # if stop_button:
+    #     if ready_start_app(status):
+    #         app_stop_ret = st.session_state['app_stop_ret']
+    #         if app_stop_ret == AppStatus.STOPPING.value:
+    #             st.success(f"Stop app {name} success, {url}")
+    #         elif app_stop_ret == AppStatus.STOPPED.value:
+    #             st.success(f"App {name} has stopped, {url}")
+    #         else:
+    #             st.error(f"Stop app {name} failed, please check the log")
+    #     else:
+    #         st.warning(f"Please preview the app {name} first")        
 
     operate_row.markdown("")
 
