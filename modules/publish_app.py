@@ -65,20 +65,27 @@ def get_model_meta(model_url):
         return civitai_meta
 
 @st.cache_data(ttl=60*60)
-def get_endpoint_object_info(endpoint):
-    ret = requests.get(f"{endpoint}/object_info")
+def get_endpoint_object_info():
+    endpoint_opt = st.session_state.get('publish_endpoint', None)
+    if not endpoint_opt:
+        st.session_state['endpoint_object_info'] = None
+        return
+    
+    endpoint = endpoint_opt.split('\t')[1]
+    object_info_url = f"{endpoint}/object_info"
+    ret = requests.get(object_info_url)
     if ret.status_code != 200:
-        logger.error(f"Failed to get comfyflow object info, {ret.content}")
-        return None
+        logger.error(f"Failed to get comfyui {object_info_url}, {ret.content}")
+        st.session_state['endpoint_object_info'] = None
     else:
-        return ret.json()
+        st.session_state['endpoint_object_info'] = ret.json()
 
 
-def get_node_endpoint(session_cookie):
-    api_url = f'{os.environ.get("COMFYFLOW_API_URL")}/api/node/list' 
+def get_node_all(session_cookie):
+    api_url = f'{os.environ.get("COMFYFLOW_API_URL")}/api/node/all' 
     req = requests.get(api_url, cookies=session_cookie)
     if req.status_code == 200:
-        logger.info(f"get node list, {req.json()}")
+        logger.info(f"get all node list, {req.json()}")
         return req.json()
     else:
         return None
@@ -103,8 +110,8 @@ def do_publish_app(name, description, image, app_conf, api_conf, workflow_conf, 
         st.error(f"publish app failed, {name} {ret.content}")
         return ret
     else:
-        logger.info(f"publish app success, {name}")
-        st.success(f"publish app success, {name}")
+        logger.info(f"publish app success, {name}， please preview on https://comfyflow.app")
+        st.success(f"publish app success, {name},  please preview on https://comfyflow.app")
         return ret
 
 def on_publish_workspace():
@@ -116,6 +123,7 @@ def is_comfyui_model_path(model_path):
         if isinstance(model_path, str) and model_path.endswith(ext):
             return True
     return False
+
 
 def publish_app_ui(app, cookies):
     logger.info("Loading publish page")
@@ -136,18 +144,29 @@ def publish_app_ui(app, cookies):
         app_data_json = json.loads(app.app_conf)
         
         # select endpoint
-        nodes = get_node_endpoint(cookies) 
+        nodes = get_node_all(cookies) 
         if not nodes:
             st.info("No comfyui node found, manage your comfyui node on website: https://comfyflow.app ")
             st.stop()
 
-        endpoint_options = [node['endpoint'] for node in nodes]
-        endpoint = st.selectbox("Select endpoint", endpoint_options, key='publish_endpoint', index=0, help="Select endpoint to publish app")
+        endpoint_options = []
+        for pool_name, pool in nodes.items():
+            if pool_name == 'common':
+                tag = 'Common Comfyui Instances'
+            elif pool_name == 'mine':
+                tag = 'Mine Comfyui Instances'
+            else:
+                tag = 'Other Comfyui Instances'
+            for node in pool:
+                endpoint_options.append(f"[{tag}]\t{node['endpoint']}\t")
+        endpoint = st.selectbox(":red[Select endpoint]", endpoint_options, placeholder="Choose a ComfyUI Instance...", key='publish_endpoint', index=None, help="Select endpoint to publish app", on_change=get_endpoint_object_info)
+        if not endpoint:
+            st.stop()
 
         # get endpoint object info
-        endpoint_object_info = get_endpoint_object_info(endpoint)
+        endpoint_object_info = st.session_state.get('endpoint_object_info', None)
         if not endpoint_object_info:
-            st.error(f"Failed to get comfyui {endpoint} object info, please check comfyui node.")
+            st.error(f"Failed to get comfyui {endpoint}/object_info, please check comfyui node.")
             st.stop()
         else:
             # parse app nodes
@@ -181,81 +200,24 @@ def publish_app_ui(app, cookies):
                                         model_options = []
 
                                     if value not in model_options:
-                                        st.write(f":red[Invalid model path\, {value}]")
-                                        st.session_state['publish_invalid_node'] = True
+                                        st.write(f":blue[Invalid model path\, {value}]")
                                     else:
                                         st.write(f":green[Check model path\, {value}]")
                             elif isinstance(value, dict):
                                 for k, v in value.items():
-                                    # 棕色 
                                     if is_comfyui_model_path(v):
                                         st.write(f":green[ignore path\, {k} {value}]")
                                     
                         except Exception as e:
-                            st.write(f":red[Invalid model path\, {value}]")
-                            st.session_state['publish_invalid_node'] = True
+                            st.write(f":blue[Invalid model path\, {value}]")
 
-        # # config app models
-        # with st.expander("Config app models", expanded=True):
-        #     if 'object_model' in st.session_state:
-        #         object_model = st.session_state['object_model']
-        #         for node_id in api_data_json:
-        #             inputs = api_data_json[node_id]['inputs']
-        #             class_type = api_data_json[node_id]['class_type']
-        #             if class_type in object_model:
-        #                 model_name_path = object_model[class_type]
-        #                 input_model_row = row([0.5, 0.5])
-        #                 for param in inputs:
-        #                     if param in model_name_path:
-        #                         model_input_name = f"{node_id}:{class_type}:{inputs[param]}"
-        #                         input_model_row.text_input("App model name", value=model_input_name, help="App model name")
-        #                         input_model_row.text_input("Input model url", key=model_input_name, help="Input model url of huggingface model hub")
-        #     else:
-        #         st.error(f"{st.session_state['get_comfyflow_model_info_error']}")
-        #         st.stop()
                                                         
         publish_button = st.button("Publish", key='publish_button', type='primary', 
                       help="Publish app to store and share with your friends")
         if publish_button:
             if st.session_state.get('publish_invalid_node', False):
-                st.warning("Invalid node, please check node info.")
+                st.warning("Invalid custom node, please check custom node info.")
             else:
-                # # check model url
-                # model_size = 0
-                # models = {}
-                # for node_id in api_data_json:
-                #     inputs = api_data_json[node_id]['inputs']
-                #     class_type = api_data_json[node_id]['class_type']
-                #     if class_type in object_model:
-                #         model_node_inputs = {}
-                #         model_name_path = object_model[class_type]
-                #         for param in inputs:
-                #             if param in model_name_path:
-                #                 model_path = model_name_path[param]
-                #                 model_input_name = f"{node_id}:{class_type}:{inputs[param]}"
-                #                 if not st.session_state[model_input_name]:
-                #                     st.warning(f"Please input model url for {model_input_name}")
-                #                     st.stop()
-                #                 else:
-                #                     model_url = st.session_state[model_input_name]
-                #                     model_meta = get_model_meta(model_url)
-                #                     if model_meta:
-                #                         model_node_inputs[param] = {
-                #                             "url": model_meta['model_url'],
-                #                             "size": model_meta['size'],
-                #                             "path": model_path,
-                #                         }
-                #                     else:
-                #                         st.warning(f"Invalid model url for {model_input_name}")
-                #                         st.stop()
-                #         if model_node_inputs:
-                #             models[node_id] = {"inputs": model_node_inputs}
-                    
-                # # update app_conf and status
-                # app_data_json['models'] = models
-                # app_data = json.dumps(app_data_json)
-                # logger.info(f"update models, {app_data}")
-                # get_workspace_model().update_app_publish(app_name, app_data)
 
                 # convert image to base64
                 image_base64 = base64.b64encode(app.image).decode('utf-8')

@@ -32,6 +32,15 @@ def get_active_nodes(session_cookie):
     else:
         return None
     
+def get_common_nodes(session_cookie):
+    api_url = f'{os.environ.get("COMFYFLOW_API_URL")}/api/node/commons' 
+    req = requests.get(api_url, cookies=session_cookie)
+    if req.status_code == 200:
+        logger.debug(f"get common node list, {req.json()}")
+        return req.json()
+    else:
+        return None
+    
 def submit_new_key(session_cookie, idx):
     keyname = st.session_state[f"{idx}_new_key_name"]
     logger.debug(f"click new key, {idx}, {keyname}")
@@ -131,6 +140,27 @@ with st.container():
             st.error("Please go to homepage for your login :point_left:")
             st.stop()
 
+        # common node list
+        with st.container():
+            st.divider()
+            common_nodes = get_common_nodes(cookies)
+            st.subheader(f"Common node list, total {len(common_nodes)} nodes.")
+            for node in common_nodes:
+                st.divider()
+                node_row_header = row([0.2, 0.25, 0.3, 0.1, 0.15], vertical_align="buttom")
+                fields = ["Name", "Description", "Endpoint", "Status", "Created"]
+                # header
+                for field in fields:
+                    node_row_header.write("**" + field + "**")
+                    
+                # node info
+                node_info_row = row([0.2, 0.25, 0.3, 0.1, 0.15], vertical_align="buttom")
+                node_info_row.write(node["name"])
+                node_info_row.write(node["description"])
+                node_info_row.write(node["endpoint"])
+                node_info_row.write(node["status"])
+                node_info_row.write(node["created_at"].split("T")[0])
+
         # active node list
         with st.container():
             active_nodes = get_active_nodes(cookies)
@@ -138,7 +168,7 @@ with st.container():
             st.divider()
             with page.stylable_button_container():
                 active_row = row([0.85, 0.15], vertical_align="bottom")
-                active_row.subheader(f"Your active node list, total {len(active_nodes)} nodes.")
+                active_row.subheader(f"Actived node list, total {len(active_nodes)} nodes.")
                 active_node_button = active_row.button("Active Node")
             if active_node_button:
                 with st.form(key="active_node_form"):
@@ -172,7 +202,7 @@ with st.container():
             st.divider()
             with page.stylable_button_container():
                 nodes_row = row([0.85, 0.15], vertical_align="buttom")
-                nodes_row.subheader(f"Your node list, total {len(nodes)} nodes.")
+                nodes_row.subheader(f"My node list, total {len(nodes)} nodes.")
                 new_node_button = nodes_row.button("New Node")
                 if new_node_button:
                     with st.form(key="new_node_form"):
