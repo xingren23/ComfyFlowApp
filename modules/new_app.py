@@ -5,8 +5,7 @@ import json
 import streamlit as st
 import modules.page as page
 from streamlit_extras.row import row
-from streamlit_extras.switch_page_button import switch_page
-from modules import get_comfyui_object_info, get_workspace_model
+from modules import get_comfyui_object_info, get_workspace_model, check_comfyui_alive
 
 NODE_SEP = '||'
 FAQ_URL = "https://github.com/xingren23/ComfyFlowApp/wiki/FAQ"
@@ -336,10 +335,15 @@ def on_edit_workspace():
 def edit_app_ui(app):
     with page.stylable_button_container():
         header_row = row([0.85, 0.15], vertical_align="top")
-        header_row.title("🌱 Edit app from comfyui workflow")
+        header_row.title("🌱 Edit app")
         header_row.button("Back Workspace", help="Back to your workspace", key="edit_back_workspace", on_click=on_edit_workspace)
         
     try:
+        if not check_comfyui_alive():
+            logger.warning("ComfyUI server is not alive, please check it")
+            st.error(f"Edit app {app.name} error, ComfyUI server is not alive")
+            st.stop()
+    
         comfyui_object_info = get_comfyui_object_info()
         st.session_state['comfyui_object_info'] = comfyui_object_info
     except Exception as e:
@@ -513,6 +517,11 @@ def new_app_ui():
             st.stop()
 
     try:
+        if not check_comfyui_alive():
+            logger.warning("ComfyUI server is not alive, please check it")
+            st.error(f"New app error, ComfyUI server is not alive")
+            st.stop()
+    
         comfyui_object_info = get_comfyui_object_info()
         st.session_state['comfyui_object_info'] = comfyui_object_info
     except Exception as e:

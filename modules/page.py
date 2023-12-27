@@ -17,8 +17,6 @@ def change_mode_pages(mode):
     all_pages = get_pages(main_script_path)
     if mode == "Creator":
         pages = ['Home', 'Workspace', "My_Apps"]
-    elif mode == "Explore":
-        pages = ['Home', 'App_Store', 'ComfyUI_Nodes']
     else:
         pages = [page['page_name'] for _, page in all_pages.items()]
     logger.info(f"pages: {pages}, mode: {mode}")
@@ -38,8 +36,6 @@ def init_env_default():
         os.environ.setdefault('COMFYFLOW_API_URL', st.secrets['COMFYFLOW_API_URL'])
     if 'COMFYUI_SERVER_ADDR' in st.secrets:
         os.environ.setdefault('COMFYUI_SERVER_ADDR', st.secrets['COMFYUI_SERVER_ADDR'])
-    if 'INNER_COMFYUI_SERVER_ADDR' in st.secrets:
-        os.environ.setdefault('INNER_COMFYUI_SERVER_ADDR', st.secrets['INNER_COMFYUI_SERVER_ADDR'])
     
     if 'DISCORD_CLIENT_ID' in st.secrets:
         os.environ.setdefault('DISCORD_CLIENT_ID', st.secrets['DISCORD_CLIENT_ID'])
