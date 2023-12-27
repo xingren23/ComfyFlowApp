@@ -153,7 +153,7 @@ def publish_app_ui(app, cookies):
                         missing_models.append({class_type: value})
 
         with st.container():
-            operation_row = row([3, 6.2, 0.8])
+            operation_row = row([3, 6, 1])
 
             missing_button = operation_row.button("Request missing nodes and models", key='missing_button', 
                       help="Request missing comfyui custom nodes and models", disabled=len(missing_nodes) == 0 and len(missing_models) == 0)

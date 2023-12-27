@@ -82,8 +82,13 @@ class Comfyflow:
                             
             logger.info(f"Sending prompt to server, {prompt}")
             queue = st.session_state.get('progress_queue', None)
-            prompt_id = self.comfy_client.gen_images(prompt, queue)
-            st.session_state['preview_prompt_id'] = prompt_id
+            try:
+                prompt_id = self.comfy_client.gen_images(prompt, queue)
+                st.session_state['preview_prompt_id'] = prompt_id
+                logger.info(f"generate prompt id: {prompt_id}")
+            except Exception as e:
+                st.session_state['preview_prompt_id'] = None
+                logger.warning(f"generate prompt error, {e}")
 
     def get_outputs(self):
         # get output images by prompt_id
@@ -223,6 +228,10 @@ class Comfyflow:
                 progress_placeholder = st.empty()
                 img_placeholder = st.empty()
                 if gen_button:
+                    if st.session_state['preview_prompt_id'] is None:
+                        st.warning("Generate failed, please check ComfyFlowApp and ComfyUI console log.")
+                        st.stop()
+
                     # update progress
                     output_progress = progress_placeholder.progress(value=0.0, text="Generate image")
                     while True:
