@@ -48,30 +48,6 @@ def create_app_info_ui(app):
                     {app.status}
                     """)
 
-@st.cache_data(ttl=60*60)
-def get_comfyflow_object_info(cookies):
-    comfyflow_api = os.getenv('COMFYFLOW_API_URL')
-    # request comfyflow object info
-    object_info = requests.get(f"{comfyflow_api}/api/comfyflow/object_info", cookies=cookies)
-    if object_info.status_code != 200:
-        logger.error(f"Get comfyflow object info failed, {object_info.text} {cookies}")
-        st.session_state['get_comfyflow_object_info_error'] = f"Get comfyflow object info failed, {object_info.text}"
-        return None
-    logger.info(f"get_comfyflow_object_info, {object_info}")
-    return object_info.json()
-
-@st.cache_data(ttl=60*60)
-def get_comfyflow_model_info(cookies):
-    comfyflow_api = os.getenv('COMFYFLOW_API_URL')
-    # request comfyflow object info
-    model_info = requests.get(f"{comfyflow_api}/api/comfyflow/model_info", cookies=cookies)
-    if model_info.status_code != 200:
-        logger.error(f"Get comfyflow model info failed, {model_info.text}")
-        st.session_state['get_comfyflow_model_info_error'] = f"Get comfyflow model info failed, {model_info.text}"
-        return None
-    logger.info(f"get_comfyflow_model_info, {model_info}")
-    return model_info.json()     
-
 
 def click_new_app():
     logger.info("new app...")
@@ -99,21 +75,6 @@ def click_publish_app(app):
     if app.status == AppStatus.CREATED.value:
         logger.warning(f"Please preview the app {app.name} first")
         return
-    
-    if 'token_cookie' in st.session_state:
-        object_info = get_comfyflow_object_info(cookies)
-        if object_info is None:
-            return
-        else:
-            st.session_state['object_info'] = object_info
-            
-        object_model = get_comfyflow_model_info(cookies)
-        if object_model is None:
-            return
-        else:
-            st.session_state['object_model'] = object_model
-    else:
-        return 
 
     logger.info(f"publish app: {app.name} status: {app.status}")
     st.session_state['publish_app'] = app
@@ -198,7 +159,7 @@ def create_operation_ui(app):
     if st.session_state.get('username', 'anonymous') == app.username:
         disabled = False
 
-    operate_row = row([1.2, 1.0, 1.1, 1.2, 1.1, 1.2, 1.2], vertical_align="bottom")
+    operate_row = row([1.2, 1.0, 1.1, 1.1, 3.3, 1.1, 1.2], vertical_align="bottom")
     preview_button = operate_row.button("✅ Preview", help="Preview and check the app", 
                                         key=f"{id}-button-preview", 
                                         on_click=click_preview_app, args=(app,), disabled=disabled)
@@ -264,7 +225,7 @@ def create_operation_ui(app):
 
     operate_row.markdown("")
 
-    operate_row.button("🚮 Delete", help="Delete the app", key=f"{id}-button-delete", 
+    operate_row.button("❌ Delete", help="Delete the app", key=f"{id}-button-delete", 
                        on_click=click_delete_app, args=(name,), disabled=disabled)
     
     publish_button = operate_row.button("✈️ Publish", help="Publish the app with template", 

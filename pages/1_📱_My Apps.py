@@ -61,31 +61,24 @@ with st.container():
     container_empty = st.empty()
     if 'enter_app' in st.session_state:
         app = st.session_state['enter_app']
-        if check_comfyui_alive():
-            logger.info(f"Start app ..., {app.name}")
-            enter_app_ui(app)
-        else:
-            st.warning("ComfyUI server is not alive, please check your comfyui server.")
+        logger.info(f"Start app ..., {app.name}")
+        enter_app_ui(app)
     else:
-        with container_empty:
-            with st.container():
-                
-                with page.stylable_button_container():
-                    header_row = row([0.85, 0.15], vertical_align="bottom")
-                    header_row.title("My Apps")
-                    explore_button = header_row.button(
-                        "Install", help="Install more apps from your workspace.")
-                    if explore_button:
-                        switch_page("Workspace")
+        with page.stylable_button_container():
+            header_row = row([0.85, 0.15], vertical_align="bottom")
+            header_row.title("My Apps")
+            explore_button = header_row.button(
+                    "Install", help="Install more apps from your workspace.")
+            if explore_button:
+                switch_page("Workspace")
 
-                with st.container():
-                    apps = get_workspace_model().get_installed_apps()
-                    if len(apps) == 0:
-                        st.divider()
-                        st.info(
-                            "No apps, you could create and install app from your workspace")
-                    else:
-                        for app in apps:
-                            st.divider()
-                            logger.info(f"load app info for {app.name} {app}")
-                            create_app_info_ui(app)
+        with st.container():
+            apps = get_workspace_model().get_installed_apps()
+            if len(apps) == 0:
+                st.divider()
+                st.info("No apps, you could create and install app from your workspace")
+            else:
+                for app in apps:
+                    st.divider()
+                    logger.info(f"load app info for {app.name} {app}")
+                    create_app_info_ui(app)
