@@ -4,9 +4,10 @@
 
 ## ComfyFlowApp 是什么？
 
-ComfyFlowApp 是一个 ComfyUI 的扩展工具， 可以轻松从 ComfyUI 的工作流开发出一个简单易用的应用，降低 ComfyUI 的使用门槛。
+ComfyFlowApp 是一个 ComfyUI 的扩展工具， 可以轻松从 ComfyUI 工作流开发出一个简单易用的 Web 应用，降低 ComfyUI 的使用门槛。
 如下图所示，将一个人像修复的工作流开发成一个 ComfyFlowApp 应用。
 ![图1](docs/images/demo-workflow.png)
+
 ![图2](docs/images/demo-webapp.png)
 
 ### ComfyFlowApp 有什么用？
@@ -24,44 +25,32 @@ ComfyFlowApp 是一个 ComfyUI 的扩展工具， 可以轻松从 ComfyUI 的工
 **总结，ComfyFlowApp 帮助工作流开发者简化工作流的使用难度，用户只需要像普通应用一样使用即可。**
 
 
-### ComfyFlowApp 的运行方式
+### 使用场景
 
-ComfyFlowApp ：用户（也是创作者）可以将 ComfyUI 工作流转换为一个 Web 应用，并分享给其他用户使用。
+![How-to-use-it](./docs/images/how-to-use-it.png)
 
-::: tip
+**1. 企业内部协作**
 
-[comfyflow.app](https://comfyflow.app/) 是一个上传分发 ComfyUI Web 应用的平台。
+* 创作者在ComfyUI中开发工作流，并使用ComfyFlowApp将这些工作流产品化为Web应用。
+* 使用者通过ComfyFlowApp使用这些工作流应用，以提高工作效率。
 
-:::
+**2. 远程企业协作**
 
-工作流如下图所示：
-![How-it-works](./docs/images/how-it-works.png)
+* 将ComfyUI和ComfyFlowApp部署到像RunPod/Vast.ai/AWS这样的云服务上，并将服务器端口映射为公网访问，例如https://{POD_ID}-{INTERNAL_PORT}.proxy.runpod.net。
+* 创作者在ComfyUI中开发工作流，并使用ComfyFlowApp将这些工作流产品化为Web应用。
+* 使用者通过ComfyFlowApp使用这些工作流应用，以提高工作效率。
 
-### 典型使用场景
+**3. SaaS服务**
 
-**1）工作室或企业内部的分工协作**
-
-工作室或企业内部处于分工协作的需求，并不要求每个人都懂 AI，懂各种模型，懂工作流搭建，典型的协作场景：一个人或几个人来构建 AI 应用，其他用户直接使用。
-
-1. 开发者在 ComfyUI 中开发工作流，测试出满意的效果，保存工作流；
-2. 开发者使用 ComfyFlowApp 工具 Creator，从工作流转换为一个 Web 应用，隐藏无关的细节参数，让应用简单易用；
-3. 开发者启动应用，并将地址分享给工作室或企业内部的用户使用；
-4. 其他用户通过分享的应用地址访问开发者部署的应用；
-
-**2）专业创造者或团队，开发并将应用分享给更多人使用**
-
-通过 ComfyUI 工具，专业的创作者或团队可以开发出很有价值的应用，但 ComfyUI 对普通来说使用门槛太高；使用 ComfyFlowApp 将工作流开发成一个面向更大众用户的应用，可以创造更大的价值。
-
-1. 开发者在 ComfyUI 中开发工作流，测试出满意的效果，保存工作流；
-2. 开发者使用 ComfyFlowApp 工具 Creator，从工作流转换为一个 Web 应用，隐藏无关的细节参数，让应用简单易用；
-3. 开发者将应用发布的应用市场；
-4. 其他用户从应用市场发现并下载应用，本地运行应用；
+* ComfyFlowApp提供应用托管运行环境，包括模型和ComfyUI扩展节点。
+* 创作者将其工作流应用发布到ComfyFlowApp。
+* 用户订阅使用这些工作流应用。
 
 关注本项目，获取最新动态。
 
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/comfyflow)
-
 ### 快速开始
+
+ComfyFlowApp 提供了一个测试账号：demo 密码：comfyflowapp，为了更好的用户体验，你可以在 https://comfyflow.app 注册自己的账号。
 
 ```bash
 # 下载项目

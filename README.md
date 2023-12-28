@@ -28,34 +28,35 @@ If you need to share workflows developed in ComfyUI with other users, ComfyFlowA
 
 **In summary, ComfyFlowApp make comfyui workflow easy to use.**
 
-### How Does ComfyFlowApp Work?
 
-ComfyFlowApp: Users (also creators) can develop a web application from the ComfyUI workflow in seconds, and share it with other users.
+### Use Cases
 
-::: tip
+![How-to-use-it](./docs/images/how-to-use-it.png)
 
-[comfyflow.app](https://comfyflow.app/) is a platform for uploading and distributing ComfyUI web applications.
+**1. For internal corporate collaboration**
 
-:::
+* Creators develop workflows in ComfyUI and productize these workflows into web applications using ComfyFlowApp.
+* Users access and utilize the workflow applications through ComfyFlowApp to enhance work efficiency.
 
-The workflow is shown below:
-![How-it-works](./docs/images/how-it-works.png)
+**2. For remote corporate collaboration**
 
-### Typical Use Cases
+* Deploy ComfyUI and ComfyFlowApp to cloud services like RunPod/Vast.ai/AWS, and map the server ports for public access, such as https://{POD_ID}-{INTERNAL_PORT}.proxy.runpod.net.
+* Creators develop workflows in ComfyUI and productize these workflows into web applications using ComfyFlowApp.
+* Users access and utilize these workflow applications through ComfyFlowApp to enhance work efficiency.
 
-1. Studio or Internal Business Collaboration
+**3. For SaaS services**
 
-   In scenarios where a studio or internal business needs collaborative work division and not everyone needs to understand AI, various models, and workflow construction, a typical collaboration scenario involves one or a few developers building an AI application within ComfyUI, achieving satisfactory results, and saving the workflow. Then, developers use ComfyFlowApp's Creator tool to convert the workflow into a web application, hiding irrelevant fine-tuning parameters, making the application simple and easy to use. Developers can then share the application's address with other users within the studio or the company, who can access the deployed application through the shared address.
-
-2. Professional Creators or Teams, Developing and Sharing Applications with a Wider Audience
-
-   Professional creators or teams can use ComfyUI tools to develop valuable applications, but the usability of ComfyUI may be too high for the normal user. By using ComfyFlowApp to transform a workflow into an application suitable for a broader audience, developers can create more value. This process typically involves developers creating a workflow in ComfyUI, achieving satisfactory results, and saving the workflow. Developers then use ComfyFlowApp's Creator tool to convert the workflow into a web application, hiding irrelevant fine-tuning parameters, and making the application easy to use. After that, developers can publish the application in an app store, allowing other users to discover and download the application and run it locally.
+* ComfyFlowApp provides an application hosting environment, including the model and ComfyUI extension nodes.
+* Creators publish their workflow applications to ComfyFlowApp.
+* Users subscribe to use the workflow applications.
 
 **Follow the repo to get the latest updates.**
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/comfyflow)
 
 ### 📌 Quick Start
+
+ComfyFlowApp offers an in-built test account(username: demo) with the credentials(password: comfyflowapp). For an enhanced user experience, please sign up your account at https://comfyflow.app.
 
 ```bash
 # download project
