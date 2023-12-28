@@ -52,7 +52,6 @@ If you need to share workflows developed in ComfyUI with other users, ComfyFlowA
 
 **Follow the repo to get the latest updates.**
 
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/comfyflow)
 
 ### 📌 Quick Start
 
