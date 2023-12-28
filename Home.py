@@ -55,11 +55,11 @@ with st.container():
             st.markdown(f"Hello, {name}({username}) :smile:")
             
             st.markdown("""
-                        ## 📌 What is ComfyFlowApp?
+                        ### 📌 What is ComfyFlowApp?
                         ComfyFlowApp is an extension tool for ComfyUI, making it easy to develop a user-friendly web application from a ComfyUI workflow and share it with others.
                         """)
             st.markdown("""
-                        ### Why You Need ComfyFlowApp? 
+                        ### 📌 Why You Need ComfyFlowApp? 
                         ComfyFlowApp helps creator to develop a web app from comfyui workflow in seconds.
 
                         If you need to share workflows developed in ComfyUI with other users, ComfyFlowApp can significantly lower the barrier for others to use your workflows:
@@ -71,7 +71,7 @@ with st.container():
                         
                         """)
             st.markdown("""
-                        ### Typical Use Cases
+                        ### 📌 Use Cases
                         """)
             st.image("./docs/images/how-to-use-it.png", use_column_width=True)
             st.markdown("""
