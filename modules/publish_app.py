@@ -94,6 +94,9 @@ def publish_app_ui(app, cookies):
         if not st.session_state.get('username'):
             st.warning("Please go to homepage for your login :point_left:")
             st.stop()
+        elif st.session_state['username'] == 'demo':
+            st.warning("Account(demo) is a test account, Please login your account to publish app :point_left:")
+            st.stop()
 
     with st.container():
         api_data_json = json.loads(app.api_conf)
