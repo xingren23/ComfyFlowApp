@@ -159,7 +159,7 @@ def create_operation_ui(app):
     if st.session_state.get('username', 'anonymous') == app.username:
         disabled = False
 
-    operate_row = row([1.2, 1.0, 1.1, 1.1, 3.3, 1.1, 1.2], vertical_align="bottom")
+    operate_row = row([1.2, 1.0, 1.1, 1.1, 4.5, 1.1], vertical_align="bottom")
     preview_button = operate_row.button("✅ Preview", help="Preview and check the app", 
                                         key=f"{id}-button-preview", 
                                         on_click=click_preview_app, args=(app,), disabled=disabled)
@@ -228,15 +228,16 @@ def create_operation_ui(app):
     operate_row.button("❌ Delete", help="Delete the app", key=f"{id}-button-delete", 
                        on_click=click_delete_app, args=(name,), disabled=disabled)
     
-    publish_button = operate_row.button("✈️ Publish", help="Publish the app with template", 
-                                        key=f"{id}-button-publish",
-                                        on_click=click_publish_app, args=(app,), disabled=disabled)
-    if publish_button:
-        if status == AppStatus.CREATED.value:
-            st.warning(f"Please preview the app {name} first")
-        else:   
-            if 'token_cookie' not in st.session_state:
-                st.warning("Please go to homepage for your login :point_left:")
+
+    # publish_button = operate_row.button("✈️ Publish", help="Publish the app with template", 
+    #                                     key=f"{id}-button-publish",
+    #                                     on_click=click_publish_app, args=(app,), disabled=disabled)
+    # if publish_button:
+    #     if status == AppStatus.CREATED.value:
+    #         st.warning(f"Please preview the app {name} first")
+    #     else:   
+    #         if 'token_cookie' not in st.session_state:
+    #             st.warning("Please go to homepage for your login :point_left:")
 
 
 def is_load_workspace_page():

@@ -31,15 +31,15 @@ with st.container():
 
     auth_instance =  MyAuthenticate("comfyflow_token", "ComfyFlowApp： Load ComfyUI workflow as webapp in seconds.")
     if not st.session_state['authentication_status']:
-        with header_button:
-            client_id = os.getenv('DISCORD_CLIENT_ID')
-            redirect_uri = os.getenv('DISCORD_REDIRECT_URI')
-            signup_url = f"https://discord.com/oauth2/authorize?client_id={client_id}&scope=identify+email&redirect_uri={redirect_uri}&response_type=code"
-            st.link_button("Sign Up", type="primary", url=signup_url, help="Sign up with Discord")
+        # with header_button:
+        #     client_id = os.getenv('DISCORD_CLIENT_ID')
+        #     redirect_uri = os.getenv('DISCORD_REDIRECT_URI')
+        #     signup_url = f"https://discord.com/oauth2/authorize?client_id={client_id}&scope=identify+email&redirect_uri={redirect_uri}&response_type=code"
+        #     st.link_button("Sign Up", type="primary", url=signup_url, help="Sign up with Discord")
 
         with st.container():
             try:
-                st.markdown("ComfyFlowApp offers an in-built test account(username: demo) with the credentials(password: comfyflowapp). For an enhanced user experience, please sign up your account at https://comfyflow.app.")
+                st.markdown("ComfyFlowApp offers an in-built test account(username: demo) with the credentials(password: comfyflowapp).")
                 auth_instance.login("Login to ComfyFlowApp")
             except Exception as e:  
                 st.error(f"Login failed, {e}")
