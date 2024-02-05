@@ -1,3 +1,5 @@
+**We have launch a online service for ComfyFlowApp, you could develop app online and share it with your friends and anyone.** WebSite: [ComfyFlow](https://comfyflow.app)
+
 # 📌 Welcome to ComfyFlowApp
 
 ComfyFlowApp is a tool to help you develop AI webapp from ComfyUI workflow and share to others.
@@ -44,11 +46,6 @@ If you need to share workflows developed in ComfyUI with other users, ComfyFlowA
 * Creators develop workflows in ComfyUI and productize these workflows into web applications using ComfyFlowApp.
 * Users access and utilize these workflow applications through ComfyFlowApp to enhance work efficiency.
 
-**3. For SaaS services**
-
-* ComfyFlowApp provides an application hosting environment, including the model and ComfyUI extension nodes.
-* Creators publish their workflow applications to ComfyFlowApp.
-* Users subscribe to use the workflow applications.
 
 **Follow the repo to get the latest updates.**
 

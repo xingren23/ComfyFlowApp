@@ -1,3 +1,6 @@
+我们发布了ComfyFlowApp在线服务，创作者可以在线创建ComfyUI工作流应用，并分享给他人使用.
+服务地址：[ComfyFlow](https://comfyflow.app)
+
 # ComfyFlowApp
 
 只要几秒就可以将你的ComfyUI工作流开发成一个Web应用，并分享给其他用户使用。
@@ -39,12 +42,6 @@ ComfyFlowApp 是一个 ComfyUI 的扩展工具， 可以轻松从 ComfyUI 工作
 * 将ComfyUI和ComfyFlowApp部署到像RunPod/Vast.ai/AWS这样的云服务上，并将服务器端口映射为公网访问，例如https://{POD_ID}-{INTERNAL_PORT}.proxy.runpod.net。
 * 创作者在ComfyUI中开发工作流，并使用ComfyFlowApp将这些工作流产品化为Web应用。
 * 使用者通过ComfyFlowApp使用这些工作流应用，以提高工作效率。
-
-**3. SaaS服务**
-
-* ComfyFlowApp提供应用托管运行环境，包括模型和ComfyUI扩展节点。
-* 创作者将其工作流应用发布到ComfyFlowApp。
-* 用户订阅使用这些工作流应用。
 
 关注本项目，获取最新动态。
 
