@@ -199,6 +199,12 @@ def get_node_input_config(input_param, app_input_name, app_input_description):
                 "name": app_input_name,
                 "help": app_input_description,
             }
+        elif class_type == 'VHS_LoadVideo' and param == 'video':
+            input_config = {
+                "type": "UPLOADVIDEO",
+                "name": app_input_name,
+                "help": app_input_description,
+            }
         else:
             input_config = {
                 "type": "SELECT",

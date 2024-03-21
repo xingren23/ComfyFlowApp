@@ -79,6 +79,18 @@ class Comfyflow:
                             else:
                                 st.error(f"Please select input image for param {param_name}")
                                 return
+                    elif param_type == 'UPLOADVIDEO':
+                        param_name = node_inputs[param_item]['name']
+                        param_key = f"{node_id}_{param_name}"
+                        if param_key in st.session_state:
+                            param_value = st.session_state[param_key]
+                            
+                            logger.info(f"update param {param_key} {param_name} {param_value}")
+                            if param_value is not None:
+                                prompt[node_id]["inputs"][param_item] = param_value.name
+                            else:
+                                st.error(f"Please select input video for param {param_name}")
+                                return
                             
             logger.info(f"Sending prompt to server, {prompt}")
             queue = st.session_state.get('progress_queue', None)
@@ -191,6 +203,21 @@ class Comfyflow:
                     # show image preview
                     image = Image.open(uploaded_file)
                     st.image(image, use_column_width=True, caption='Input Image')
+            elif param_type == 'UPLOADVIDEO':
+                param_name = param_node['name']
+                param_help = param_node['help']
+                param_subfolder = param_node.get('subfolder', '')
+                param_key = f"{node_id}_{param_name}"
+                uploaded_file = st.file_uploader(param_name, help=param_help, key=param_key, type=['mp4', "h264"], accept_multiple_files=False)
+                if uploaded_file is not None:
+                    logger.info(f"uploading image, {uploaded_file}")
+                    # upload to server
+                    upload_type = "input"
+                    imagefile = {'image': (uploaded_file.name, uploaded_file)}  # 替换为要上传的文件名和路径
+                    self.comfy_client.upload_image(imagefile, param_subfolder, upload_type, 'true')
+
+                    # show video preview
+                    st.video(uploaded_file, format="video/mp4", start_time=0)
 
     def create_ui(self, show_header=True):      
         logger.info("Creating UI")  
